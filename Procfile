@@ -1,2 +1,2 @@
-web: node index.coffee
+web: node target/index.js
 
