@@ -72,9 +72,26 @@ slack.on 'message', (message) ->
         if error
           console.log "Jira error: #{error}"
         else
-          response = '*[' + issue.key + ']* ' + issue.fields.summary + "\n" +
-                      issue.fields.issuetype.name + ' `' + issue.fields.status.name + '` ' + "\n" +
-                      'https://' + config.host + '/browse/' + issue.key;
+          customer = issue.fields.customfield_10025.pop()
+          customerName = if customer then customer.value else '(unknown)'
+
+          switch issue.fields.issuetype.name
+            when 'Release'
+              version = issue.fields.summary.match(/\d+\.\d+/)
+              response = customerName + ' *' + version[0] + '*: _' + issue.fields.status.name + '_' + "\n" +
+                          'https://' + config.host + '/browse/' + issue.key;
+
+              for subtask in issue.fields.subtasks
+                do (subtask) ->
+                  response += "\n" + ' • ' + subtask.fields.summary + ': _' + subtask.fields.status.name + '_'
+
+              if issue.fields.customfield_10202
+                response += "\n*Deployment notes:*\n>>>" + issue.fields.customfield_10202
+
+            else
+              response = issue.fields.issuetype.name + ' ' + issue.key + ' for _' + customerName +  '_ is *' + issue.fields.status.name + '* ' + "\n" +
+                          '> ' + issue.fields.summary + "\n" +
+                          'https://' + config.host + '/browse/' + issue.key;
           channel.send response
           console.log """
             @#{slack.self.name} responded with "#{response}"
