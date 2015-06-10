@@ -72,7 +72,9 @@ slack.on 'message', (message) ->
         if error
           console.log "Jira error: #{error}"
         else
-          response = issue.fields.issuetype.name + ' *' + issue.key + '* is _' + issue.fields.status.name + '_ ' + " \n" + issue.fields.summary + "\n" + 'https://' + config.host + '/browse/' + issue.key
+          response = '*[' + issue.key + ']* ' + issue.fields.summary + "\n" +
+                      issue.fields.issuetype.name + ' `' issue.fields.status.name + '` ' + "\n" +
+                      'https://' + config.host + '/browse/' + issue.key;
           channel.send response
           console.log """
             @#{slack.self.name} responded with "#{response}"
