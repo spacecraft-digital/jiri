@@ -117,3 +117,12 @@ slack.on 'error', (error) ->
 
 
 slack.login()
+
+# Bind to port so Heroku is happy
+http = require 'http';
+
+http.createServer((request, response) ->
+  response.writeHead(200, { 'Content-Type': 'text/plain' });
+  response.end('Running as Slack bot', 'utf-8');
+
+).listen(process.env.PORT);
