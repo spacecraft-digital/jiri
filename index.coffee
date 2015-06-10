@@ -66,7 +66,7 @@ slack.on 'message', (message) ->
 
   # Respond to messages with the reverse of the text received.
   if type is 'message' and text? and channel?
-    m = text.match(/\b(SPC-[0-9]{3,6})/i);
+    m = text.match(/\b((SPC|SUP)-[0-9]{3,6})/i);
     if m
       jira.findIssue m[1], (error, issue) ->
         if error
