@@ -90,8 +90,12 @@ slack.on 'message', (message) ->
 
             else
               response = issue.fields.issuetype.name + ' ' + issue.key + ' for _' + customerName +  '_ is *' + issue.fields.status.name + '* ' + "\n" +
-                          '> ' + issue.fields.summary + "\n" +
-                          'https://' + config.host + '/browse/' + issue.key;
+                          '> ' + issue.fields.summary
+
+              urlRegex = new RegExp 'jadultd\.atlassian\.net/browse/' + issue.key, 'i'
+              if not text.match urlRegex
+                response += "\n" +'https://' + config.host + '/browse/' + issue.key
+
           channel.send response
           console.log """
             @#{slack.self.name} responded with "#{response}"
