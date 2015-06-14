@@ -2,7 +2,7 @@
 class Client
     
     constructor: (reportingCustomerField) ->
-        @name = reportingCustomerField.value
+        @name = if reportingCustomerField? then reportingCustomerField.value else ''
         @shortName = @condenseName @name
         @codename = @codenamify @name
 
