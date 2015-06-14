@@ -1,3 +1,4 @@
+Issue = require './Issue'
 
 class IssueOutput
 
@@ -19,11 +20,15 @@ class IssueOutput
 
                     [m, versionNumber] = issue.summary.match /(\d\.\d)/
                     if versionNumber and not issue.client.isEmpty()
-                        text += "#{issue.client.name} #{versionNumber}"
+                        text += " *#{issue.client.name} #{versionNumber}*"
                     else
-                        text += "#{issue.summary}"
+                        text += " #{issue.summary}"
 
                     text += " `#{issue.status.name}`"
+
+                    for link in issue.issuelinks
+                        linkedIssue = new Issue link.inwardIssue
+                        text += "\n  • _#{link.type.inward}_ <#{linkedIssue.url}|#{linkedIssue.key}> #{linkedIssue.summary} `#{linkedIssue.status.name}`"
 
                 when "Deployment"
                     text = "<#{issue.url}|#{issue.key}>"

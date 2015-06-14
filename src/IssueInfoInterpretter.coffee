@@ -35,6 +35,7 @@ class IssueInfoInterpretter extends Interpretter
             'subtasks',
             'customfield_10202',
             'customfield_12302', # Server(s)
+            'issuelinks'
         ]
 
         new RSVP.Promise (resolve, reject) =>
