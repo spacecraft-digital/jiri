@@ -12,7 +12,7 @@ class Issue
                     @[key2] = value2
             else
                 @[key] = value
-        @client = new Client issueData.fields.customfield_10025.pop()
+        @client = new Client if issueData.fields.customfield_10025 then issueData.fields.customfield_10025.pop() else null
         @server = issueData.fields.customfield_12302
         @url = config.jira_issueUrl.replace /#{([a-z0-9_]+)}/, (m, key) =>
             return @[key]
