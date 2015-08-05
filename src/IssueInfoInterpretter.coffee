@@ -5,7 +5,7 @@ IssueOutput = require './IssueOutput'
 
 class IssueInfoInterpretter extends Interpretter
 
-    refRegex: /\b((SPC|SUP|SA)-[0-9]{3,6})/ig
+    refRegex: /\b(([A-Z]{2,5})-[0-9]{3,6})/ig
 
     constructor: (@jiri) ->
 
