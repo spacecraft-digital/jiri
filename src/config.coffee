@@ -6,6 +6,9 @@ config =
     slack_autoReconnect: true
     slack_autoMark: true
 
+    # a list of Slack channels that aren't customer channels, so shouldn't be used as a value of Reporting Customer
+    slack_nonCustomerChannels: 'academy accessibility accreditations administration agile astronauts betterconnected boilerplate-redux branding buildtaskrefine business-models buzz cambs_xfp_testing cio-summit-app cio-team-jaam civica cmp cms-changes cms-docs cms-suggestion cmserrors cod-reviews code-conventions code-reviews code-spacecraft comets comets-deployments community-videos conferences control-centre-ui custom-devs customer-build-jobs demo-sites deployments design-critique disruptive docker dot-net engineering equipment eye-tracking feature-requests films-tv finance football gaming general global-partners google-certification googleplus gravity happiness hydrazine hydrazine-test ideabox innovationday innovations jadu-change-freeze jadu-north javascript jokes lostlinks marketing meteordeployments movers_shakers movetophp56 neutron nudge nudgenudge online-tutorials openstack-migrate openstack-weirdness optimus orbit-and-twig peoplehr perceptive planning-portal product-content project-managers projects pulsar quality quantum quantum-cantina quantum-dev-errors quantum-errors quantum-live-errors quantum-notifications quantum-uat-errors quasar quotes random rant recruitment redirects releasetools scripttesting scrum-masters security slack-meta social spacecraft spacecraft-deploy spacecraft-tickets spacejam spam spotify sqwiggle ssl starwars stellar sumpy support support-jira-status svn-to-git syadmins sysadmins testing testing-tests tombottest tommys-channel transport twig un-hack-a-thon-deux uncompany upgrades ux vpn wayofjadu weareallsales webdev weejot worldcupsweeptake xfp-changes zody_ac-forms'
+
     jira_protocol: 'https'
     jira_host: 'jadultd.atlassian.net'
     jira_port: '443'
