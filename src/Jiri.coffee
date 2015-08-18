@@ -47,7 +47,8 @@ class Jiri
             message.text = '@jiri ' + message.text
 
         # remove politeness
-        message.text = message.text.replace /\s*\bplease\b/, ''
+        if message.text
+            message.text = message.text.replace /\s*\bplease\b/, ''
 
         message
 
