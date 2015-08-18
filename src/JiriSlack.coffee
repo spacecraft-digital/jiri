@@ -32,8 +32,6 @@ class JiriSlack extends Slack
 
     req = https.request post_options, (res) ->
       res.setEncoding('utf8');
-      res.on 'data', (chunk) ->
-          console.log('Response: ' + chunk)
 
     req.on 'error', (error) ->
       console.error error
