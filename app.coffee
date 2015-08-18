@@ -1,6 +1,8 @@
 
 config = require './src/config'
 
+db = require './src/db'
+
 JiraApi = require('jira').JiraApi
 JiriSlack = require './src/JiriSlack'
 
@@ -26,4 +28,4 @@ slack = new JiriSlack(
 
 ############
 
-jiri = new Jiri slack, jira
+jiri = new Jiri slack, jira, db

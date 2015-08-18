@@ -7,7 +7,7 @@ db.clients = new Datastore
     autoload: true
 
 db.clients.ensureIndex
-    fieldName: 'codename'
+    fieldName: 'alias'
     unique: true
 
 module.exports = db
