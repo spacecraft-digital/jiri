@@ -33,6 +33,7 @@ class UnknownAction extends Action
                 "Apologies, but I have no idea what you're talking about",
                 "Je ne comprends pas",
                 "?",
+                "¯\\_(ツ)_/¯",
             ]
             # is a question
             if message.text.match /\?$/
