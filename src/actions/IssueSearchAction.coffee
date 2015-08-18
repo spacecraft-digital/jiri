@@ -106,13 +106,10 @@ class IssueSearchAction extends IssueInfoAction
                                         callback null, null
                                         return
 
-                                    console.log "speculatively trying #{message.channel.name} as client"
                                     clientRepository.find message.channel.name
                                         .then (client) =>
-                                            console.log if client then "found #{client.name}" else "didn't find a client"
                                             callback null, if client then "'Reporting Customers' = '#{client.name}'" else null
                                         .catch (error) =>
-                                            console.log "error spec finding client"
                                             callback null
 
                             (callback) =>
