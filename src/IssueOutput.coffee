@@ -6,20 +6,39 @@ class IssueOutput
     VIEW_CONDENSED: 2
     VIEW_EXPANDED: 3
 
+    # the fields that should be requested in an api call to be processed by this class
+    FIELDS: [
+        'customfield_10025', # Reporting Customer
+        'issuetype',
+        'summary',
+        'status',
+        'subtasks',
+        'customfield_10202',
+        'customfield_12302', # Server(s)
+        'issuelinks',
+        'assignee'
+    ]
+
     constructor: (@issues) ->
         unless @issues.length?
             @issues = [@issues]
 
     getSlackMessage: () ->
         attachments = []
-        for issue in @issues
 
-            switch issue.issuetype.name
-                when "Release"
+        try
+            for issue in @issues
+                attachment =
+                    "mrkdwn_in": ["text"]
+                    "fallback": "[#{issue.key}] #{issue.summary}"
+
+                # Spacecraft Release ticket
+                if issue.key.match /^SPC-/ and issue.issuetype.name is "Release"
                     text = "<#{issue.url}|#{issue.key}>"
 
-                    [m, versionNumber] = issue.summary.match /(\d\.\d)/
-                    if versionNumber and not issue.client.isEmpty()
+                    versionMatch = issue.summary.match /(\d+\.\d+)/
+                    if versionMatch and not issue.client.isEmpty()
+                        versionNumber = versionMatch[1]
                         text += " *#{issue.client.name} #{versionNumber}*"
                     else
                         text += " #{issue.summary}"
@@ -28,29 +47,46 @@ class IssueOutput
 
                     for link in issue.issuelinks
                         linkedIssue = new Issue link.inwardIssue
+                        if link.type.inward is 'is blocked by'
+                            link.type.inward = 'includes'
                         text += "\n  • _#{link.type.inward}_ <#{linkedIssue.url}|#{linkedIssue.key}> #{linkedIssue.summary} `#{linkedIssue.status.name}`"
 
-                when "Deployment"
+                # Spacecraft Deployment ticket
+                else if issue.key.match /^SPC-/ and issue.issuetype.name is "Deployment"
                     text = "<#{issue.url}|#{issue.key}>"
                     status = if issue.status.name.match(/Deployment/i) then issue.status.name else "Deployment (#{issue.status.name})"
 
-                    [m, versionNumber] = issue.summary.match /(\d\.\d\.\d)/
-                    if versionNumber and not issue.client.isEmpty() and issue.server
+                    versionMatch = issue.summary.match /(\d+\.\d+\.\d+)/
+                    if versionMatch and not issue.client.isEmpty() and issue.server
+                        versionNumber = versionMatch[1]
                         text += " #{status} of *#{issue.client.name} #{versionNumber}* to #{issue.server}"
                     else
                         text += " #{status} of #{issue.summary}"
 
+                # Others
                 else
-                    text = """<#{issue.url}|#{issue.key}> #{issue.summary}
-                            #{issue.issuetype.name}"""
+                    attachment.author_name = "#{issue.key} #{issue.summary}"
+                    attachment.author_link = issue.url
+
+                    text = "#{issue.issuetype.name}"
                     unless issue.client.name.match /^(|\*None\*)$/
                         text += " for #{issue.client.name}"
                     text += " `#{issue.status.name}`"
 
-            attachments.push
-                "mrkdwn_in": ["text"]
-                "fallback": "[#{issue.key}] #{issue.summary}"
-                "text": text
+                    if issue.supportRef
+                        text += " <#{issue.supportUrl}|#{issue.supportRef}>"
+
+                # display Assignee's gavatar
+                if issue.assignee?.emailAddress
+                    Gravatar = require 'gravatar'
+                    attachment.author_icon = Gravatar.url issue.assignee.emailAddress, {s: 48, d: '404'}, 'https'
+
+                attachment.text = text
+
+                attachments.push attachment
+
+        catch e
+            console.error e
 
         "attachments": JSON.stringify(attachments)
 
