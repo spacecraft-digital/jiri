@@ -13,6 +13,13 @@ config =
     jira_password: process.env.JIRA_PASSWORD
     jira_issueUrl: 'https://jadultd.atlassian.net/browse/#{key}'
 
+    jira_status_inProgress: ['In Progress', 'WebDev in Progress', 'UX in Progress']
+    jira_status_toTest: 'Testing ToDo: Spacecraft'
+    jira_status_webdevToDo: 'WebDev ToDo'
+    jira_status_uxToDo: 'UX ToDo'
+    jira_status_awaitingMerge: ['Awaiting Merge', 'Awaiting Merge: Spacecraft']
+    jira_status_readyToRelease: 'Ready for Release: Spacecraft'
+
     bot_name: 'Jiri'
     bot_iconUrl: 'http://res.cloudinary.com/jadu-slack/image/upload/v1434266028/jiri-icon_gmhsch.png'
 
