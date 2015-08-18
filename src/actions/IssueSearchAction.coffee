@@ -20,7 +20,7 @@ class IssueSearchAction extends IssueInfoAction
     # pattern parts
     patternParts:
         find:
-            _: 'what( i|\')s|find|search|show( us| me)?|display'
+            _: 'what( i|\\\')s|find|search|show( us| me)?|display'
         after_find:
             _: 'still|remaining|left|outstanding|all'
         issueType:
@@ -55,16 +55,9 @@ class IssueSearchAction extends IssueInfoAction
         return false unless message.type is 'message' and message.text? and message.channel?
 
         @lastOutcome = @jiri.getLastOutcome @
-        if @lastOutcome?.outcome is @OUTCOME_TRUNCATED_RESULTS
-            pattern = @jiri.createPattern "(?=.*\\bjiri\\b.*)?(?:jiri )?more.*",
-                        more: "(?:(?:show|find|display|give me|gimme|let's have)\\s+)?(?:(\\d+)\\s+)?(?:more|moar|m04r)(?:\\s+(?:please|now))?",
-                        true
-            match = message.text.match pattern.getRegex()
-            if match
-                @matched = @MATCH_MORE
-                if match[3]?.match /^\d+$/
-                    @MAX_RESULTS = parseInt match[3]
-                return true
+        if @lastOutcome?.outcome is @OUTCOME_TRUNCATED_RESULTS and message.text.match @getMoreRegex()
+            @matched = @MATCH_MORE
+            return true
 
         if message.text.match @getTestRegex()
             @matched = @MATCH_NORMAL
@@ -72,8 +65,15 @@ class IssueSearchAction extends IssueInfoAction
 
     getTestRegex: =>
         unless @pattern
-            @pattern = @jiri.createPattern '^jiri (find after_find?)? (issueType ?|status ?|client ?|search ?)+$', @patternParts
+            @pattern = @jiri.createPattern '^jiri (find after_find?)? (\\d+|(?:the )?latest|one)? ?(issueType ?|status ?|client ?|search ?)+\\??$', @patternParts
         return @pattern.getRegex()
+
+    getMoreRegex: =>
+        unless @morePattern
+            @morePattern = @jiri.createPattern "(?=.*\\bjiri\\b.*)?(?:jiri )?more.*",
+                    more: "(?:(?:show|find|display|give me|gimme|let's have)\\s+)?(?:(\\d+)\\s+)?(?:more|moar|m04r)(?:\\s+(?:please|now))?",
+                    true
+        return @morePattern.getRegex()
 
     # Returns a promise that will resolve to a response if successful
     respondTo: (message) =>
@@ -82,9 +82,17 @@ class IssueSearchAction extends IssueInfoAction
                 when @MATCH_NORMAL
                     return new RSVP.Promise (resolve, reject) =>
 
+                        matches = message.text.match @getTestRegex()
+                        console.log matches
+                        if matches[2]
+                            if matches[2].match /^\d+$/
+                                @MAX_RESULTS = parseInt matches[2]
+                            else
+                                @MAX_RESULTS = 1
+
                         async.parallel([
                             (callback) =>
-                                pattern = @jiri.createPattern "client", @patternParts, true
+                                pattern = @jiri.createPattern "\\bclient\\b", @patternParts, true
                                 matches = message.text.match pattern.getRegex()
                                 clientRepository = new ClientRepository @jiri
                                 if matches?
@@ -122,7 +130,7 @@ class IssueSearchAction extends IssueInfoAction
                                 callback null, null
 
                             (callback) =>
-                                pattern = @jiri.createPattern "status", @patternParts, true
+                                pattern = @jiri.createPattern "\\bstatus\\b", @patternParts, true
                                 matches = message.text.match pattern.getRegex()
                                 if matches?
                                     status = null
@@ -152,7 +160,7 @@ class IssueSearchAction extends IssueInfoAction
                                 callback null, null
 
                             (callback) =>
-                                pattern = @jiri.createPattern "search", @patternParts, true
+                                pattern = @jiri.createPattern "\\bsearch\\b", @patternParts, true
                                 matches = message.text.match pattern.getRegex()
                                 if matches?
                                     if matches[0].match new RegExp "(#{@patternParts.search._})", 'i'
@@ -177,6 +185,10 @@ class IssueSearchAction extends IssueInfoAction
                         )
                 when @MATCH_MORE
                     return new RSVP.Promise (resolve, reject) =>
+                        match = message.text.match @getMoreRegex()
+                        if match[5]?.match /^\d+$/
+                            @MAX_RESULTS = parseInt match[5]
+
                         message.jiri_jira_query = @lastOutcome.data.query
                         message.jiri_jira_startAt = @lastOutcome.data.startAt + @lastOutcome.data.limit
                         message.jiri_jira_limit = @MAX_RESULTS
@@ -197,20 +209,21 @@ class IssueSearchAction extends IssueInfoAction
             moreAvailable = true
             result.issues = result.issues.slice(0,@MAX_RESULTS)
 
+        count = result.issues.length
+
         response = super result, message
 
-        if result.issues.length is 0
+        if count is 0
             response.text = "I'm afraid I couldn't find any. This is the query I tried: \n```\n#{message.jiri_jira_query}\n```"
         else if message.jiri_jira_startAt > 0
             startAt = message.jiri_jira_startAt
-            if result.issues.length is 1
+            if count is 1
                 response.text = "Here is result #{startAt+1}. "
             else
-                response.text = "Here are results #{startAt+1}–#{startAt + result.issues.length}. "
-        else if result.issues.length is 1
+                response.text = "Here are results #{startAt+1}–#{startAt + count}. "
+        else if count is 1
             response.text = "Here it is. "
         else if moreAvailable
-            count = Math.min(@MAX_RESULTS, result.issues.length)
             response.text = "Here are the first #{count} I found. "
         else
             response.text = "Here you go — I found #{count}. "
@@ -223,8 +236,12 @@ class IssueSearchAction extends IssueInfoAction
                 "Just ask if you want more.",
                 "I've got more if you want them.",
                 "There are more available.",
-                "There are more where they came from.",
             ]
+            if count is 1
+                strings.push "There are more where that came from."
+            else
+                strings.push "There are more where they came from."
+
             response.text += strings[Math.floor(Math.random() * strings.length)]
 
             outcome = @OUTCOME_TRUNCATED_RESULTS
