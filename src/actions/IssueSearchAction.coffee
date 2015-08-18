@@ -99,8 +99,6 @@ class IssueSearchAction extends IssueInfoAction
                                         .catch (error) =>
                                             callback "Couldn't find client #{client}"
                                 else
-                                    message.channel.name = 'warrington-localoffer'
-
                                     # ignore the blacklist of channels
                                     if message.channel.name in config.slack_nonCustomerChannels.split(/ /)
                                         callback null, null
