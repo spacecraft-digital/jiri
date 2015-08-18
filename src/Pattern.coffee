@@ -48,7 +48,8 @@ class Pattern
                 .replace /\? /g, '?\\s*'
                 .replace /\s/, '\\s+'
                 .replace /(\\b|\b)([a-z0-9_]{2,})(\b|\s)/ig, (m,prefix,partName) =>
-                    prefix + @getRegexStringForPart partName
+                    s = prefix + @getRegexStringForPart partName
+                    if s then return s else return m
             'i')
 
     # Updates the 'jiri' part to allow the Slack user ID mention
