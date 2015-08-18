@@ -58,7 +58,8 @@ class Pattern
             @parts.jiri._ = @parts.jiri._.replace /@\?jiri(?!\|<@)/g, "(@?#{slack.self.name}|<@#{slack.self.id}>)"
 
             # allow Jiri to be mentioned in parts
-            for own key, values of @parts when key is not 'jiri'
+            for own key, values of @parts
+                continue if key is 'jiri'
                 for own key2, value of values
                     @parts[key][key2] = value.replace /(\b|\\b)@?jiri(\b|\\b)/ig, "(@?#{slack.self.name}|<@#{slack.self.id}>)"
 
