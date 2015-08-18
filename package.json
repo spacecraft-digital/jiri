@@ -1,6 +1,6 @@
 {
   "name": "jadu-jira-slack",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Integration between Jadu Jira and Slack",
   "main": "app.coffee",
   "repository": "https://gitlab.hq.jadu.net/u/matt.dolan/jadu-jira-slack",
