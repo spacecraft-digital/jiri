@@ -2,6 +2,7 @@ RSVP = require 'rsvp'
 Action = require './Action'
 Issue = require '../Issue'
 IssueOutput = require '../IssueOutput'
+config = require '../config'
 
 # To extend this class, you probably just need to override the respondTo method and refRegex property (or the test method for advanced)
 class IssueInfoAction extends Action
@@ -81,7 +82,7 @@ class IssueInfoAction extends Action
         if result?.issues
             for issue in result.issues when issue?
                 issues.push new Issue(issue)
-                @jiri.storeActionData @, @getRefsDataKey(), issue.key, 5
+                @jiri.storeActionData @, @getRefsDataKey(), issue.key, config.timeBeforeRepeatUnfurl
 
         @jiri.recordOutcome @, @OUTCOME_RESULTS, 
             issueCount: issues.length

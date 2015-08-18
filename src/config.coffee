@@ -28,6 +28,9 @@ config =
 
     supportUrl: 'https://support.jadu.net/jadu/support/support_ticket_list.php?subject=#{ref}'
 
+    # the number of seconds to ignore a Jira ref for after it is once unurled
+    timeBeforeRepeatUnfurl: 120
+
 # Assert some required config
 throw "SLACK_API_TOKEN needs to be set in the environment" unless config.slack_apiToken?
 throw "JIRA_PASSWORD needs to be set in the environment" unless config.jira_password?
