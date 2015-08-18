@@ -44,9 +44,7 @@ class GeneralChatAction extends Action
                     text.push "Good afternoon"
 
             else
-                pattern = @jiri.createPattern '', @patternParts
-
-                pattern.metaPattern = 'hello'
+                pattern = @jiri.createPattern 'hello', @patternParts
 
                 if message.text||''.match pattern.getRegex()
                     text = [
