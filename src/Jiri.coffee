@@ -131,7 +131,7 @@ class Jiri
         return if message.subtype is 'bot_message' and message.username?.match /Jiri/
 
         # for development, only respond to Matt Dolan
-        return unless message.user is 'U025466D6'
+        # return unless message.user is 'U025466D6'
 
         @actOnMessage message
 
