@@ -59,6 +59,7 @@ class IssueInfoAction extends Action
             options[key] = value
 
         return new RSVP.Promise (resolve, reject) =>
+            @setLoading()
             @jiri.jira.searchJira(
                 query
                 options

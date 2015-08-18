@@ -39,5 +39,9 @@ class JiriSlack extends Slack
     req.write post_data
     req.end()
 
+  setTyping: (channelId) ->
+    @_send
+      type: "typing"
+      channel: channelId
 
 module.exports = JiriSlack

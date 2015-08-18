@@ -20,4 +20,8 @@ class Action
     test: (message) ->
         throw 'Action subclass needs to implement test method'
 
+    # Make Slack say “Jiri is typing” to show the user that something is happening
+    setLoading: () =>
+        @jiri.slack.setTyping @channel.id
+
 module.exports = Action

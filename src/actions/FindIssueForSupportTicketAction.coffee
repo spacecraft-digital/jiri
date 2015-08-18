@@ -20,6 +20,7 @@ class FindIssueForSupportTicketAction extends IssueInfoAction
     respondTo: (message) ->
         [supportTicketUrl] = message.text.match @getTestRegex()
 
+        @setLoading()
         return @getJiraIssues "'Jadu Support Ticket' = '#{supportTicketUrl}'"
 
 module.exports = FindIssueForSupportTicketAction

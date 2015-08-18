@@ -97,6 +97,8 @@ class IssueSearchAction extends IssueInfoAction
                                 clientRepository = new ClientRepository @jiri
                                 if matches?
                                     client = matches[1]
+                                    @setLoading()
+
                                     clientRepository.find client
                                         .then (client) =>
                                             if !client
@@ -112,6 +114,7 @@ class IssueSearchAction extends IssueInfoAction
                                         callback null, null
                                         return
 
+                                    @setLoading()
                                     clientRepository.find message.channel.name
                                         .then (client) =>
                                             callback null, if client then "'Reporting Customers' = '#{client.name}'" else null
@@ -180,6 +183,7 @@ class IssueSearchAction extends IssueInfoAction
                                 message.jiri_jira_startAt = 0
                                 message.jiri_jira_limit = @MAX_RESULTS
 
+                                @setLoading()
                                 resolve @getJiraIssues query, {maxResults: @MAX_RESULTS + 1}, message
 
                         )
