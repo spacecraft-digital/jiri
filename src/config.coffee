@@ -23,6 +23,8 @@ config =
     bot_name: 'Jiri'
     bot_iconUrl: 'http://res.cloudinary.com/jadu-slack/image/upload/v1434266028/jiri-icon_gmhsch.png'
 
+    supportUrl: 'https://support.jadu.net/jadu/support/support_ticket_list.php?subject=#{ref}'
+
 # Assert some required config
 throw "SLACK_API_TOKEN needs to be set in the environment" unless config.slack_apiToken?
 throw "JIRA_PASSWORD needs to be set in the environment" unless config.jira_password?
