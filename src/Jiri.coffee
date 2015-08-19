@@ -52,6 +52,13 @@ class Jiri
         message
 
     actOnMessage: (message) =>
+        if message.subtype is 'message_changed'
+            # if we store messages that come in, by their ts, we could cancel and restart those requests
+            # channel: 'D064EK61Y',
+            # event_ts: '1439907605.267252',
+            # ts: '1439907605.000630'
+            return
+
         if !message.text
             return
 
