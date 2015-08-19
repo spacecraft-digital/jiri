@@ -128,7 +128,7 @@ class Jiri
 
     onSlackMessage: (message) =>
         # ignore messages Jiri sends
-        return if message.subtype is 'bot_message' and message.username?.match /Jiri/
+        return if message.user is @slack.self.id
 
         # for development, only respond to Matt Dolan
         # return unless message.user is 'U025466D6'

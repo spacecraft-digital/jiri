@@ -18,6 +18,7 @@ class JiriSlack extends Slack
     data.token = config.slack_apiToken
     data.username = config.bot_name
     data.icon_url = config.bot_iconUrl
+    data.as_user = true
 
     post_data = querystring.stringify data
 
