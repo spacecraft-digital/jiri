@@ -22,7 +22,7 @@ class GeneralChatAction extends Action
         userName = message.user.profile.first_name || message.user.profile.real_name || message.user.name;
 
         return new RSVP.Promise (resolve, reject) =>
-            if message.subtype in ['group_join', 'channel_join']
+            if message.subtype in ['group_join', 'channel_join'] and message.user.id is @jiri.slack.self.id
                 text = [
                     "Hi folks",
                     "Jiri, at your service.",
