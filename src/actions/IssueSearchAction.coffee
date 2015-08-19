@@ -104,7 +104,8 @@ class IssueSearchAction extends IssueInfoAction
                                             if !client
                                                 callback "Client not found for #{client}"
 
-                                            callback null, "'Reporting Customers' = '#{client.name}'"
+                                            clientName = client.name.replace /'/g, "\\'"
+                                            callback null, "'Reporting Customers' = '#{clientName}'"
 
                                         .catch (error) =>
                                             callback "Couldn't find client #{client}"
@@ -117,7 +118,8 @@ class IssueSearchAction extends IssueInfoAction
                                     @setLoading()
                                     clientRepository.find message.channel.name
                                         .then (client) =>
-                                            callback null, if client then "'Reporting Customers' = '#{client.name}'" else null
+                                            clientName = client.name.replace /'/g, "\\'"
+                                            callback null, if client then "'Reporting Customers' = '#{clientName}'" else null
                                         .catch (error) =>
                                             callback null
 
