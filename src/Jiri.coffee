@@ -41,18 +41,20 @@ class Jiri
         message.user = @slack.getUserByID message.user
         message.userName = if message.user?.name? then "@#{message.user.name}" else "UNKNOWN_USER"
 
-        if message.text
-            # to simplify matching, if Jiri is addresses via a DM, we'll ensure "@jiri " is prefixed, so we
-            # can use the same patterns to match there as in other channels
-            if message.channel.is_im and not message.text.match @createPattern('jiri').getRegex()
-                message.text = '@jiri ' + message.text
+        # to simplify matching, if Jiri is addresses via a DM, we'll ensure "@jiri " is prefixed, so we
+        # can use the same patterns to match there as in other channels
+        if message.channel.is_im and not message.text.match @createPattern('jiri').getRegex()
+            message.text = '@jiri ' + message.text
 
-            # remove politeness
-            message.text = message.text.replace /\s*\bplease\b/, ''
+        # remove politeness
+        message.text = message.text.replace /\s*\bplease\b/, ''
 
         message
 
     actOnMessage: (message) =>
+        if !message.text
+            return
+
         message = @normaliseMessage message
 
         @matchingActions = 0
