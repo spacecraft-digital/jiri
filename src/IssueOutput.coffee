@@ -15,6 +15,7 @@ class IssueOutput
         'subtasks',
         'customfield_10202',
         'customfield_12302', # Server(s)
+        'customfield_10004', # Story points
         'issuelinks',
         'assignee'
     ]
@@ -63,18 +64,40 @@ class IssueOutput
                     else
                         text += " #{status} of #{issue.summary}"
 
+
                 # Others
                 else
                     attachment.author_name = "#{issue.key} #{issue.summary}"
                     attachment.author_link = issue.url
 
                     text = "#{issue.issuetype.name}"
-                    unless issue.client.name.match /^(|\*None\*)$/
-                        text += " for #{issue.client.name}"
-                    text += " `#{issue.status.name}`"
 
-                    if issue.supportRef
-                        text += " <#{issue.supportUrl}|#{issue.supportRef}>"
+                    # Spacecraft / Support
+                    if issue.key.match /^(SPC|SUP)-/
+
+                        unless issue.client.name.match /^(|\*None\*)$/
+                            text += " for #{issue.client.name}"
+                        text += " `#{issue.status.name}`"
+
+                        if issue.supportRef
+                            text += " <#{issue.supportUrl}|#{issue.supportRef}>"
+
+                    # Other projects
+                    else
+                        # story points
+                        switch issue.customfield_10004
+                            when 1 then text += " :one:"
+                            when 2 then text += " :two:"
+                            when 3 then text += " :three:"
+                            when 4 then text += " :four:"
+                            when 5 then text += " :five:"
+                            when 6 then text += " :six:"
+                            when 7 then text += " :seven:"
+                            when 8 then text += " :eight:"
+                            when 9 then text += " :nine:"
+                            when 10 then text += " :keycap_ten:"
+
+                        text += " `#{issue.status.name}`"
 
                 # display Assignee's gavatar
                 if issue.assignee?.emailAddress
