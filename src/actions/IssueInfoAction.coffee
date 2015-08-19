@@ -102,10 +102,12 @@ class IssueInfoAction extends Action
         return "Sorry #{message.user.profile.first_name}, I couldn't find any"
 
     errorLoadingIssues: (error) ->
-        console.error "Jira API error: #{error}", error
+        console.error "Jira API error: #{error}"
+        throw error
 
     errorParsingIssues: (error) ->
         console.error "Jira parsing error: #{error} in IssueInfoAction"
+        throw error
 
     test: (message) ->
         return false unless message.type is 'message' and message.text? and message.channel?
