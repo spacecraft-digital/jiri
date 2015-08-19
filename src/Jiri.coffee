@@ -132,6 +132,8 @@ class Jiri
         # ignore messages Jiri sends
         return if message.user is @slack.self.id
 
+        return if message.userName = '@slackbot' and message.text?.match /^You have been removed/
+
         # for development, only respond to Matt Dolan
         # return unless message.user is 'U025466D6'
 
