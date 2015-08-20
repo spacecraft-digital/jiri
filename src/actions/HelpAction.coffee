@@ -16,36 +16,48 @@ class HelpAction extends Action
 
     patternParts:
         "what_can_you_do": "(?=.*jiri.*)(jiri[,-—: ]*)?\\b(help|help with jiri|what (do|will|can) (you|I|we) do|what (can|does|will) jiri (do|understand)|what is jiri for?|what( i|\\')?s the (point|purpose) of jiri)\\?*([, ]+jiri\??)?$"
+        "who_is_jiri": "^jiri[,:\\- ]* (what|who) are you\\??|(what|who)( i|')s (this )?jiri\\??"
 
     respondTo: (message) ->
         return new RSVP.Promise (resolve, reject) =>
             text = []
 
-            ledes = [
-                "*Here's what I can do:*",
-                "*I can do stuff like this…*",
-                "*I'm glad you asked. I can…*",
-                "*Thanks for asking. I can…*",
-                "*I can…*",
-                "*You wanna know what floats my boat? I like to…*",
-                "*On a good day, I can:*"
-            ]
-            text.push ledes[Math.floor(Math.random() * ledes.length)]
+            if message.text.match @jiri.createPattern('what_can_you_do', @patternParts).getRegex()
+                ledes = [
+                    "*Here's what I can do:*",
+                    "*I can do stuff like this…*",
+                    "*I'm glad you asked. I can…*",
+                    "*Thanks for asking. I can…*",
+                    "*I can…*",
+                    "*You wanna know what floats my boat? I like to…*",
+                    "*On a good day, I can:*"
+                ]
+                text.push ledes[Math.floor(Math.random() * ledes.length)]
 
-            # allow each Action to describe itself
-            for actionClass in @jiri.actions
-                action = new actionClass @, message.channel
-                description = action.describe()
-                text.push description unless description in ['', undefined]
+                # allow each Action to describe itself
+                for actionClass in @jiri.actions
+                    action = new actionClass @, message.channel
+                    description = action.describe()
+                    text.push description unless description in ['', undefined]
 
-            resolve
-                text: text.join "\n • "
-                channel: @channel.id
+                resolve
+                    text: text.join "\n • "
+                    channel: @channel.id
+
+            else if message.text.match @jiri.createPattern('who_is_jiri', @patternParts).getRegex()
+                text = [
+                    "I'm just a helpful little assistant.",
+                    "A question I often ask myself",
+                    "I can be whoever you want me to be. Unless you want me to be batman. I can't do batman.",
+                ]
+                resolve
+                    text: text[Math.floor(Math.random() * text.length)]
+                    channel: @channel.id
 
     # Returns TRUE if this action can respond to the message
     # No further actions will be tested if this returns TRUE
     test: (message) =>
-        pattern = @jiri.createPattern 'what_can_you_do', @patternParts
+        pattern = @jiri.createPattern Object.keys(@patternParts).join('|'), @patternParts
         return message.text.match pattern.getRegex()
 
 module.exports = HelpAction
