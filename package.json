@@ -1,11 +1,12 @@
 {
-  "name": "jadu-jira-slack",
+  "name": "jiri",
   "version": "1.1.0",
   "description": "Integration between Jadu Jira and Slack",
   "main": "app.coffee",
-  "repository": "https://gitlab.hq.jadu.net/u/matt.dolan/jadu-jira-slack",
+  "repository": "https://gitlab.hq.jadu.net/u/matt.dolan/jiri",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "coffee -w app.coffee"
   },
   "author": "matt.dolan@jadu.co.uk",
   "license": "ISC",
