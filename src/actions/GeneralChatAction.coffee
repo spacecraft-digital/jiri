@@ -11,6 +11,7 @@ class GeneralChatAction extends Action
     patternParts:
         hello: "^(?=.*jiri.*)(jiri[,-—: ]*)?\\b(say (hello|hi)( to the (nice )?people)?|are you there\\??|hi|hello|hey|yo|s\\'?up|what\\'?s up|greetings|oi)\\b.*"
         thanks: "^(?=.*jiri.*)(jiri[,-—: ]*)?\\b(thank you( very much)?|thanks|ta|cheers|nice one|good work|ta muchly)\\b.*"
+        stupid: "^(?=.*jiri.*)(jiri[,-—: ]*)?\\b(stupid|drunk|annoying|go away|get lost|fuck off|piss off)\\b.*"
 
     # should return the class name as a string
     getType: ->
@@ -81,6 +82,14 @@ class GeneralChatAction extends Action
                     "No problem. ",
                     "No problem. Let me know if there's anything else I can help with.",
                     ":grin:"
+                ]
+
+            else if message.text.match @jiri.createPattern('stupid', @patternParts).getRegex()
+                pkg = require "../../package.json"
+                text = [
+                    "Give me a chance, #{userName} — I'm still young",
+                    "Merge requests welcome: #{pkg.repository}",
+                    "`/kick @jiri`…?",
                 ]
 
 
