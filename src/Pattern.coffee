@@ -15,7 +15,7 @@ class Pattern
 
     parts:
         jiri:
-            _: '@?jiri[:-—…. ]*|(?=.*@?jiri\\b)'
+            _: '@?jiri[:\\-—…. ]*'
 
     constructor: (@metaPattern, parts, @subpartMatches = false) ->
         for own key, value of parts
