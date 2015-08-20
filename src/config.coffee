@@ -20,6 +20,7 @@ config =
     jira_status_toTest: 'Testing ToDo: Spacecraft'
     jira_status_webdevToDo: 'WebDev ToDo'
     jira_status_uxToDo: 'UX ToDo'
+    jira_status_awaitingReview: ['Code Review ToDo']
     jira_status_awaitingMerge: ['Awaiting Merge', 'Awaiting Merge: Spacecraft']
     jira_status_readyToRelease: 'Ready for Release: Spacecraft'
 

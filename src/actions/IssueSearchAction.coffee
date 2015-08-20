@@ -36,6 +36,7 @@ class IssueSearchAction extends IssueInfoAction
             'merge': 'to merge|awaiting merge'
             'webdev': 'web ?dev|for web ?dev|web ?dev to[ \\-]?do'
             'ux': 'ux|needing ux|for ux|ux to[ \\-]?do'
+            'to review': '(?:ready )?(to|for|awaiting|needing) review'
             'release': '(?:ready )?(to|for) release|releaseable'
             'in progress': 'open|in progress|being worked on|underway'
         client:
@@ -157,6 +158,8 @@ class IssueSearchAction extends IssueInfoAction
                                                 status = config.jira_status_uxToDo
                                             when 'merge'
                                                 status = config.jira_status_awaitingMerge
+                                            when 'to review'
+                                                status = config.jira_status_awaitingReview
                                             when 'release'
                                                 status = config.jira_status_readyToRelease
 
