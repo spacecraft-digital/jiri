@@ -47,7 +47,7 @@ class IssueOutput
                     text += " `#{issue.status.name}`"
 
                     for link in issue.issuelinks
-                        linkedIssue = new Issue link.inwardIssue
+                        linkedIssue = new Issue link.inwardIssue||link.outwardIssue
                         if link.type.inward is 'is blocked by'
                             link.type.inward = 'includes'
                         text += "\n  • _#{link.type.inward}_ <#{linkedIssue.url}|#{linkedIssue.key}> #{linkedIssue.summary} `#{linkedIssue.status.name}`"
