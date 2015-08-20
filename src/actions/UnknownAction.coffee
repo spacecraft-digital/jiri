@@ -56,7 +56,7 @@ class UnknownAction extends Action
 
         return true if @channel.is_im
 
-        pattern = @jiri.createPattern '.*jiri.*'
+        pattern = @jiri.createPattern '^jiri\\b.+'
         return message.text.match pattern.getRegex()
 
 module.exports = UnknownAction
