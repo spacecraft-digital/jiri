@@ -78,7 +78,7 @@ class IssueSearchAction extends IssueInfoAction
 
     getMoreRegex: =>
         unless @morePattern
-            @morePattern = @jiri.createPattern "^more",
+            @morePattern = @jiri.createPattern "^jiri?more",
                     more: "(?:(?:show|find|display|give me|gimme|let's have)\\s+)?(?:(\\d+)\\s+)?(?:more|moar|m04r)(?:\\s+(?:please|now))?",
                     true
         return @morePattern.getRegex()
