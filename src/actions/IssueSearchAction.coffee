@@ -230,6 +230,8 @@ class IssueSearchAction extends IssueInfoAction
 
         response = super result, message
 
+        return unless response
+
         if count is 0
             response.text = "I'm afraid I couldn't find any. This is the query I tried: \n```\n#{message.jiri_jira_query}\n```"
         else if message.jiri_jira_startAt > 0
@@ -281,9 +283,6 @@ class IssueSearchAction extends IssueInfoAction
         }
 
         response
-
-    getNoneFoundMessage: (message) ->
-        return "Sorry #{message.user.profile.first_name}, I couldn't find any #{message.jiri_jira_query}"
 
 
 module.exports = IssueSearchAction

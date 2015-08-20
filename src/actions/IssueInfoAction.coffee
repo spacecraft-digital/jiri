@@ -97,15 +97,9 @@ class IssueInfoAction extends Action
         if issues.length
             outputter = new IssueOutput issues
             response = outputter.getSlackMessage()
-        else
-            response =
-                text: @getNoneFoundMessage message
 
-        response.channel = @channel.id
-        response
-
-    getNoneFoundMessage: (message) ->
-        return "Sorry #{message.user.profile.first_name}, I couldn't find any"
+            response.channel = @channel.id
+            response
 
     errorLoadingIssues: (error) ->
         console.error "Jira API error: #{error}"
