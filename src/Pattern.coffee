@@ -55,7 +55,7 @@ class Pattern
     # Updates the 'jiri' part to allow the Slack user ID mention
     setSlack: (slack) =>
         unless @slackSet
-            @parts.jiri._ = @parts.jiri._.replace /@\?jiri(?!\|<@)/g, "(@?#{slack.self.name}|<@#{slack.self.id}>)"
+            @parts.jiri._ = @parts.jiri._.replace /@?jiri(?!\|<@)/g, "(@?#{slack.self.name}|<@#{slack.self.id}>)"
 
             # allow Jiri to be mentioned in parts
             for own key, values of @parts
