@@ -120,7 +120,6 @@ class Jiri
         validData = []
         validData.push datum for datum in @actionData[a][key] when not datum.expired()
 
-        @actionData[a] = validData
         validData
 
     sendResponse: (response) =>
