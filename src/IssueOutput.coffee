@@ -38,7 +38,7 @@ class IssueOutput
                     text = "<#{issue.url}|#{issue.key}>"
 
                     versionMatch = issue.summary.match /(\d+\.\d+)/
-                    if versionMatch and not issue.client.isEmpty()
+                    if versionMatch and not issue.client?.isEmpty()
                         versionNumber = versionMatch[1]
                         text += " *#{issue.client.name} #{versionNumber}*"
                     else
@@ -58,7 +58,7 @@ class IssueOutput
                     status = if issue.status.name.match(/Deployment/i) then issue.status.name else "Deployment (#{issue.status.name})"
 
                     versionMatch = issue.summary.match /(\d+\.\d+\.\d+)/
-                    if versionMatch and not issue.client.isEmpty() and issue.server
+                    if versionMatch and not issue.client?.isEmpty() and issue.server
                         versionNumber = versionMatch[1]
                         text += " #{status} of *#{issue.client.name} #{versionNumber}* to #{issue.server}"
                     else
@@ -75,7 +75,7 @@ class IssueOutput
                     # Spacecraft / Support
                     if issue.key.match /^(SPC|SUP)-/
 
-                        unless issue.client.name.match /^(|\*None\*)$/
+                        unless not issue.client or issue.client.name.match /^(|\*None\*)$/
                             text += " for #{issue.client.name}"
                         text += " `#{issue.status.name}`"
 
@@ -109,7 +109,7 @@ class IssueOutput
                 attachments.push attachment
 
         catch e
-            console.error e
+            console.error "Error building Issue output: #{e}"
 
         "attachments": JSON.stringify(attachments)
 
