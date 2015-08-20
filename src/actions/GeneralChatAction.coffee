@@ -9,9 +9,9 @@ class GeneralChatAction extends Action
     constructor: (@jiri, @channel) ->
 
     patternParts:
-        hello: "^(?=.*jiri.*)(jiri[,-—: ]*)?\\b(say (hello|hi)( to the (nice )?people)?|are you there\\??|hi|hello|hey|yo|s\\'?up|what\\'?s up|greetings|oi)\\b.*"
-        thanks: "^(?=.*jiri.*)(jiri[,-—: ]*)?\\b(thank you( very much)?|thanks|ta|cheers|nice one|good work|ta muchly)\\b.*"
-        stupid: "^(?=.*jiri.*)(jiri[,-—: ]*)?\\b(stupid|drunk|annoying|go away|get lost|fuck off|piss off)\\b.*"
+        hello: "^(?=.*jiri).*\\b(say (hello|hi)( to the (nice )?people)?|are you there\\??|hi|hello|hey|yo|s\\'?up|what\\'?s up|greetings|oi)\\b.*"
+        thanks: "^(?=.*jiri).*\\b(thank you( very much)?|thanks|ta|cheers|nice one|good work|ta muchly)\\b.*"
+        stupid: "^(?=.*jiri).*\\b(stupid|drunk|annoying|go away|get lost|fuck off|piss off)\\b.*"
 
     # should return the class name as a string
     getType: ->
@@ -107,4 +107,5 @@ class GeneralChatAction extends Action
 
         pattern = @jiri.createPattern Object.keys(@patternParts).join('|'), @patternParts
         return message.text.match pattern.getRegex()
+
 module.exports = GeneralChatAction
