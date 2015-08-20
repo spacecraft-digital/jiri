@@ -200,6 +200,8 @@ class IssueSearchAction extends IssueInfoAction
                         match = message.text.match @getMoreRegex()
                         if match[5]?.match /^\d+$/
                             @MAX_RESULTS = parseInt match[5]
+                        else
+                            @MAX_RESULTS = @lastOutcome.data.limit
 
                         message.jiri_jira_query = @lastOutcome.data.query
                         message.jiri_jira_startAt = @lastOutcome.data.startAt + @lastOutcome.data.limit
