@@ -34,7 +34,7 @@ class IssueOutput
                     "fallback": "[#{issue.key}] #{issue.summary}"
 
                 # Spacecraft Release ticket
-                if issue.key.match(/^SPC-/) and issue.issuetype?.name is "Release"
+                if issue.key.match(/^(SPC|SUP)-/) and issue.issuetype?.name is "Release"
                     text = "<#{issue.url}|#{issue.key}>"
 
                     versionMatch = issue.summary.match /(\d+\.\d+)/
@@ -53,7 +53,7 @@ class IssueOutput
                         text += "\n  • _#{link.type.inward}_ <#{linkedIssue.url}|#{linkedIssue.key}> #{linkedIssue.summary} `#{linkedIssue.status.name}`"
 
                 # Spacecraft Deployment ticket
-                else if issue.key.match(/^SPC-/) and issue.issuetype.name is "Deployment"
+                else if issue.key.match(/^(SPC|SUP)-/) and issue.issuetype.name is "Deployment"
                     text = "<#{issue.url}|#{issue.key}>"
                     status = if issue.status.name.match(/Deployment/i) then issue.status.name else "Deployment (#{issue.status.name})"
 
