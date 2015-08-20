@@ -56,8 +56,15 @@ class IssueSearchAction extends IssueInfoAction
 
         @lastOutcome = @jiri.getLastOutcome @
         if @lastOutcome?.outcome is @OUTCOME_TRUNCATED_RESULTS and message.text.match @getMoreRegex()
-            @matched = @MATCH_MORE
-            return true
+            # if Jiri was the last user to speak, assume 'more' is talking to him
+            if message.channel.latest.user is @jiri.slack.self.id
+                @matched = @MATCH_MORE
+                return true
+            # otherwise require mention of his name
+            pattern = @jiri.createPattern "(?=.*\\bjiri\\b).*more", @morePattern.parts
+            if message.text.match pattern.getRegex()
+                @matched = @MATCH_MORE
+                return true
 
         if message.text.match @getTestRegex()
             @matched = @MATCH_NORMAL
@@ -70,7 +77,7 @@ class IssueSearchAction extends IssueInfoAction
 
     getMoreRegex: =>
         unless @morePattern
-            @morePattern = @jiri.createPattern "(?=.*\\bjiri\\b.*)?(?:jiri )?more.*",
+            @morePattern = @jiri.createPattern "^more",
                     more: "(?:(?:show|find|display|give me|gimme|let's have)\\s+)?(?:(\\d+)\\s+)?(?:more|moar|m04r)(?:\\s+(?:please|now))?",
                     true
         return @morePattern.getRegex()
@@ -83,7 +90,6 @@ class IssueSearchAction extends IssueInfoAction
                     return new RSVP.Promise (resolve, reject) =>
 
                         matches = message.text.match @getTestRegex()
-                        console.log matches
                         if matches[2]
                             if matches[2].match /^\d+$/
                                 @MAX_RESULTS = parseInt matches[2]
