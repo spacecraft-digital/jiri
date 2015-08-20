@@ -95,7 +95,7 @@ class IssueSearchAction extends IssueInfoAction
                             if matches[2].match /^\d+$/
                                 @MAX_RESULTS = parseInt matches[2]
                             else
-                                @MAX_RESULTS = 1
+                                @MAX_RESULTS = 10
 
                         async.parallel([
                             (callback) =>
@@ -201,8 +201,8 @@ class IssueSearchAction extends IssueInfoAction
                 when @MATCH_MORE
                     return new RSVP.Promise (resolve, reject) =>
                         match = message.text.match @getMoreRegex()
-                        if match[5]?.match /^\d+$/
-                            @MAX_RESULTS = parseInt match[5]
+                        if match[2]?.match /^\d+$/
+                            @MAX_RESULTS = parseInt match[2]
                         else
                             @MAX_RESULTS = @lastOutcome.data.limit
 
