@@ -58,12 +58,18 @@ class IssueInfoAction extends Action
         for own key, value of opts
             options[key] = value
 
+        loadingTimer = null
+
         return new RSVP.Promise (resolve, reject) =>
             @setLoading()
+            loadingTimer = setInterval (=> @setLoading()), 4000
+
             @jiri.jira.searchJira(
                 query
                 options
                 (error, result) =>
+                    clearInterval loadingTimer
+
                     if error
                         reject error
                     else
