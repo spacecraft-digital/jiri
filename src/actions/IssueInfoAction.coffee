@@ -19,7 +19,7 @@ class IssueInfoAction extends Action
 
     # if one of these matches, this Action will be run
     getTestRegex: ->
-        return /\b(([A-Z]{2,5})-?[0-9]{2,5}\b)/ig
+        return /\b(([A-Z]{2,5})-?(?!112\.)[0-9]{2,5}\b)/ig
 
     constructor: (@jiri, @channel) ->
 
