@@ -17,6 +17,8 @@ class Jiri
     matchingActions: 0
 
     constructor: (@slack, @jira, @db) ->
+        @debugMode = '--debug' in process.argv
+
         @slack.on 'open', @onSlackOpen
         @slack.on 'message', @onSlackMessage
         @slack.on 'error', @onSlackError
@@ -134,6 +136,14 @@ class Jiri
     onSlackOpen: () =>
         console.log "Connected to Slack"
 
+        if @debugMode then console.log """
+
+            ******************** DEBUG MODE **************************
+            ** I ain't listening to no one other than #{@slack.getUserByID(config.debugSlackUserId).real_name}
+            **********************************************************
+
+            """
+
     onSlackMessage: (message) =>
         # ignore messages Jiri sends
         return if message.user is @slack.self.id
@@ -141,7 +151,7 @@ class Jiri
         return if message.userName = '@slackbot' and message.text?.match /^You have been removed/
 
         # for development, only respond to Matt Dolan
-        # return unless message.user is 'U025466D6'
+        return unless not @debugMode or message.user is config.debugSlackUserId
 
         @actOnMessage message
 
