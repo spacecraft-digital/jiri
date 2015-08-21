@@ -51,7 +51,7 @@ class IssueInfoAction extends Action
             return new RSVP.Promise (resolve, reject) ->
                 resolve()
 
-    getJiraIssues: (query, opts, message) ->
+    getJiraIssues: (query, opts, message) =>
         options =
             maxResults: 10
             fields: IssueOutput.prototype.FIELDS
@@ -71,6 +71,7 @@ class IssueInfoAction extends Action
                     clearInterval loadingTimer
 
                     if error
+                        console.log "#{error} in #{query}"
                         reject error
                     else
                         resolve
@@ -79,7 +80,7 @@ class IssueInfoAction extends Action
             )
         .catch @errorLoadingIssues
         .then (o) =>
-            @issuesLoaded o.result, o.message
+            @issuesLoaded o.result, o.message if o
         .catch @errorParsingIssues
 
     issuesLoaded: (result, message) =>
@@ -101,9 +102,9 @@ class IssueInfoAction extends Action
             response.channel = @channel.id
             response
 
-    errorLoadingIssues: (error) ->
-        console.error "Jira API error: #{error}"
-        throw error
+    errorLoadingIssues: (error) =>
+        # throw an error, unless we've just sniffed the refs
+        throw error unless @getType() is 'IssueInfoAction'
 
     errorParsingIssues: (error) ->
         console.error "Jira parsing error: #{error} in IssueInfoAction"
