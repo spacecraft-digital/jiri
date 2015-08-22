@@ -1,5 +1,5 @@
 ical = require 'ical'
-moment = require 'moment'
+moment = require 'moment-timezone'
 
 class Cron
 
@@ -12,6 +12,13 @@ class Cron
     # Takes a Date object, returns an HH:MM string
     formatTimeString: (date) ->
         return moment(date).format('HH:mm')
+
+    # Converts a time string from an arbitrary time zone to server time
+    convertToServerTime: (timeString, startZone = "Europe/London") ->
+        [...,hours,minutes] = timeString.match /^(\d+):(\d+)$/
+        throw "Time format must be HH:MM" unless hours and minutes
+
+        moment.tz(startZone).hour(hours).minute(minutes).local().format('HH:mm')
 
     start: ->
         @pollTimer = setInterval @poll, @frequency
@@ -32,7 +39,7 @@ class Cron
 
     ##
     # Register a function to fire at the given times of date
-    # string|Array times     single string, or array of, HH:MM time strings
+    # string|Array times     single string, or array of, HH:MM time strings. Times are in server timezone (probably UTC)
     # function     callback
     #
     at: (times, callback) =>
