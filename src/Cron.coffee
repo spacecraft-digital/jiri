@@ -33,7 +33,10 @@ class Cron
         return if @lastTimePolled is timeString
         @lastTimePolled = timeString
 
+        isWeekend = moment().day() in [0, 6]
+
         for callback in @callbacks
+            continue if callback.weekdaysOnly and isWeekend
             if timeString in callback.times
                 callback.callback()
 
@@ -42,7 +45,7 @@ class Cron
     # string|Array times     single string, or array of, HH:MM time strings. Times are in server timezone (probably UTC)
     # function     callback
     #
-    at: (times, callback) =>
+    at: (times, callback, weekdaysOnly = true) =>
         unless typeof callback is 'function'
             throw "Cron callback must be a function"
 
@@ -53,5 +56,6 @@ class Cron
         @callbacks.push
             callback: callback
             times: times
+            weekdaysOnly: weekdaysOnly
 
 module.exports = Cron
