@@ -30,7 +30,6 @@ class Jiri
 
         @slack.login()
 
-        console.log 'Never fear, Jiri is here'
         console.log 'Awakening the Jiri…'
 
         # Create a cron instance to which we can register callbacks
