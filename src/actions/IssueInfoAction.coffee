@@ -2,7 +2,7 @@ RSVP = require 'rsvp'
 Action = require './Action'
 Issue = require '../Issue'
 IssueOutput = require '../IssueOutput'
-config = require '../config'
+config = require '../../config'
 
 # To extend this class, you probably just need to override the respondTo method and refRegex property (or the test method for advanced)
 class IssueInfoAction extends Action

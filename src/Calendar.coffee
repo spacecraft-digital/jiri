@@ -1,5 +1,5 @@
 ical = require 'ical'
-config = require './config'
+config = require './../config'
 Gravatar = require 'gravatar'
 converter = require 'number-to-words'
 moment = require 'moment'

@@ -1,5 +1,5 @@
 
-config = require './src/config'
+config = require './config'
 
 db = require './src/db'
 

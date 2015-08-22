@@ -1,4 +1,4 @@
-config = require './config'
+config = require './../config'
 ActionData = require './ActionData'
 Pattern = require './Pattern'
 Calendar = require './Calendar'

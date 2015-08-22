@@ -4,7 +4,7 @@ querystring = require 'querystring'
 https = require 'https'
 Slack = require 'slack-client'
 
-config = require './config'
+config = require './../config'
 
 # Extends the Slack client app
 class JiriSlack extends Slack

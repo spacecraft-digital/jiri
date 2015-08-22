@@ -1,5 +1,5 @@
 Client = require './Client'
-config = require './config'
+config = require './../config'
 
 # Wraps a standard Jira issue object (as returned by the API) to normalise
 # some Jaduisms
