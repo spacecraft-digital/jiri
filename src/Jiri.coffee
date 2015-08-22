@@ -1,6 +1,8 @@
 config = require './config'
 ActionData = require './ActionData'
 Pattern = require './Pattern'
+Calendar = require './Calendar'
+Cron = require './Cron'
 
 class Jiri
 
@@ -29,6 +31,10 @@ class Jiri
         @slack.login()
 
         console.log 'Never fear, Jiri is here'
+        console.log 'Awakening the Jiri…'
+
+        # Create a cron instance to which we can register callbacks
+        @cron = new Cron
 
     createPattern: (metaPattern, parts, subpartMatches = false) ->
         pattern = new Pattern metaPattern, parts, subpartMatches
@@ -133,6 +139,11 @@ class Jiri
             channel: action.channel.id
             text: "Uh oh, something went a bit wrong: _#{error}_"
 
+    # pull People HR calendar feed, and post who is on Holiday/WFH to Slack
+    postHolidaysCalendar: =>
+        calendar = new Calendar @, config.peopleCalendarUrl
+        calendar.loadPeopleCalendar()
+
     onSlackOpen: () =>
         console.log "Connected to Slack"
 
@@ -143,6 +154,8 @@ class Jiri
             **********************************************************
 
             """
+
+        @cron.at @cron.convertToServerTime('07:30'), @postHolidaysCalendar
 
     onSlackMessage: (message) =>
         # ignore messages Jiri sends
