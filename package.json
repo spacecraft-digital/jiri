@@ -1,5 +1,5 @@
 {
-  "name": "jiri",
+  "name": "jadu-jiri",
   "version": "1.1.0",
   "description": "A helpful assistant for Jadu development. Integrates Jira, Gitlab, etc",
   "main": "app.coffee",
