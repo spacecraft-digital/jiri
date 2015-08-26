@@ -1,6 +1,8 @@
 RSVP = require 'rsvp'
 Action = require './Action'
 Pattern = require '../Pattern'
+config = require '../../config'
+moment = require 'moment'
 
 # General chit chat. In case you're in need of a friend.
 #
@@ -23,6 +25,8 @@ class GeneralChatAction extends Action
     respondTo: (message) ->
         userName = message.user.profile.first_name || message.user.profile.real_name || message.user.name;
 
+        hours = moment.tz(config.timezone).hours()
+
         return new RSVP.Promise (resolve, reject) =>
             if message.subtype in ['group_join', 'channel_join'] and message.user.id is @jiri.slack.self.id
                 text = [
@@ -36,7 +40,6 @@ class GeneralChatAction extends Action
                     "Let's get Jiri with it",
                     ":wave:",
                 ]
-                hours = new Date().getHours()
                 if hours < 12
                     text.push "Good morning!"
                     text.push "Top of the morning to you all"
@@ -55,7 +58,6 @@ class GeneralChatAction extends Action
                     "Hey #{userName}, how can I help?",
                     "You rang?",
                 ]
-                hours = new Date().getHours()
                 if hours < 12
                     text.push "Morning!"
                     text.push "Top of the morning to you"
