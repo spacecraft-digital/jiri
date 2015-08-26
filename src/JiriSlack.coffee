@@ -45,4 +45,23 @@ class JiriSlack extends Slack
             type: "typing"
             channel: channelId
 
+    ##
+    # Returns a user with the given email address, if found
+    #
+    # @param string email
+    # @return object
+    #
+    findUserByEmail: (email) ->
+        # escape email for regex
+        email = email.replace /[-\/\\^$*+?.()|[\]{}]/g, '\\$&'
+
+        # match @jadu.co.uk or @jadu.net
+        email = email.replace /@jadu\\\.(net|co\\\.uk)$/, '@jadu\\.(net|co\\.uk)'
+
+        regex = new RegExp "^#{email}$", 'i'
+
+        for own id, user of @users
+            if user.profile?.email?.match regex
+                return user
+
 module.exports = JiriSlack
