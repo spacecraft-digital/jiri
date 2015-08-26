@@ -80,9 +80,10 @@ class Jiri
                 if action.test message
                     @matchingActions++
                     try
-                        action.respondTo(message)
-                            .then @sendResponse
-                            .catch (error) =>
+                        promise = action.respondTo(message)
+                        if promise?.then
+                            promise.then @sendResponse
+                            promise.catch (error) =>
                                 @actionError error,action
                     catch e
                         console.error "Error running #{action.getType()}: #{e}"
