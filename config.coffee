@@ -30,6 +30,11 @@ config =
     gitlab_url: 'https://gitlab.hq.jadu.net/'
     gitlab_token: process.env.GITLAB_TOKEN
 
+    isoSpreadsheetId: '0AhQfpyH66MJXdGpYcGZiMTNDaFQ0dGpJcnJqZXdnaXc'
+    google_client_id: process.env.GOOGLE_CLIENT_ID
+    google_client_email: process.env.GOOGLE_CLIENT_EMAIL
+    google_private_key: process.env.GOOGLE_PRIVATE_KEY
+
     peopleCalendarUrl: process.env.PEOPLE_CALENDAR_URL
 
     timezone: 'Europe/London'
@@ -53,6 +58,9 @@ if '--debug' in process.argv
 throw "SLACK_API_TOKEN needs to be set in the environment" unless config.slack_apiToken?
 throw "JIRA_PASSWORD needs to be set in the environment" unless config.jira_password?
 throw "GITLAB_TOKEN needs to be set in the environment" unless config.gitlab_token?
+throw "GOOGLE_PRIVATE_KEY needs to be set in the environment" unless config.google_private_key?
+throw "GOOGLE_CLIENT_ID needs to be set in the environment" unless config.google_client_id?
+throw "GOOGLE_CLIENT_EMAIL needs to be set in the environment" unless config.google_client_email?
 throw "PEOPLE_CALENDAR_URL needs to be set in the environment" unless config.peopleCalendarUrl?
 
 module.exports = config
