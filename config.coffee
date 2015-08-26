@@ -42,7 +42,7 @@ config =
     calendarChannel: '#general'
 
     # the number of seconds to ignore a Jira ref for after it is once unurled
-    timeBeforeRepeatUnfurl: 120
+    timeBeforeRepeatUnfurl: 1800
 
 # Mix in dev config
 if '--debug' in process.argv
