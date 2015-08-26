@@ -44,7 +44,7 @@ class IssueOutput
                     else
                         text += " #{issue.summary}"
 
-                    text += " `#{issue.status.name}`"
+                    text += " `#{issue.status.name}`" if issue.status?.name
 
                     for link in issue.issuelinks
                         linkedIssue = new Issue link.inwardIssue||link.outwardIssue
