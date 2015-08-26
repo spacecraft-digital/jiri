@@ -10,9 +10,10 @@ class Jiri
         # require './actions/IssueStatusAction'
         require './actions/FindIssueForSupportTicketAction'
         require './actions/IssueSearchAction'
+        require './actions/HelpAction'
+        require './actions/ReceiveJiraWebhooksAction'
         require './actions/IssueInfoAction'
         require './actions/GeneralChatAction'
-        require './actions/HelpAction'
         require './actions/UnknownAction'
     ]
 
@@ -166,7 +167,7 @@ class Jiri
         return if message.userName = '@slackbot' and message.text?.match /^You have been removed/
 
         # for development, only respond to Matt Dolan
-        return unless not @debugMode or message.user is config.debugSlackUserId
+        return if @debugMode and message.subtype != 'bot_message' and message.user != config.debugSlackUserId
 
         @actOnMessage message
 
