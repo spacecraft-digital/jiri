@@ -32,6 +32,8 @@ config =
 
     peopleCalendarUrl: process.env.PEOPLE_CALENDAR_URL
 
+    timezone: 'Europe/London'
+
     bot_name: 'Jiri'
     bot_iconUrl: 'http://res.cloudinary.com/jadu-slack/image/upload/v1434266028/jiri-icon_gmhsch.png'
 
