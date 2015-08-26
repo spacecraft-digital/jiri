@@ -87,7 +87,9 @@ class Jiri
                                 @actionError error,action
                     catch e
                         console.error "Error running #{action.getType()}: #{e}"
-                    break
+
+                    if not action.allowOtherActions()
+                        break
             catch e
                 console.error "Error testing #{action.getType()}: #{e}"
 

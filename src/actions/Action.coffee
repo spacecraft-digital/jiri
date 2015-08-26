@@ -24,4 +24,9 @@ class Action
     setLoading: () =>
         @jiri.slack.setTyping @channel.id
 
+    # Return true if other actions can run
+    # Return false if this action has handled this message, and no other actions should be triggered
+    allowOtherActions: ->
+        false
+
 module.exports = Action
