@@ -19,6 +19,13 @@ projectSchema = mongoose.Schema
     slackChannel: String
     projectManager: String
 
+    # exact names used in different data sources
+    # These are used when re-importing data, to match to
+    # existing records
+    name_isoSpreadsheet: String
+    name_goLivesSheet: String
+    name_gitlab: String
+    name_jira: String
 
 ########################################################
 #
