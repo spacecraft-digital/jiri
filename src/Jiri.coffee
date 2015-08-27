@@ -158,7 +158,10 @@ class Jiri
 
             """
 
-        @cron.at @cron.convertToServerTime('07:30'), @postHolidaysCalendar
+        # avoid re-registering cron task on reconnect
+        unless @holidaysCronAdded
+            @holidaysCronAdded = true
+            @cron.at @cron.convertToServerTime('07:30'), @postHolidaysCalendar
 
     onSlackMessage: (message) =>
         # ignore messages Jiri sends
