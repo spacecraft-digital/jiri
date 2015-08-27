@@ -12,6 +12,8 @@ customerSchema = mongoose.Schema
     projects: [projectSchema]
     slackChannel: String
 
+    primaryProjectName: String
+
 ########################################################
 #
 # Utility methods
