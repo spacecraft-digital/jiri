@@ -17,6 +17,7 @@ projectSchema = mongoose.Schema
     platform: String # LAMP, WISP, WINS
     goLiveDate: Date
     slackChannel: String
+    projectManager: String
 
 
 ########################################################
