@@ -91,8 +91,7 @@ class Jiri
                     catch e
                         console.error "Error running #{action.getType()}: #{e}"
 
-                    if not action.allowOtherActions()
-                        break
+                    break unless action.allowOtherActions()
             catch e
                 console.error "Error testing #{action.getType()}: #{e}"
 
@@ -139,7 +138,12 @@ class Jiri
         @slack.postMessage response if response
 
     actionError: (error, action) =>
-        console.error 'Action error: ' + error
+        if action
+            console.error "Action error in #{action.name}"
+            console.log error.stack
+        else
+            console.error error
+
         @slack.postMessage
             channel: action.channel.id
             text: "Uh oh, something went a bit wrong: _#{error}_"
