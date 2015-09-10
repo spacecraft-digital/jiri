@@ -103,7 +103,7 @@ module.exports =
                         continue if key[0] is '_'
 
                         # we'll defer arrays and objects til later for nicer ordering
-                        if typeof value is 'object' and value.length?
+                        if value and typeof value is 'object' and value.length?
                             arrayProperties[key] = value
                         else if typeof value is 'object'
                             objectProperties[key] = value if value
