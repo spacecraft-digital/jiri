@@ -51,6 +51,8 @@ class UnknownAction extends Action
     test: (message) =>
         return false unless message.type is 'message' and message.text? and message.channel?
 
+        return false if message.subtype is 'bot_message'
+
         # this is only if nothing else has responded
         return false unless @jiri.matchingActions is 0
 
