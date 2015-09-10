@@ -1,4 +1,3 @@
-db = require './db'
 async = require 'async'
 RSVP = require 'rsvp'
 Client = require './Client'

@@ -8,6 +8,8 @@
 #   a hash with part name as key, and a 'subparts' hash as value
 #   The subparts hash contains subpart name as key and a partial regex as value
 #
+# NOTE: any back slashes in parts strings need to be repeated. i.e. to achieve \s, you need to write \\s
+#
 # subpartMatches
 #   if false, any groups within subparts will be converted to non-matching groups (?:foo)
 #
