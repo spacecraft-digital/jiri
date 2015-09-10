@@ -29,18 +29,18 @@ class IsoSpreadsheet
 
     requestRows: =>
         new RSVP.Promise (resolve, reject) =>
-            @sheet.getRows 1, # first worksheet
+            @sheet.getRows 2, # first worksheet
                     start: 1,          # start index
                     num: 500,              # number of rows to pull
                     orderby: 'title'  # column to order results by
-                , (err, rows) => @rowsLoaded(err, rows).then resolve
+                , @rowsLoaded
 
     rowsLoaded: (err, rows) =>
         new RSVP.Promise (resolve, reject) =>
             async.mapSeries rows, (row, callback) =>
                 [..., row.title, brackets] = row.title.match /^(.+?)\s*(?:(?:\(|[\-—–]\s+)(.+?)\)?\s*)?$/i
 
-                row.projectName = 'Website'
+                row.projectName = Project.defaultProjectName
                 row.titleAliases = []
 
                 # handle the word 'intranet' at the end of the title
@@ -64,12 +64,12 @@ class IsoSpreadsheet
                         else
                             row.projectName = brackets.charAt(0).toUpperCase() + brackets.slice(1)
 
-                Customer.findOne name: row.title
-                    .then @curryFindCustomer row
+                Project.findOne mappingId_isoSpreadsheet: row.title
+                    .then @curryOnFindMapping row
                     .then (customer) ->
                         callback null, customer
                     .catch (error) ->
-                        console.error error
+                        console.error error.stack
                         callback()
 
             , (error, customers) ->
@@ -77,20 +77,37 @@ class IsoSpreadsheet
                 resolve customers
 
     # this function curries row
-    curryFindCustomer: (row) =>
+    curryOnFindMapping: (row) ->
         (customer) =>
-            if customer
-                @importRow row, customer
+            new RSVP.Promise (resolve, reject) =>
+                if customer
+                    return @importRow row, customer
+                else
+                    return Customer.findByName row.title
+                        .then @curryOnFindCustomer row
+                        .then resolve
+
+    # this function curries row
+    curryOnFindCustomer: (row) ->
+        (customers) =>
+            if customers.length
+                return @importRow row, customers[0]
             else
-                @importNewCustomer row
+                return @importNewCustomer row
 
     importRow: (row, customer) ->
         new RSVP.Promise (resolve, reject) =>
+            # preserve the exact title for matching on re-import
+            customer.mappingId_isoSpreadsheet = row.title
+
             customer.aliases.push alias for alias in row.titleAliases when alias not in customer.aliases
 
             # if there are non-alphanumeric characters in the title, add an alias without
             normalizedTitle = row.title.replace(/[^a-z0-9 \-]+/ig, '').replace(/[\-_]+/g, ' ')
-            customer.aliases.push normalizedTitle if normalizedTitle != row.title and normalizedTitle not in customer.aliases
+
+            customer.addAlias normalizedTitle if normalizedTitle != row.title
+
+            customer.addAlias "#{normalizedTitle} #{row.projectName}" if row.projectName != Customer.defaultProjectName
 
             project = customer.getProject(row.projectName) or new Project name: row.projectName
 
@@ -119,23 +136,28 @@ class IsoSpreadsheet
             customer.projects.push project if project.isNew
 
             customer.save (error, object) ->
-                reject error if error
+                return reject error if error
+                console.log "#{object?.name} imported"
                 resolve object
 
     importStage: (project, stageName, servers, urls, versions) ->
         stage = project.getStage(stageName) or new Stage name: stageName
 
-        urls = [urls] if typeof url is 'string'
+        urls = [urls] if typeof urls is 'string'
         for url in urls
-            stage.urls.push url if url not in stage.urls
+            if url not in stage.urls and url.toLowerCase() not in ['-','','n/a']
+                stage.urls.push url
 
         servers = web: servers if typeof servers is 'string'
         for role, host of servers
             stage.servers.push role: role, host: host unless stage.getServer(role)
 
-        for module, version of versions
-            module = stage.getModule(module) or new Module name: module
-            module.version = version
+        for module, version of versions when version
+            existingModule = stage.getModule(module)
+            if existingModule
+                existingModule.version = version
+            else
+                stage.modules.push name: module, version: version
 
         project.stages.push stage if stage.isNew
 
