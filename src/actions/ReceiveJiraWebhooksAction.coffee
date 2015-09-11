@@ -26,7 +26,6 @@ class ReceiveJiraWebhooksAction extends Action
 
         switch data.action
             when "createCodeReview"
-                console.log data
                 user = @jiri.slack.findUserByEmail data.userEmail
                 userName = if user then "@#{user.name}" else data.userEmail.replace(/@.+$/, '').replace(/\./,' ')
 
