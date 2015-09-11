@@ -20,9 +20,7 @@ converter = require 'number-to-words'
 
 module.exports =
 
-    allCaps:
-        url: 'URL'
-        pm: 'PM'
+    allCaps: 'URL SSH PM'
 
     # Returns a human readable string representation of the object parameter
     dump: (object) ->
@@ -35,18 +33,25 @@ module.exports =
     getRelationalPath: (matches, showCountForLast = true) ->
         targets = []
 
+        # convert to array
+        @allCaps = @allCaps.split(' ') if typeof @allCaps is 'string'
+
         for match, i in matches
             isLastMatch = i is matches.length-1
             if match.target?.getName
                 targets.push match.target.getName(isLastMatch)
-            else if @allCaps[match.property.toLowerCase()]
-                targets.push @allCaps[match.property.toLowerCase()]
             else
                 property = match.property
                 if showCountForLast and isLastMatch and typeof match.target is 'object' and match.target.length
                     targets.push converter.toWords match.target.length
                     property = inflect.singularize match.property if match.target.length is 1
-                targets.push stringUtils.uncamelize(property).toLowerCase()
+                property = stringUtils.uncamelize(property).toLowerCase()
+
+                # replace some known abbreviation with correct case
+                for abbrev in @allCaps
+                    property = property.replace new RegExp("\\b#{abbrev}\\b","ig"), abbrev
+
+                targets.push property
 
         targets[0] += '’s' if targets.length > 1
 
