@@ -77,19 +77,8 @@ class CustomerSetInfoAction extends Action
 
                                         # valid array index
                                         if result.target[arrayIndex]?
-                                            previousValue = result.target[arrayIndex]
-                                            # set new value
-                                            result.target[arrayIndex] = newValue
-
                                             targetPath = humanize.getRelationalPath result.matches, false
-                                            return result.matches[0].target.save()
-                                                    .then (customer) =>
-                                                        return resolve
-                                                            text: "The #{converter.toWordsOrdinal arrayIndex+1} of _#{targetPath}_ is now `#{newValue}`\n(it was `#{previousValue}`)"
-                                                            channel: @channel.id
-                                                            unfurl_links: false
-
-                                            @jiri.recordOutcome @, @OUTCOME_CHANGED
+                                            return @setValue result.target, arrayIndex, newValue, targetPath, result.matches[0].target, resolve
 
                                         # out of range / invalid index
                                         else
@@ -138,16 +127,7 @@ class CustomerSetInfoAction extends Action
                                     text = "What do you want to do with _#{humanize.getRelationalPath result.matches}_?\n>>>\n#{options.join "\n"}"
 
                                 else
-                                    previousValue = parent[property]
-                                    parent[property] = newValue
-                                    return result.matches[0].target.save()
-                                            .then (customer) =>
-                                                return resolve
-                                                    text: "_#{targetPath}_ is now `#{newValue}`\n(it was `#{previousValue}`)"
-                                                    channel: @channel.id
-                                                    unfurl_links: false
-
-                                    @jiri.recordOutcome @, @OUTCOME_CHANGED
+                                    return @setValue parent, property, newValue, targetPath, result.matches[0].target, resolve
 
                             when NaturalLanguageObjectReference.prototype.RESULT_SUGGESTION
                                 if result.suggestions.length is 1
@@ -175,6 +155,37 @@ class CustomerSetInfoAction extends Action
                         text: error
                         channel: @channel.id
 
+    # Sets a value and saves the customer
+    #
+    # Parameters:
+    #   parent[property] will be set to value
+    #   targetPath will be used in the message to the customer
+    #   customer is the Customer object that parent is a descendent of
+    #   resolve is the Promise callback
+    setValue: (parent, property, value, targetPath, customer, resolve) ->
+
+        # allow boolean values to be set with a variety of text strings
+        if typeof parent[property] is 'boolean' and typeof value != 'boolean'
+            switch value.toLowerCase()
+                when 'yes','y', 'true' then value = true
+                when 'no', 'n', 'false' then value = false
+                else throw "Could not convert `#{value}` to a boolean"
+
+        previousValue = parent[property]
+        parent[property] = value
+        @jiri.recordOutcome @, @OUTCOME_CHANGED
+
+        if typeof parent is 'object' and parent.length?
+            saveMessage = "The #{converter.toWordsOrdinal arrayIndex+1} of _#{targetPath}_ is now `#{newValue}`\n(it was `#{previousValue}`)"
+        else
+            saveMessage = "_#{targetPath}_ is now `#{value}`\n(it was `#{previousValue}`)"
+
+        return customer.save()
+                .then (customer) =>
+                    return resolve
+                        text: saveMessage
+                        channel: @channel.id
+                        unfurl_links: false
 
     getTestRegex: =>
         unless @pattern
