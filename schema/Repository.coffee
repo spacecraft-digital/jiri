@@ -53,8 +53,15 @@ repositorySchema.virtual('host')
         else
             return 'unknown'
 
-# alias url -> sshUrl
+# alias url -> webUrl
 repositorySchema.virtual('url')
+    .get -> @webUrl
+    .set (value) ->
+        @webUrl = value
+        @markModified 'webUrl'
+
+# alias url -> webUrl
+repositorySchema.virtual('cloneUrl')
     .get -> @sshUrl
     .set (value) ->
         @sshUrl = value
