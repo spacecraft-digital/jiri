@@ -84,8 +84,8 @@ class NaturalLanguageObjectReference
                         suggestions = []
                         formattedSuggestions = []
                         for potentiallyIntendedTarget in potentiallyIntendedTargets
-                            suggestions.push "#{keywords} #{potentiallyIntendedTarget.label} #{match.query}"
-                            formattedSuggestions.push "#{keywords} _#{potentiallyIntendedTarget.label}_ #{match.query}"
+                            suggestions.push "#{keywords.trim()} #{potentiallyIntendedTarget.label} #{match.query}"
+                            formattedSuggestions.push "#{keywords.trim()} _#{potentiallyIntendedTarget.label}_ #{match.query}"
 
                         return resolve
                             matches: matches
