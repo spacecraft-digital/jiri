@@ -69,8 +69,8 @@ class CustomerInfoAction extends Action
                                 else
                                     if result.target in [true,false]
                                         text = "_Is #{targetPath}_? *#{humanize.dump(result.target)}*"
-                                    else if typeof result.target in ['string', 'number']
-                                        text = "_#{targetPath}_:\n`#{humanize.dump(result.target).replace(/\\n/g, "; ")}`"
+                                    else if typeof result.target is 'number' or (typeof result.target is 'string' and result.target.length < 60)
+                                        text = "_#{targetPath}_: `#{humanize.dump(result.target).replace(/\\n/g, "; ")}`"
                                     else
                                         text = "_#{targetPath}_:\n```#{humanize.dump(result.target).replace(/\\n/g, "; ")}```"
                                     @jiri.recordOutcome @, @OUTCOME_FOUND
