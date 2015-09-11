@@ -44,5 +44,20 @@ repositorySchema.methods.getName = -> "#{@host} repo"
 repositorySchema.methods.getNameRegexString = ->
     return "#{@host}(?: repo(sitory)?)?"
 
+repositorySchema.virtual('host')
+    .get ->
+        if @sshUrl.match /gitlab/i
+            return 'GitLab'
+        else if @sshUrl.match /github/i
+            return 'GitHub'
+        else
+            return 'unknown'
+
+# alias url -> sshUrl
+repositorySchema.virtual('url')
+    .get -> @sshUrl
+    .set (value) ->
+        @sshUrl = value
+        @markModified 'sshUrl'
 
 module.exports = repositorySchema
