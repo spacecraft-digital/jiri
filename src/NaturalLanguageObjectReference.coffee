@@ -51,7 +51,7 @@ class NaturalLanguageObjectReference
                         return resolve
                             matches: matches
                             outcome: @RESULT_FOUND
-                            target: if match.target?.toObject then match.target.toObject() else match.target
+                            target: match.target
 
                     # get the reference to the last match found
                     match = matches[matches.length - 1]
