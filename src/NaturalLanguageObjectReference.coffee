@@ -57,13 +57,13 @@ class NaturalLanguageObjectReference
                     match = matches[matches.length - 1]
 
                     potentiallyIntendedTargets = []
-                    if typeof match.target is 'object'
+                    if match.target and typeof match.target is 'object'
                         for property of match.target.toObject(virtuals: false, versionKey: false)
                             continue if property[0] is '_'
 
                             child = match.target[property]
 
-                            if typeof child is 'object'
+                            if child and typeof child is 'object'
                                 # is an array
                                 if child.length
                                     for c in child when c.findSubtarget and target = c.findSubtarget(match.query)
