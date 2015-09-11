@@ -69,8 +69,10 @@ class CustomerInfoAction extends Action
                                 else
                                     if result.target in [true,false]
                                         text = "_Is #{targetPath}_? *#{humanize.dump(result.target)}*"
+                                    else if typeof result.target in ['string', 'number']
+                                        text = "_#{targetPath}_:\n`#{humanize.dump(result.target).replace(/\\n/g, "; ")}`"
                                     else
-                                        text = "_#{targetPath}_:\n#{humanize.dump(result.target).replace(/\\n/g, "; ")}"
+                                        text = "_#{targetPath}_:\n```#{humanize.dump(result.target).replace(/\\n/g, "; ")}```"
                                     @jiri.recordOutcome @, @OUTCOME_FOUND
 
                             when NaturalLanguageObjectReference.prototype.RESULT_SUGGESTION
