@@ -38,6 +38,11 @@ repositorySchema = mongoose.Schema
 
 (require './_Base').applyTo repositorySchema
 
-repositorySchema.methods.getName = -> @webUrl
+repositorySchema.methods.getName = -> "#{@host} repo"
+
+# allow names to be aliased
+repositorySchema.methods.getNameRegexString = ->
+    return "#{@host}(?: repo(sitory)?)?"
+
 
 module.exports = repositorySchema
