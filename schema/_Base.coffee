@@ -29,7 +29,8 @@ _Base =
             uncamelizedProperty = stringUtils.uncamelize(property)
             parts.push uncamelizedProperty if uncamelizedProperty != property
 
-            parts.push @[property].getNameRegexString() if @[property]?.getNameRegexString
+            if typeof @[property] is 'object' and @[property]?.getNameRegexString
+                parts.push @[property].getNameRegexString()
 
             parts
 
@@ -43,15 +44,39 @@ _Base =
             object = @.toObject virtuals: true, versionKey: false
 
             for own property of object
-                regexParts = @getPropertyRegexParts property
-                m = query.match new RegExp "^(#{regexParts.join('|')})\\b\\s*", 'i'
-                return if m
-                    new SubTargetMatch
-                        target: @[property]
-                        keyword: m[0]
-                        query: query.replace m[0], ''
-                        property: property
+                match = @propertyVariantsMatchQuery @, property, query
+                return match if match
+
+            # check members of array properties
+            for own property, child of object when typeof child is 'object' and child? and child.length?
+                for own childProperty of child
+                    match = @propertyVariantsMatchQuery child, childProperty, query
+                    return match if match
+
             return
+
+        propertyVariantsMatchQuery: (parent, property, query) ->
+            return unless parent.getPropertyRegexParts
+
+            # get the name regex of each member of array
+            if typeof parent[property] is 'object' and parent[property]?.length
+                for child, i in parent[property] when child.getNameRegexString
+                    m = query.match new RegExp "^(#{child.getNameRegexString()})\\b\\s*", 'i'
+                    return if m
+                        new SubTargetMatch
+                            target: parent[property][i]
+                            keyword: m[0]
+                            query: query.replace m[0], ''
+                            property: property
+
+            regexParts = parent.getPropertyRegexParts property
+            m = query.match new RegExp "^(#{regexParts.join('|')})\\b\\s*", 'i'
+            return if m
+                new SubTargetMatch
+                    target: parent[property]
+                    keyword: m[0]
+                    query: query.replace m[0], ''
+                    property: property
 
         toString: ->
             object = @.toObject virtuals: false, versionKey: false

@@ -63,28 +63,6 @@ projectSchema.methods.getDefault = (property) ->
         when 'stages' then return @getStage 'production'
         else return baseSchema.methods.getDefault.call this, property
 
-# Returns something that matches the start of the query
-#
-# @return object with properties:
-#   target   the property that matched the query string
-#   keywords the string found at the start of the query
-#   query    the updated query, with the match removed
-projectSchema.methods.findSubtarget = (query) ->
-    o = baseSchema.methods.findSubtarget.call this, query
-    return o if o
-
-    # look for project by name
-    for stage in @stages
-        m = query.match new RegExp("^(#{stage.getNameRegexString()})\\b\\s*", 'i')
-        return if m
-            new SubTargetMatch
-                target: stage
-                keyword: m[0]
-                property: 'stages'
-                query: query.replace m[0], ''
-
-    return false
-
 # allow names to be aliased
 projectSchema.methods.getNameRegexString = ->
     names = [regexEscape(@name)]

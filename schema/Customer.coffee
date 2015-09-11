@@ -146,16 +146,6 @@ customerSchema.methods.findSubtarget = (query) ->
     o = baseSchema.methods.findSubtarget.call this, query
     return o if o
 
-    # look for project by name
-    for project in @projects
-        m = query.match new RegExp("^(#{project.getNameRegexString()})\\b\\s*", 'i')
-        return if m
-            new SubTargetMatch
-                target: project
-                keyword: m[0]
-                property: 'projects'
-                query: query.replace m[0], ''
-
     # no match on property or project name, so assume it's a property of the default property
     defaultProject = @getDefault 'projects'
     return if defaultProject
