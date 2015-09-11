@@ -83,8 +83,11 @@ module.exports =
 
             when 'object'
 
+                if object is null
+                    return 'NULL'
+
                 # array
-                if object.length?
+                else if object.length?
                     output = {}
                     count = 0
                     for property, v of @_unpackArraysForOutput '', object
