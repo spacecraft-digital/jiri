@@ -100,18 +100,25 @@ module.exports =
 
                 # other object
                 else
+                    originalObject = object
+
+                    # for Mongoose Document objects, the original can be accessed at originalObject to call methods on
+                    # but the `object` var then contains a vanilla JS object
+                    object = object.toObject() if object.toObject
+
                     output = {}
                     arrayProperties = {}
                     objectProperties = {}
 
                     for own key, value of object
                         continue if key[0] is '_'
+                        continue if originalObject.getNameProperty and originalObject.getNameProperty() is key
 
                         # we'll defer arrays and objects til later for nicer ordering
                         if value and typeof value is 'object' and value.length?
-                            arrayProperties[key] = value
+                            arrayProperties[key] = originalObject[key]
                         else if typeof value is 'object'
-                            objectProperties[key] = value if value
+                            objectProperties[key] = originalObject[key] if value
                         else if key
                             output[@_humanizeKey key] = @_humanizeObject value
 
@@ -159,15 +166,8 @@ module.exports =
     # If it doesn't have a name-like key, use the index to number the key,
     # or failing that just return the bare key.
     _getNamedKey: (object, singularKey, index = null) ->
-
-        for key in ['name','role']
-            if object[key]?
-                name = object[key]
-                delete object[key]
-                break
-
-        if name
-            return "#{stringUtils.upperCaseFirst name} #{singularKey}"
+        if object.getName
+            return object.getName true
         else if index
             return "#{singularKey} #{index}"
         else
