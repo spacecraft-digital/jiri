@@ -105,12 +105,13 @@ projectSchema.methods.getNameRegexString = ->
 
 # projectSchema.virtual('url').get -> @getDefault('stages').url
 projectSchema.virtual('repo')
-    .get -> @getDefault('repos')
+    .get -> @getDefault 'repos'
     .set (value) ->
 
 projectSchema.virtual('pm')
     .get -> @projectManager
     .set (value) ->
-
+        @projectManager = value
+        @markModified 'projectManager'
 
 module.exports = projectSchema
