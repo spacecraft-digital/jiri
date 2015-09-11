@@ -61,7 +61,7 @@ projectSchema.methods.toString = ->
 projectSchema.methods.getDefault = (property) ->
     switch property
         when 'stages' then return @getStage 'production'
-        else return baseSchema.methods.getDefault property
+        else return baseSchema.methods.getDefault.call this, property
 
 # Returns something that matches the start of the query
 #

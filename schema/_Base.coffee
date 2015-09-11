@@ -28,6 +28,9 @@ _Base =
             parts = [property]
             uncamelizedProperty = stringUtils.uncamelize(property)
             parts.push uncamelizedProperty if uncamelizedProperty != property
+
+            parts.push @[property].getNameRegexString() if @[property]?.getNameRegexString
+
             parts
 
         # Returns a property that appears at the start of the query
