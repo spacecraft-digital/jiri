@@ -38,6 +38,9 @@ class CustomerSetInfoAction extends Action
     respondTo: (message) ->
         return new RSVP.Promise (resolve, reject) =>
 
+            # remove detected URLs
+            message.text = message.text.replace /<[^|>]+\|([^>]+)>/g, '$1'
+
             if @lastOutcome?.outcome is @OUTCOME_NO_VALUE_SPECIFIED
                 query = @lastOutcome.data.query
                 newValue = message.text.replace @jiri.createPattern('^jiri ').getRegex(), ''
@@ -189,7 +192,7 @@ class CustomerSetInfoAction extends Action
 
     getTestRegex: =>
         unless @pattern
-            @pattern = @jiri.createPattern '^jiri set\\s+(.+?)(?:\\[(\\d+)\\])?(?:\\s+to\\s+[\'"“‘<]?(.+?)[>\'"”’]?)?$', @patternParts
+            @pattern = @jiri.createPattern '^jiri set\\s+(.+?)(?:\\[(\\d+)\\])?(?:\\s+to\\s+[\'"“‘`<_]?(.+?)[>\'"”’`_]?)?$', @patternParts
         return @pattern.getRegex()
 
     # Returns TRUE if this action can respond to the message
