@@ -20,11 +20,19 @@ converter = require 'number-to-words'
 
 module.exports =
 
-    allCaps: 'URL SSH PM'
+    # words that should have certain capitalisation
+    allCaps: 'URL SSH PM CMS XFP LAMP ID HTTP HTTPS Jadu QA UAT'
+
+    # general string replacements to perform
+    #
+    # Useful for words that are naturally camelCased
+    replacements:
+        "Git Lab": "GitLab"
+        "Git Hub": "GitHub"
 
     # Returns a human readable string representation of the object parameter
     dump: (object) ->
-        @_cleanJson JSON.stringify(@_humanizeObject(object), null, 4)
+        @_cleanJson(JSON.stringify(@_humanizeObject(object), null, 4)).trim()
 
     # Returns a human-readable path of the match targets
     #
@@ -32,9 +40,6 @@ module.exports =
     # @params   boolean showCountForLast    If true and the last target is an array, the length of that array will be included
     getRelationalPath: (matches, showCountForLast = true) ->
         targets = []
-
-        # convert to array
-        @allCaps = @allCaps.split(' ') if typeof @allCaps is 'string'
 
         for match, i in matches
             isLastMatch = i is matches.length-1
@@ -47,11 +52,7 @@ module.exports =
                     property = inflect.singularize match.property if match.target.length is 1
                 property = stringUtils.uncamelize(property).toLowerCase()
 
-                # replace some known abbreviation with correct case
-                for abbrev in @allCaps
-                    property = property.replace new RegExp("\\b#{abbrev}\\b","ig"), abbrev
-
-                targets.push property
+                targets.push @_fixCapitalisation(property)
 
         targets[0] += '’s' if targets.length > 1
 
@@ -69,11 +70,23 @@ module.exports =
 
     #########################
 
-    _humanizeKey: (key) ->
-        # some hardcoded abbreviations, so they are all caps
-        return @allCaps[key.toLowerCase()] if @allCaps[key.toLowerCase()]
+    # Fix the capitalisation of some known abbreviations (e.g. URL, SSH)
+    _fixCapitalisation: (s) ->
+        # convert to array
+        @allCaps = @allCaps.split(' ') if typeof @allCaps is 'string'
 
+        # replace some known abbreviation with correct case
+        for abbrev in @allCaps
+            s = s.replace new RegExp("\\b#{abbrev}\\b","ig"), abbrev
+
+        for own find, replace of @replacements
+            s = s.replace new RegExp("\\b#{find}\\b","ig"), replace
+
+        return s
+
+    _humanizeKey: (key) ->
         s = stringUtils.upperCaseFirst stringUtils.uncamelize(key).trim()
+        @_fixCapitalisation s
 
     _humanizeObject: (object) ->
         switch typeof object
@@ -157,7 +170,7 @@ module.exports =
                 for member in array
                     index++
                     key = @_getNamedKey(member, singularKey, index)
-                    output["*#{key}*"] = member
+                    output["#{key}"] = member
             else
                 output["#{pluralKey}"] = array.join ", "
 
