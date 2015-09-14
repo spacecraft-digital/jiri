@@ -63,6 +63,7 @@ stageSchema.virtual('server').get -> @servers[0]
 
 stageSchema.virtual('cmsVersion').get -> @getModule('cms')?.version
 stageSchema.virtual('clientVersion').get -> @getModule('client')?.version
+stageSchema.virtual('customerVersion').get -> @getModule('client')?.version
 stageSchema.virtual('xfpVersion').get -> @getModule('xfp')?.version
 
 stageSchema.virtual('versions').get -> @modules
