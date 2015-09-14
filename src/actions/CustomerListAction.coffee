@@ -21,6 +21,12 @@ class CustomerListAction extends Action
     MODE_LIST: 0
     MODE_COUNT: 1
 
+    # These constants control auto switching between 'list' and 'count' mode
+    # If the user does a list, and there are lots of results, just show the count and let them confirm to show all.
+    # If the user does a count, but there are only a handful of results, just show them anyway
+    RATHER_A_LOT: 30
+    ONLY_A_FEW: 5
+
     patternParts:
         count: 'count|how many|what number of'
         list: 'list|show|display|output|which'
@@ -47,17 +53,19 @@ class CustomerListAction extends Action
 
             m = message.text.match @getTestRegex()
 
-            if m[1].match @getRegex('count')
+            force = m[1] and m[1].match /force /i
+
+            if m[2].match @getRegex('count')
                 mode = @MODE_COUNT
             else
                 mode = @MODE_LIST
 
-            if m[2].match @getRegex('customers')
+            if m[3].match @getRegex('customers')
                 set = 'customers'
             else
-                return reject "I'm not sure what #{m[1]} is"
+                return reject "I'm not sure what #{m[3]} is"
 
-            filter = m[3]
+            filter = m[4]
             # remove quote marks from filter, if any
             filter = filter.replace(/(^["'“‘]|["'“‘?]$)/g, '') if filter
 
@@ -79,7 +87,11 @@ class CustomerListAction extends Action
             search.then (results) =>
                 if results.length
 
-                    if mode is @MODE_LIST or (mode is @MODE_COUNT and results.length < 5)
+                    # if there are lots of results, we'll check that the user wants to see them
+                    if mode is @MODE_LIST and results.length >= @RATHER_A_LOT and not force
+                        mode = @MODE_COUNT
+
+                    if mode is @MODE_LIST or (mode is @MODE_COUNT and results.length <= @ONLY_A_FEW)
                         @jiri.recordOutcome @, @OUTCOME_FOUND
                         if results.length is 1
                             title = "Here is the one #{inflect.singularize set}"
@@ -90,7 +102,9 @@ class CustomerListAction extends Action
                         text += (result.getName() for result in results).join "\n"
 
                     else
-                        @jiri.recordOutcome @, @OUTCOME_COUNTED, m[0].replace(@getRegex('count', false), 'list')
+                        # convert query to 'force list'
+                        forcedQuery = m[0].replace(@jiri.createPattern('^jiri (force )?(count|list)\\b', @patternParts).getRegex(), 'jiri force list')
+                        @jiri.recordOutcome @, @OUTCOME_COUNTED, forcedQuery
                         if results.length is 1
                             title = "There is just one #{inflect.singularize set}"
                         else
@@ -116,7 +130,7 @@ class CustomerListAction extends Action
 
     getTestRegex: =>
         unless @pattern
-            @pattern = @jiri.createPattern('^jiri (count|list) (?:all |the |our )*(customers|projects)(?: +like (.+))?$', @patternParts)
+            @pattern = @jiri.createPattern('^jiri (force )?(count|list) (?:all |the |our )*(customers|projects)(?: +like (.+))?$', @patternParts)
         return @pattern.getRegex()
 
     getRegex: (part, whole = true) ->
