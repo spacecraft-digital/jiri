@@ -24,8 +24,9 @@ class CustomerInfoAction extends Action
 
     patternParts:
         find: "(show|display|get|tell (me|us) about|(what|who)([’']s| is| are)?|is)(\\s+the)?"
-        yes: "^jiri y(es)\\s*(please|thanks|thank you|cheers|mate)?$"
+        yes: "^jiri y(es|ep|up)?\\s*(please|thanks|thank you|cheers|mate)?$"
         numberChoice: "^jiri (\\d+)\\s*(please|thanks|thank you|cheers)?$"
+        whatVersion: "what (?:(.*?) )version(?: is|'s')"
 
     # should return the class name as a string
     getType: ->
@@ -47,13 +48,20 @@ class CustomerInfoAction extends Action
                     return resolve
                         text: "That wasn't one of the options!"
                         channel: @channel.id
+
             else
-                query = message.text.replace @jiri.createPattern('^jiri find\\s+', @patternParts).getRegex(), ''
+                # convert a 'what version' query to standard form
+                if m = message.text.match @getTestRegexes().whatVersion
+                    customer = m[3].replace /[!.?\s]+$/, ''
+                    query = "#{customer} #{m[2]} version"
+
+                else
+                    query = message.text.replace(@jiri.createPattern('^jiri find\\s+', @patternParts).getRegex(), '')
                             # remove trailing question mark
                             .replace /[!.?\s]+$/, ''
-                            # remove any 'apostrophe s'
-                            .replace /(\w)['’]+s /g, '$1 '
 
+            # remove any 'apostrophe s'
+            query = query.replace /(\w)['’]+s /g, '$1 '
 
             @setLoading()
             ref = new NaturalLanguageObjectReference query
@@ -108,10 +116,14 @@ class CustomerInfoAction extends Action
                         text: error
                         channel: @channel.id
 
-    getTestRegex: =>
-        unless @pattern
-            @pattern = @jiri.createPattern '^jiri find\\s+\\S', @patternParts
-        return @pattern.getRegex()
+    getTestRegexes: =>
+        unless @patterns
+            @patterns =
+                find: @jiri.createPattern('^jiri find\\s+\\S', @patternParts),
+                whatVersion: @jiri.createPattern('^jiri whatVersion\\s+(\\S.+?)(?: on| running| at)?\\?*$', @patternParts, true),
+        output = {}
+        output[name] = pattern.getRegex() for own name, pattern of @patterns
+        return output
 
     # Returns TRUE if this action can respond to the message
     # No further actions will be tested if this returns TRUE
@@ -119,6 +131,8 @@ class CustomerInfoAction extends Action
         @lastOutcome = @jiri.getLastOutcome @
         return true if @lastOutcome?.outcome is @OUTCOME_SUGGESTION and message.text.match @jiri.createPattern(@patternParts.yes).getRegex()
         return true if @lastOutcome?.outcome is @OUTCOME_SUGGESTIONS and message.text.match @jiri.createPattern(@patternParts.numberChoice).getRegex()
-        return message.text.match @getTestRegex()
+        for own name,regex of @getTestRegexes()
+            return true if message.text.match regex
+        return false
 
 module.exports = CustomerInfoAction
