@@ -13,6 +13,7 @@ class Jiri
         require './actions/HelpAction'
         require './actions/ReceiveJiraWebhooksAction'
         require './actions/IssueInfoAction'
+        require './actions/CustomerListAction'
         require './actions/CustomerInfoAction'
         require './actions/CustomerSetInfoAction'
         require './actions/GeneralChatAction'
