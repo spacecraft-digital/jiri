@@ -60,6 +60,8 @@ class Jiri
         # remove politeness
         message.text = message.text.replace /\s*\bplease\b/, ''
 
+        message.text = message.text.trim()
+
         message
 
     actOnMessage: (message) =>
