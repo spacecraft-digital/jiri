@@ -56,19 +56,19 @@ customerSchema.statics.findByName = (name) ->
 customerSchema.statics.findByExactName = (name, property = 'name') ->
     o = {}
     o[property] = new RegExp("^#{regexEscape(name)}$", 'i')
-    @find o
+    @find o, name: 1
 
 # Find where the name contains the query as a whole word
 customerSchema.statics.findBySingleWord = (name, property = 'name') ->
     o = {}
     o[property] = new RegExp("\\b#{regexEscape(name)}\\b", 'i')
-    @find o
+    @find o, name: 1
 
 # Find where the name contains the query as a whole
 customerSchema.statics.findByPartialName = (name, property = 'name') ->
     o = {}
     o[property] = new RegExp("#{regexEscape(name)}", 'i')
-    @find o
+    @find o, name: 1
 
 # Find where the name contains each of the words in the query, in any order
 customerSchema.statics.findByNameParts = (name, property = 'name') ->
@@ -77,13 +77,13 @@ customerSchema.statics.findByNameParts = (name, property = 'name') ->
         expression = {}
         expression[property] = new RegExp("\\b#{regexEscape(word)}\\b", 'i')
         o['$and'].push expression
-    @find o
+    @find o, name: 1
 
 # remove commonly ignored words like 'council' and 'borough'
 customerSchema.statics.findBySimplifiedName = (name, property = 'name') ->
     o = {}
     o[property] = new RegExp("#{regexEscape(@simplifyName(name))}", 'i')
-    @find o
+    @find o, name: 1
 
 # returns a Promise which resolves to a regular expression containing all customer names and aliases
 customerSchema.statics.getAllNameRegexString = ->
