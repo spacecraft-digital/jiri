@@ -1,6 +1,7 @@
 stringUtils = require './string'
 inflect = require('i')()
 converter = require 'number-to-words'
+moment = require 'moment'
 
 # Humanize
 #
@@ -98,6 +99,10 @@ module.exports =
 
                 if object is null
                     return 'NULL'
+
+                else if object instanceof Date
+                    return moment(object).calendar null,
+                        sameElse: 'dddd LL'
 
                 # array
                 else if object.length?
