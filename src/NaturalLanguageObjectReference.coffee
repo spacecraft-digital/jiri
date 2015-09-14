@@ -58,7 +58,7 @@ class NaturalLanguageObjectReference
 
                     potentiallyIntendedTargets = []
                     if match.target and typeof match.target is 'object'
-                        for property of match.target.toObject(virtuals: false, versionKey: false)
+                        for property of match.target.toObject({virtuals: false, versionKey: false})
                             continue if property[0] is '_'
 
                             child = match.target[property]
