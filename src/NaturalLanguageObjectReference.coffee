@@ -116,6 +116,7 @@ class NaturalLanguageObjectReference
                 regexs = [
                     new RegExp("^#{customerRegexString}\\b\\s*", 'i'),
                     new RegExp("\\bfor\\s+(#{customerRegexString})\\b\\s*", 'i')
+                    new RegExp("^([a-z0-9_-]+)\\b\\s*", 'i'),
                 ]
                 try
                     for regex in regexs
