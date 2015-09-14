@@ -88,7 +88,7 @@ module.exports =
         s = stringUtils.upperCaseFirst stringUtils.uncamelize(key).trim()
         @_fixCapitalisation s
 
-    _humanizeObject: (object) ->
+    _humanizeObject: (object, depth = 0) ->
         switch typeof object
             # represent boolean as yes/no
             when 'boolean'
@@ -104,13 +104,12 @@ module.exports =
                     output = {}
                     count = 0
                     for property, v of @_unpackArraysForOutput '', object
-                        key = @_humanizeKey property
-                        value = @_humanizeObject v
-                        output[key] = value
+                        @_addValueToOutput property, v, depth, output
                         count++
 
-                    if count is 1 and not key
-                        output = value
+                    # if the result is an array of one object, collapse it into the parent
+                    if count is 1 and not property
+                        output = output[Object.keys(output)[0]]
 
                     return output
 
@@ -118,39 +117,67 @@ module.exports =
                 else
                     originalObject = object
 
+                    # Allow objects to return a different set of properties at different depths
+                    # This allows objects to return a more concise representation of themselves
+                    # when they are being including in a dump as children/grandchildren of the main object
+                    if object.toObjectAtDepth
+                        object = object.toObjectAtDepth depth
                     # for Mongoose Document objects, the original can be accessed at originalObject to call methods on
                     # but the `object` var then contains a vanilla JS object
-                    object = object.toObject() if object.toObject
+                    else if object.toObject
+                        object = object.toObject()
 
                     output = {}
-                    arrayProperties = {}
-                    objectProperties = {}
+
+                    keys = Object.keys(object)
+
+                    # get the property used in the getName() method, to avoid including it twice
+                    nameProperty = if originalObject.getNameProperty then originalObject.getNameProperty() else null
+
+                    # remove keys we want to ignore
+                    delete object[key] for key in keys when key[0] is '_' or key is nameProperty
+
+                    keys = Object.keys(object)
+
+                    # if the object has a single scalar value, we'll collapse it with the parent property
+                    if keys.length is 1 and typeof object[keys[0]] != 'object'
+                        return {
+                            __object_as_string: true
+                            key: keys[0]
+                            value: object[keys[0]]
+                        }
 
                     for own key, value of object
-                        continue if key[0] is '_'
-                        continue if originalObject.getNameProperty and originalObject.getNameProperty() is key
-
                         # we'll defer arrays and objects til later for nicer ordering
                         if value and typeof value is 'object' and value.length?
-                            arrayProperties[key] = originalObject[key]
-                        else if typeof value is 'object'
-                            objectProperties[key] = originalObject[key] if value
-                        else if key
-                            output[@_humanizeKey key] = @_humanizeObject value
-
-                    for own key, value of objectProperties
-                        output[@_humanizeKey key] = @_humanizeObject value
-
-                    for own key, value of arrayProperties
-                        newProperties = @_unpackArraysForOutput key, value
-                        for property, v of newProperties
-                            output[@_humanizeKey property] = @_humanizeObject v
+                            newProperties = @_unpackArraysForOutput key, originalObject[key]
+                            for property, v of newProperties
+                                @_addValueToOutput property, v, depth, output
+                        else if key and value and (typeof value != 'object' or value instanceof Date or Object.keys(value).length)
+                            @_addValueToOutput key, value, depth, output
 
                     return output
 
             # return other scalar types unaltered
             else
                 return object
+
+    # A method to add a property to the output object
+    #
+    # It facilitates a sub object with a single value being flattened
+    # into the parent property, with the keys being merged
+    #
+    # e.g. {"CMS": {"version": "1.12.1.15"}}
+    # can be flattened to {"CMS version": "1.12.1.15"}
+    _addValueToOutput: (key, value, depth, output) ->
+        value = @_humanizeObject value, depth+1
+
+        # an object with a single value should be displayed as a string
+        if value.__object_as_string
+            key = "#{key} #{value.key}"
+            value = value.value
+
+        output[@_humanizeKey key] = value
 
     _unpackArraysForOutput: (key, array) ->
         output = {}
