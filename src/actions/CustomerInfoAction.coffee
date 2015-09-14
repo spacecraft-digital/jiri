@@ -54,6 +54,8 @@ class CustomerInfoAction extends Action
                             # remove any 'apostrophe s'
                             .replace /(\w)['’]+s /g, '$1 '
 
+
+            @setLoading()
             ref = new NaturalLanguageObjectReference query
             ref.findTarget()
                 .then (result) =>

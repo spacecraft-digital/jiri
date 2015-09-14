@@ -52,6 +52,7 @@ class CustomerSetInfoAction extends Action
                 arrayIndex = if matches[2] then parseInt matches[2], 10
                 newValue = matches[3]
 
+            @setLoading()
             ref = new NaturalLanguageObjectReference query
             ref.findTarget()
                 .then (result) =>
@@ -183,6 +184,7 @@ class CustomerSetInfoAction extends Action
         else
             saveMessage = "_#{targetPath}_ is now `#{value}`\n(it was `#{previousValue}`)"
 
+        @setLoading()
         return customer.save()
                 .then (customer) =>
                     return resolve
