@@ -70,7 +70,6 @@ projectSchema.methods.getNameRegexString = ->
         when projectSchema.statics.defaultProjectName
             names.push 'main'
             names.push 'internet'
-            names.push 'cms'
             names.push '1\\.12'
             names.push '(main )?website'
 
