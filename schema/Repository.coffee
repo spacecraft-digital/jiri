@@ -38,6 +38,21 @@ repositorySchema = mongoose.Schema
 
 (require './_Base').applyTo repositorySchema
 
+repositorySchema.methods.toObjectAtDepth = (depth) ->
+    if depth is 0
+        return @toObject()
+    else
+        return {
+            description: @description
+            sshUrl: @sshUrl
+            webUrl: @webUrl
+            mergeRequestsEnabled: @mergeRequestsEnabled
+            wikiEnabled: @wikiEnabled
+            createdDate: @createdDate
+            lastActivityDate: @lastActivityDate
+            namespace: @namespace.name
+        }
+
 repositorySchema.methods.getName = -> "#{@host} repo"
 
 # allow names to be aliased
