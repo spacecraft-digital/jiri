@@ -123,9 +123,12 @@ customerSchema.post 'save', (doc) ->
 # Document methods
 #
 
-customerSchema.methods.getProject = (name = projectSchema.statics.defaultProjectName) ->
-    regex = new RegExp "^#{regexEscape(name)}$", "i"
-    return p for p in @projects when p.name.match regex
+customerSchema.methods.getProject = (name = null) ->
+    if name is null
+        return @projects[0]
+    else
+        regex = new RegExp "^#{regexEscape(name)}$", "i"
+        return p for p in @projects when p.name.match regex
 
 customerSchema.methods.getRepo = (id) ->
     for project in @projects
@@ -173,7 +176,7 @@ customerSchema.methods.findSubtarget = (query) ->
 # Virtual properties
 #
 
-customerSchema.virtual('project').get -> @getDefault 'projects'
+customerSchema.virtual('project').get -> @getProject()
 
 
 module.exports = customerSchema
