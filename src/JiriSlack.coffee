@@ -64,4 +64,10 @@ class JiriSlack extends Slack
             if user.profile?.email?.match regex
                 return user
 
+    # escape any formatting characters
+    escape: (s) ->
+        s.replace /`/g, '%60'
+         .replace /_/g, '%5F'
+         .replace /\*/g, '%2A'
+
 module.exports = JiriSlack
