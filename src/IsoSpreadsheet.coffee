@@ -29,7 +29,7 @@ class IsoSpreadsheet
 
     requestRows: =>
         new RSVP.Promise (resolve, reject) =>
-            @sheet.getRows 2, # first worksheet
+            @sheet.getRows 1, # first worksheet
                     start: 1,          # start index
                     num: 500,              # number of rows to pull
                     orderby: 'title'  # column to order results by
