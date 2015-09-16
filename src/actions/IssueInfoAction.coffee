@@ -60,28 +60,16 @@ class IssueInfoAction extends Action
 
         loadingTimer = null
 
-        return new RSVP.Promise (resolve, reject) =>
-            @setLoading()
-            loadingTimer = setInterval (=> @setLoading()), 4000
+        @setLoading()
+        loadingTimer = setInterval (=> @setLoading()), 4000
 
-            @jiri.jira.searchJira(
-                query
-                options
-                (error, result) =>
-                    clearInterval loadingTimer
-
-                    if error
-                        console.log "#{error} in #{query}"
-                        reject error
-                    else
-                        resolve
-                            result: result
-                            message: message
-            )
-        .catch @errorLoadingIssues
-        .then (o) =>
-            @issuesLoaded o.result, o.message if o
-        .catch @errorParsingIssues
+        @jiri.jira.search(query, options)
+        .then (result) =>
+            clearInterval loadingTimer
+            @issuesLoaded result, message
+        .catch (error) =>
+            clearInterval loadingTimer
+            @errorLoadingIssues error
 
     issuesLoaded: (result, message) =>
 
@@ -103,12 +91,9 @@ class IssueInfoAction extends Action
             response
 
     errorLoadingIssues: (error) =>
+        console.log error.stack
         # throw an error, unless we've just sniffed the refs
         throw error unless @getType() is 'IssueInfoAction'
-
-    errorParsingIssues: (error) ->
-        console.error "Jira parsing error: #{error} in IssueInfoAction"
-        throw error
 
     test: (message) ->
         return false unless message.type is 'message' and message.text? and message.channel?

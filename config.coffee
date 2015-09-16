@@ -27,6 +27,10 @@ config =
     jira_status_awaitingMerge: ['Awaiting Merge', 'Awaiting Merge: Spacecraft']
     jira_status_readyToRelease: 'Ready for Release: Spacecraft'
 
+    # Custom field names
+    jira_field_reportingCustomer: 'customfield_10025'
+    jira_field_server: 'customfield_12302'
+
     gitlab_url: 'https://gitlab.hq.jadu.net/'
     gitlab_token: process.env.GITLAB_TOKEN
 

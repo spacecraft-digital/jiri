@@ -2,7 +2,6 @@ RSVP = require 'rsvp'
 IssueInfoAction = require './IssueInfoAction'
 Issue = require '../Issue'
 IssueOutput = require '../IssueOutput'
-ClientRepository = require '../ClientRepository'
 config = require '../../config'
 
 class FindIssueForSupportTicketAction extends IssueInfoAction

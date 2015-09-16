@@ -2,10 +2,12 @@ RSVP = require 'rsvp'
 IssueInfoAction = require './IssueInfoAction'
 Issue = require '../Issue'
 IssueOutput = require '../IssueOutput'
-ClientRepository = require '../ClientRepository'
 config = require '../../config'
 Pattern = require '../Pattern'
 async = require 'async'
+mongoose = require '../../database_init'
+Customer = mongoose.model 'Customer'
+stringUtils = require '../utils/string'
 
 class IssueSearchAction extends IssueInfoAction
 
@@ -83,6 +85,39 @@ class IssueSearchAction extends IssueInfoAction
                     true
         return @morePattern.getRegex()
 
+    ####
+    # @param query (string) the user input that we've parsed as a customer name
+    # @param callback (function) the async callback to progress. Parameters are (string error, string JQL partial query)
+    # @param resolve (function) the overall respondTo promise resolution callback — to exit the whole process if needed
+    _curryGetJiraMappingIdForCustomer: (query, callback, loadCustomerNames = true) ->
+        (customer) =>
+            return new RSVP.Promise (resolve, reject) =>
+                return callback "Customer not found for #{query}" unless customer
+
+                jiraCustomerName = customer.getProject()?._mappingId_jira
+
+                if !jiraCustomerName and loadCustomerNames
+                    @jiri.sendResponse text: "Syncing customers with Jira, one moment please…", channel: @channel.id
+                    @setLoading()
+                    loadingTimer = setInterval (() => @setLoading()), 4000
+                    return @jiri.jira.loadReportingCustomerValues()
+                            .then =>
+                                clearInterval loadingTimer
+                                console.log "try again…"
+                                Customer.findOneByName customer.name
+                                    .then @_curryGetJiraMappingIdForCustomer(query, callback, false)
+                            .catch (error) ->
+                                clearInterval loadingTimer
+                                reject error
+
+                if jiraCustomerName
+                    callback null, "'Reporting Customers' = '#{stringUtils.escape jiraCustomerName}'"
+                else
+                    resolve
+                        text: "I don't know what #{customer.name} is known as in Jira. Please `set #{customer.name}'s _mappingId_jira`"
+                        channel: @channel.id
+
+
     # Returns a promise that will resolve to a response if successful
     respondTo: (message) =>
         try
@@ -101,34 +136,21 @@ class IssueSearchAction extends IssueInfoAction
                             (callback) =>
                                 pattern = @jiri.createPattern "\\bclient\\b", @patternParts, true
                                 matches = message.text.match pattern.getRegex()
-                                clientRepository = new ClientRepository @jiri
-                                if matches?
-                                    client = matches[1]
-                                    @setLoading()
-
-                                    clientRepository.find client
-                                        .then (client) =>
-                                            if !client
-                                                callback "Client not found for #{client}"
-
-                                            clientName = client.name.replace /'/g, "\\'"
-                                            callback null, "'Reporting Customers' = '#{clientName}'"
-
-                                        .catch (error) =>
-                                            callback "Couldn't find client #{client}"
+                                @setLoading()
+                                if matches
+                                    Customer.findOneByName matches[1]
+                                        .then @_curryGetJiraMappingIdForCustomer(matches[1], callback)
+                                        .then resolve
+                                        .catch callback
                                 else
                                     # ignore the blacklist of channels
                                     if message.channel.name in config.slack_nonCustomerChannels.split(/ /)
-                                        callback null, null
-                                        return
+                                        return callback null, null
 
-                                    @setLoading()
-                                    clientRepository.find message.channel.name
-                                        .then (client) =>
-                                            clientName = client.name.replace /'/g, "\\'"
-                                            callback null, if client then "'Reporting Customers' = '#{clientName}'" else null
-                                        .catch (error) =>
-                                            callback null
+                                    Customer.findOne(slackChannel: new RegExp("^#{message.channel.name}$",'i'))
+                                        .then @_curryGetJiraMappingIdForCustomer(message.channel.name, callback)
+                                        .then resolve
+                                        .catch (error) => callback null
 
                             (callback) =>
                                 pattern = @jiri.createPattern "\\bissueType\\b", @patternParts, true

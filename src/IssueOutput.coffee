@@ -38,9 +38,9 @@ class IssueOutput
                     text = "<#{issue.url}|#{issue.key}>"
 
                     versionMatch = issue.summary.match /(\d+\.\d+)/
-                    if versionMatch and not issue.client?.isEmpty()
+                    if versionMatch and not issue.clientName
                         versionNumber = versionMatch[1]
-                        text += " *#{issue.client.name} #{versionNumber}*"
+                        text += " *#{issue.clientName} #{versionNumber}*"
                     else
                         text += " #{issue.summary}"
 
@@ -58,9 +58,9 @@ class IssueOutput
                     status = if issue.status.name.match(/Deployment/i) then issue.status.name else "Deployment (#{issue.status.name})"
 
                     versionMatch = issue.summary.match /(\d+\.\d+\.\d+)/
-                    if versionMatch and not issue.client?.isEmpty() and issue.server
+                    if versionMatch and not issue.clientName and issue.server
                         versionNumber = versionMatch[1]
-                        text += " #{status} of *#{issue.client.name} #{versionNumber}* to #{issue.server}"
+                        text += " #{status} of *#{issue.clientName} #{versionNumber}* to #{issue.server}"
                     else
                         text += " #{status} of #{issue.summary}"
 
@@ -75,8 +75,8 @@ class IssueOutput
                     # Spacecraft / Support
                     if issue.key.match /^(SPC|SUP)-/
 
-                        unless not issue.client or issue.client.name.match /^(|\*None\*)$/
-                            text += " for #{issue.client.name}"
+                        unless issue.clientName?.match /^(|\*None\*)$/
+                            text += " for #{issue.clientName}"
                         text += " `#{issue.status.name}`"
 
                         if issue.supportRef
@@ -109,7 +109,7 @@ class IssueOutput
                 attachments.push attachment
 
         catch e
-            console.error "Error building Issue output: #{e}"
+            console.error "Error building Issue output: #{e}", e.stack
 
         "attachments": JSON.stringify(attachments)
 
