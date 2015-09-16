@@ -1,3 +1,4 @@
+RSVP = require 'rsvp'
 mongoose = require 'mongoose'
 regexEscape = require 'escape-string-regexp'
 SubTargetMatch = require '../src/SubTargetMatch'
@@ -74,6 +75,20 @@ projectSchema.methods.getNameRegexString = ->
             names.push '(main )?website'
 
     return "(#{names.join('|')})(?: project)?"
+
+###
+ # Get the Jira mapping ID for this project
+ # Returns a promise that resolves to the mapping ID (i.e. Reporting Customers string)
+ # If the value is null, these values will be imported from Jira first.
+ # @param  {Jira} jira    Instance of Jira class
+ # @return Promise
+###
+projectSchema.methods.getJiraMappingId = (jira) ->
+    throw "getJiraMappingId requires a Jira instance as the first parameter" unless jira?.loadReportingCustomerValues
+    return new RSVP.Promise (resolve, reject) =>
+        return resolve @_mappingId_jira if @_mappingId_jira != null
+        # import values from Jira and try again
+        jira.loadReportingCustomerValues().then @getJiraMappingId jira
 
 ########################################################
 #
