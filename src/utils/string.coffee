@@ -1,3 +1,4 @@
+regexEscape = require 'escape-string-regexp'
 
 stringUtils =
     # Returns a more useful typeof, returning the class name for objects
@@ -20,5 +21,10 @@ stringUtils =
     upperCaseFirst: (s) ->
         return s unless s
         s[0].toUpperCase() + s.slice(1)
+
+    # escape each of the chars in s by preceding it with escapeChar
+    escape: (s, chars = '\'', escapeChar = '\\') ->
+        return s if typeof s != 'string'
+        s.replace new RegExp("(^|[^\\\\])([#{regexEscape chars}])",'g'), "$1#{escapeChar}$2"
 
 module.exports = stringUtils
