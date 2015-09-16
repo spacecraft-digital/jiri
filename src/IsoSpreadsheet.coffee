@@ -103,11 +103,16 @@ class IsoSpreadsheet
             customer.aliases.push alias for alias in row.titleAliases when alias not in customer.aliases
 
             # if there are non-alphanumeric characters in the title, add an alias without
-            normalizedTitle = row.title.replace(/[^a-z0-9 \-]+/ig, '').replace(/[\-_]+/g, ' ')
+            normalizedName = row.title.replace(/[^a-z0-9 \-]+/ig, '').replace(/[\-_]+/g, ' ')
+            customer.addAlias normalizedName if normalizedName != row.title
 
-            customer.addAlias normalizedTitle if normalizedTitle != row.title
+            # add simplified name as alias
+            simplifiedName = Customer.simplifyName(row.title)
+            customer.addAlias simplifiedName if simplifiedName != row.title
 
-            customer.addAlias "#{normalizedTitle} #{row.projectName}" if row.projectName != Customer.defaultProjectName
+            # add simplified name as alias
+            andAsWord = row.title.replace / & /, ' and '
+            customer.addAlias andAsWord if andAsWord != row.title
 
             project = customer.getProject(row.projectName) or new Project name: row.projectName
 
