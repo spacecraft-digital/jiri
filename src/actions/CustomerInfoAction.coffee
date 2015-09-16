@@ -73,7 +73,7 @@ class CustomerInfoAction extends Action
                                 targetPath = humanize.getRelationalPath result.matches
 
                                 if typeof result.target is 'undefined'
-                                    text = "I'm afraid I don't know what _#{targetPath}_ is"
+                                    text = "I'm afraid I don't have any information about _#{targetPath}_\n(if you find out, let me know)"
                                     @jiri.recordOutcome @, @OUTCOME_EMPTY
 
                                 else

@@ -46,6 +46,9 @@ module.exports =
             isLastMatch = i is matches.length-1
             if match.target?.getName
                 targets.push match.target.getName(isLastMatch)
+            # private properties stay as-is
+            else if match.property[0] is '_'
+                targets.push match.property
             else
                 property = match.property
                 if showCountForLast and isLastMatch and typeof match.target is 'object' and match.target.length
@@ -62,7 +65,7 @@ module.exports =
     explainMatches: (matches) ->
         bits = []
         for match in matches
-            name = if match.target.getName then match.target.getName() else match.property
+            name = if match.target?.getName then match.target.getName() else match.property
             if match.keyword
                 bits.push "`#{match.keyword.trim()}` is _#{name}_"
             else
@@ -145,7 +148,7 @@ module.exports =
                     keys = Object.keys(object)
 
                     # if the object has a single scalar value, we'll collapse it with the parent property
-                    if keys.length is 1 and typeof object[keys[0]] != 'object'
+                    if keys.length is 1 and typeof object[keys[0]] != 'object' and depth > 0
                         return {
                             __object_as_string: true
                             key: keys[0]

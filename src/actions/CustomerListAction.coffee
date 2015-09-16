@@ -31,6 +31,7 @@ class CustomerListAction extends Action
         count: 'count|how many|what number of'
         list: 'list|show|display|output|which'
         like: 'like|contain(ing)?|with|match(ing)?|(is|are )?(called|named)'
+        where: 'where ([a-z_\.0-9]+) (=|is|contains)'
         customers: 'customers|clients|customer'
 
         yes: "jiri y(es|ep|up)?\\s*(please|thanks|thank you|cheers|mate)?"
@@ -51,76 +52,102 @@ class CustomerListAction extends Action
             if @lastOutcome?.outcome is @OUTCOME_COUNTED and message.text.match @getRegex('no', false)
                 return resolve()
 
-            m = message.text.match @getTestRegex()
+            [..., forceMatch, modeMatch, setMatch, propertyMatch, filter] = message.text.match @getTestRegex()
 
-            force = m[1] and m[1].match /force /i
+            force = forceMatch and forceMatch.match /force /i
 
-            if m[2].match @getRegex('count')
+            if modeMatch.match @getRegex('count')
                 mode = @MODE_COUNT
             else
                 mode = @MODE_LIST
 
-            if m[3].match @getRegex('customers')
+            if setMatch.match @getRegex('customers')
                 set = 'customers'
             else
-                return reject "I'm not sure what #{m[3]} is"
+                return reject "I'm not sure what #{setMatch} is"
 
-            filter = m[4]
-            # remove quote marks from filter, if any
-            filter = filter.replace(/(^["'“‘]|["'“‘?]$)/g, '') if filter
+            filterRegex = null
+            if filter
+                # remove quote marks from filter, if any
+                filter = filter.replace(/(^["'“‘]|["'“‘?]$)/g, '')
+                if filter.match /[\^$|()*?+.{}[\]]/
+                    filter = filter.replace(/(^\/|\/$)/g, '')
+                    filterRegex = new RegExp(filter, 'i')
 
-            queryObject = null
-            if set is 'customers'
-                if filter
-                    if filter.match /[\^$|()*?+.{}[\]]/
-                        filterRegex = new RegExp(filter, 'i')
-                        search = Customer.find $or: [{name: filterRegex}, {aliases: filterRegex}]
-                        filterName = "with a name matching the regular expression `/#{filter}/i`"
+            searchProperty = 'name'
+            if m = propertyMatch?.match @getRegex('where')
+                searchProperty = m[1]
+
+            try
+                if set is 'customers'
+                    if filter
+                        # special-case 'name' to also search aliases
+                        if searchProperty is 'name'
+                            if filterRegex
+                                search = Customer.find $or: [{name: filterRegex}, {aliases: filterRegex}]
+                                filterName = "with a name matching the regular expression `/#{filter}/i`"
+                            else
+                                filterName = "with a name containing “#{filter}”"
+                                search = Customer.findByName(filter)
+                        else
+                            if filterRegex
+                                search = Customer.find "#{searchProperty}": filterRegex
+                                filterName = "where #{searchProperty} matches the regular expression `/#{filter}/i`"
+                            else if filter is 'empty'
+                                filterName = "where #{searchProperty} is empty"
+                                search = Customer.find "#{searchProperty}": null
+                            else if filter is 'not empty'
+                                filterName = "where #{searchProperty} is not empty"
+                                search = Customer.find "#{searchProperty}": {$exists: true}
+                            else
+                                filterName = "where #{searchProperty} contains “#{filter}”"
+                                search = Customer.find "#{searchProperty}": filter
+                    # unfiltered
                     else
-                        filterName = "with a name containing “#{filter}”"
-                        search = Customer.findByName(filter)
-
-                # unfiltered
-                else
-                    search = Customer.find()
+                        search = Customer.find()
+            catch e
+                console.log e.stack
 
             search.then (results) =>
-                if results.length
+                try
+                    if results.length
 
-                    # if there are lots of results, we'll check that the user wants to see them
-                    if mode is @MODE_LIST and results.length >= @RATHER_A_LOT and not force
-                        mode = @MODE_COUNT
+                        # if there are lots of results, we'll check that the user wants to see them
+                        if mode is @MODE_LIST and results.length >= @RATHER_A_LOT and not force
+                            mode = @MODE_COUNT
 
-                    if mode is @MODE_LIST or (mode is @MODE_COUNT and results.length <= @ONLY_A_FEW)
-                        @jiri.recordOutcome @, @OUTCOME_FOUND
-                        if results.length is 1
-                            title = "Here is the one #{inflect.singularize set}"
+                        if mode is @MODE_LIST or (mode is @MODE_COUNT and results.length <= @ONLY_A_FEW)
+                            @jiri.recordOutcome @, @OUTCOME_FOUND
+                            if results.length is 1
+                                title = "Here is the one #{inflect.singularize set}"
+                            else
+                                title = "Here are the #{converter.toWords results.length} #{set}"
+                            title += " #{filterName}" if filterName
+                            text = "*#{title}*:\n>>>\n"
+                            text += (result.getName() for result in results).join "\n"
+
                         else
-                            title = "Here are the #{converter.toWords results.length} #{set}"
-                        title += " #{filterName}" if filterName
-                        text = "*#{title}*:\n>>>\n"
-                        text += (result.getName() for result in results).join "\n"
+                            # convert query to 'force list'
+                            forcedQuery = message.text.replace(@jiri.createPattern('^jiri (force )?(count|list)\\b', @patternParts).getRegex(), 'jiri force list')
+                            @jiri.recordOutcome @, @OUTCOME_COUNTED, forcedQuery
+                            if results.length is 1
+                                title = "There is just one #{inflect.singularize set}"
+                            else
+                                title = "There are #{converter.toWords results.length} #{set}"
+                            title += " #{filterName}" if filterName
+                            text = "*#{title}*\nDo you want to see them?"
 
                     else
-                        # convert query to 'force list'
-                        forcedQuery = m[0].replace(@jiri.createPattern('^jiri (force )?(count|list)\\b', @patternParts).getRegex(), 'jiri force list')
-                        @jiri.recordOutcome @, @OUTCOME_COUNTED, forcedQuery
-                        if results.length is 1
-                            title = "There is just one #{inflect.singularize set}"
-                        else
-                            title = "There are #{converter.toWords results.length} #{set}"
-                        title += " #{filterName}" if filterName
-                        text = "*#{title}*\nDo you want to see them?"
+                        @jiri.recordOutcome @, @OUTCOME_NONE
+                        text = "Alas, I couldn't find _any_ #{set}"
+                        text += " #{filterName}" if filterName
 
-                else
-                    @jiri.recordOutcome @, @OUTCOME_NONE
-                    text = "Alas, I couldn't find _any_ #{set}"
-                    text += " #{filterName}" if filterName
-
-                return resolve
-                    text: text
-                    channel: @channel.id
-                    unfurl_links: false
+                    return resolve
+                        text: text
+                        channel: @channel.id
+                        unfurl_links: false
+                catch e
+                    console.log e.stack
 
             .catch (error) =>
                 @jiri.recordOutcome @, @OUTCOME_ERROR
@@ -130,16 +157,8 @@ class CustomerListAction extends Action
 
     getTestRegex: =>
         unless @pattern
-            @pattern = @jiri.createPattern('^jiri (force )?(count|list) (?:all |the |our )*(customers|projects)(?: +like (.+))?$', @patternParts)
+            @pattern = @jiri.createPattern('^jiri (force )?(count|list) (?:all |the |our )*(customers|projects)(?: +(like|where) (.+))?$', @patternParts)
         return @pattern.getRegex()
-
-    getRegex: (part, whole = true) ->
-        return null unless @patternParts[part]
-        partRegex = @patternParts[part]
-        if whole
-            return @jiri.createPattern("^#{partRegex}$").getRegex()
-        else
-            return @jiri.createPattern("\\b(#{partRegex})\\b").getRegex()
 
     # Returns TRUE if this action can respond to the message
     # No further actions will be tested if this returns TRUE

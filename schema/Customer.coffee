@@ -22,9 +22,9 @@ baseSchema.applyTo customerSchema
 #
 
 customerSchema.statics.simplifyName = (name) ->
-    name.replace /\b(council|city|town|university|college|london borough|borough|district|of)\b/gi, ''
+    name.replace /\b(council|city|town|university|college|london borough|borough|district|of|[^a-z]+)\b/gi, ''
         .replace new RegExp(' {2,}'), ' '
-        .replace /(^\s+|\s+$)/, ''
+        .trim()
 
 
 ########################################################
@@ -51,6 +51,14 @@ customerSchema.statics.findByName = (name) ->
         .then (results) => if results.length then results else @findByPartialName(name, 'aliases')
         .then (results) => if results.length then results else @findByNameParts(name)
         .then (results) => if results.length then results else @findByNameParts(name, 'aliases')
+        .then (results) =>
+            return results if results.length
+            # simplify the input name and run it all again!
+            simplifiedName = @simplifyName name
+            if simplifiedName != name
+                return @findByName simplifiedName
+            else
+                return
 
 # Find where the full name exactly matches the query
 customerSchema.statics.findByExactName = (name, property = 'name') ->
@@ -98,6 +106,9 @@ customerSchema.statics.getAllNameRegexString = ->
                 names.push regexEscape(customer.name)
                 names.push alias for alias in customer.aliases
                 names.push @simplifyName(customer.name)
+
+            # sort long -> short
+            names.sort (a, b) -> b.length - a.length
 
             customerSchema.static.allNameRegexString = "(#{names.join('|')})"
             resolve customerSchema.static.allNameRegexString

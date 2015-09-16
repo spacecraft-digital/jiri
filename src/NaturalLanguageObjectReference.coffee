@@ -116,7 +116,7 @@ class NaturalLanguageObjectReference
                 regexs = [
                     new RegExp("^#{customerRegexString}\\b\\s*", 'i'),
                     new RegExp("\\bfor\\s+(#{customerRegexString})\\b\\s*", 'i')
-                    new RegExp("^([a-z0-9_-]+)\\b\\s*", 'i'),
+                    /^([a-z0-9_-]+)['’]?\b\s*/i
                 ]
                 try
                     for regex in regexs
@@ -125,6 +125,7 @@ class NaturalLanguageObjectReference
                             query = query.replace regex, ''
                             return Customer.findOneByName m[1]
                                 .then (customer) ->
+                                    return reject "Sorry, I couldn't figure out which customer `#{m[1]}` is" unless customer
                                     return resolve new SubTargetMatch
                                         query: query
                                         keyword: m[1].trim()
@@ -132,9 +133,12 @@ class NaturalLanguageObjectReference
                                 .catch (error) ->
                                     console.log error.stack
                                     return reject "Sorry, I couldn't load data about #{m[1]}"
+
                     return reject "Sorry, I can't see a customer in `#{query}`"
                 catch e
                     return reject e
+
+
             .catch ->
                 return reject "Unable to load customers data"
 

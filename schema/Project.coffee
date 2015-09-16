@@ -25,9 +25,9 @@ projectSchema = mongoose.Schema
     # exact IDs/names used in different data sources
     # These are used when re-importing data, to match to
     # existing records
-    mappingId_isoSpreadsheet: String
-    mappingId_goLivesSheet: String
-    mappingId_jira: String
+    _mappingId_isoSpreadsheet: String
+    _mappingId_goLivesSheet: String
+    _mappingId_jira: String
 
 baseSchema.applyTo projectSchema
 

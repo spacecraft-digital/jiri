@@ -29,4 +29,13 @@ class Action
     allowOtherActions: ->
         false
 
+    # returns a Pattern made from the specified patternPart
+    getRegex: (part, whole = true) ->
+        return null unless @patternParts[part]
+        partRegex = @patternParts[part]
+        if whole
+            return @jiri.createPattern("^#{partRegex}$").getRegex()
+        else
+            return @jiri.createPattern("\\b(#{partRegex})\\b").getRegex()
+
 module.exports = Action
