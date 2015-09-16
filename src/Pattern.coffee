@@ -15,11 +15,11 @@
 #
 class Pattern
 
-    parts:
-        jiri:
-            _: '@?jiri[:\\-—…. ]*'
-
     constructor: (@metaPattern, parts, @subpartMatches = false) ->
+        @parts =
+            jiri:
+                _: '@?jiri[:\\-—…. ]*'
+
         for own key, value of parts
             if typeof value is 'string'
                 value = {_: value}
