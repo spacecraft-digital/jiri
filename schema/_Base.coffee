@@ -50,7 +50,7 @@ _Base =
         #   keyword    the string found at the start of the query
         #   query    the updated query, with the match removed
         findSubtarget: (query) ->
-            object = @.toObject virtuals: true, versionKey: false
+            object = @.toObject getters: true, virtuals: true, versionKey: false, minimize: false
 
             for own property of object
                 match = @propertyVariantsMatchQuery @, property, query
