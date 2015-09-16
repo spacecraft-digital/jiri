@@ -25,9 +25,18 @@ _Base =
         # e.g. property @foo would be identified at the start of "foo bar"
         #      property @fooBar would be identified in "fooBar baz" and "foo bar baz"
         getPropertyRegexParts: (property) ->
-            parts = [property]
-            uncamelizedProperty = stringUtils.uncamelize(property)
-            parts.push uncamelizedProperty if uncamelizedProperty != property
+            parts = []
+
+            # require private properties (beginning with an underscore) to be named exactly
+            if property[0] is '_'
+                parts.push property
+            else
+                # allow dashes and spaces to be used interchangeably
+                makeFlexibleWordDividers = (s) -> s.replace(/[-_ ]/g,'[ \\-_]')
+
+                parts.push makeFlexibleWordDividers(property)
+                uncamelizedPropertyRegex = stringUtils.uncamelize(property)
+                parts.push makeFlexibleWordDividers(uncamelizedPropertyRegex) if uncamelizedPropertyRegex != property
 
             if typeof @[property] is 'object' and @[property]?.getNameRegexString
                 parts.push @[property].getNameRegexString()
