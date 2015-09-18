@@ -32,6 +32,7 @@ class IssueSearchAction extends IssueInfoAction
             'release': 'releases?'
             'deployment': 'deployments?'
             'test item': 'test items?'
+            'epic': 'epics?'
         status:
             'to do': 'to work on|to do|to fix'
             'test': 'to test|in testing|test'
