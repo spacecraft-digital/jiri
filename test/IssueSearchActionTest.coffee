@@ -138,7 +138,7 @@ describe 'IssueSearchAction', ->
         for own description, messages of validMessages
             describe description, ->
                 for msg in messages
-                    it "respond to “#{msg}”",
+                    it "respond to “@jiri #{msg}”",
                         ((msg) -> ->
                             action = new IssueSearchAction jiri, channel
                             expect(action.test(createMessage(msg))).to.be.ok
@@ -146,7 +146,7 @@ describe 'IssueSearchAction', ->
 
         describe 'misc invalid messages', ->
             for msg in invalidMessages
-                it "don't respond to “#{msg}”",
+                it "don't respond to “@jiri #{msg}”",
                     ((msg) -> ->
                         action = new IssueSearchAction jiri, channel
                         expect(action.test(createMessage(msg))).to.not.be.ok
