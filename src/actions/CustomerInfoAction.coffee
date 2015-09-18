@@ -23,7 +23,7 @@ class CustomerInfoAction extends Action
     OUTCOME_EMPTY: 3
 
     patternParts:
-        find: "(show|display|get|tell (me|us) about|(what|who)([’']s| is| are)?|is)(\\s+the)?"
+        find: "(find|show|display|get|tell (me|us) about|(what|who)([’']s| is| are)?|is)(\\s+the)?"
         yes: "^jiri y(es|ep|up)?\\s*(please|thanks|thank you|cheers|mate)?$"
         numberChoice: "^jiri (\\d+)\\s*(please|thanks|thank you|cheers)?$"
         whatVersion: "what (?:(.*?) )version(?: is|'s')"
