@@ -43,7 +43,7 @@ class IssueSearchAction extends IssueInfoAction
             'in progress': 'open|in progress|being worked on|underway'
         client:
             _: 'for ([a-z0-9\\-\'.: ]+|"[^"]+")'
-        search:
+        _search:
             _: '(?:containing|like|matching|with|about) +(?:[“"]([^"]+)[”"]|([^" ]+)(?= |$)) *'
 
     searchDescription: []
@@ -75,7 +75,7 @@ class IssueSearchAction extends IssueInfoAction
 
     getTestRegex: =>
         unless @pattern
-            @pattern = @jiri.createPattern '^jiri (find after_find?)? (\\d+|(?:the )?latest|one)? ?(issueType ?|status ?|client ?|search ?)+\\??$', @patternParts
+            @pattern = @jiri.createPattern '^jiri (find after_find?)? (\\d+|(?:the )?latest|one)? ?(issueType ?|status ?|client ?|_search ?)+\\??$', @patternParts
         return @pattern.getRegex()
 
     getMoreRegex: =>
