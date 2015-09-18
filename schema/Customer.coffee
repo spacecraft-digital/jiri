@@ -125,7 +125,7 @@ customerSchema.post 'save', (doc) ->
 
 customerSchema.methods.getProject = (name = null) ->
     if name is null
-        return @projects[0]
+        return @getDefault('projects')
     else
         regex = new RegExp "^#{regexEscape(name)}$", "i"
         return p for p in @projects when p.name.match regex
@@ -145,7 +145,9 @@ customerSchema.methods.getDefault = (property) ->
     switch property
         # special case for default project
         when 'projects'
-            return project for project in @projects when project.name is projectSchema.statics.defaultProjectName
+            project = p for p in @projects when p.name is projectSchema.statics.defaultProjectName
+            # return first project if 'default' one not found
+            return project or @projects[0]
         else
             return baseSchema.methods.getDefault property
 
@@ -161,7 +163,7 @@ customerSchema.methods.findSubtarget = (query) ->
     return o if o
 
     # no match on property or project name, so assume it's a property of the default property
-    defaultProject = @getDefault 'projects'
+    defaultProject = @getProject()
     return if defaultProject
         new SubTargetMatch
             target: defaultProject
