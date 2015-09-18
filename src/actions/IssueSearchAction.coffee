@@ -22,7 +22,7 @@ class IssueSearchAction extends IssueInfoAction
     # pattern parts
     patternParts:
         find:
-            _: 'what( is|\\\'s| are)( the)?|find|search|show( us| me)?|display'
+            _: 'what( is|\\\'s| are)( the)?|find|search|get|show( us| me)?|display'
         after_find:
             _: 'still|remaining|left|outstanding|all'
         issueType:
