@@ -96,8 +96,9 @@ class IssueInfoAction extends Action
         throw error unless @getType() is 'IssueInfoAction'
 
     test: (message) ->
-        return false unless message.type is 'message' and message.text? and message.channel?
+        new RSVP.Promise (resolve) =>
+            return resolve false unless message.type is 'message' and message.text? and message.channel?
 
-        return true if message.text.match @getTestRegex()
+            return resolve message.text.match @getTestRegex()
 
 module.exports = IssueInfoAction

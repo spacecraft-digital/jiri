@@ -102,12 +102,13 @@ class GeneralChatAction extends Action
 
     # Returns TRUE if this action can respond to the message
     # No further actions will be tested if this returns TRUE
-    test: (message) =>
-        return true if message.subtype in ['group_join', 'channel_join']
+    test: (message) ->
+        new RSVP.Promise (resolve) =>
+            return resolve true if message.subtype in ['group_join', 'channel_join']
 
-        return false unless message.text
+            return resolve false unless message.text
 
-        pattern = @jiri.createPattern Object.keys(@patternParts).join('|'), @patternParts
-        return message.text.match pattern.getRegex()
+            pattern = @jiri.createPattern Object.keys(@patternParts).join('|'), @patternParts
+            return resolve message.text.match pattern.getRegex()
 
 module.exports = GeneralChatAction

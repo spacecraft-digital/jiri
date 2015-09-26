@@ -77,26 +77,25 @@ class Jiri
 
         message = @normaliseMessage message
 
-        @matchingActions = 0
-
         # allow each Action to decide if they want to respond to the message
-        for actionClass in @actions
+        async.detectSeries @actions, (actionClass, done) =>
             action = new actionClass @, message.channel
-            try
-                if action.test message
-                    @matchingActions++
-                    try
-                        promise = action.respondTo(message)
-                        if promise?.then
-                            promise.then @sendResponse
-                            promise.catch (error) =>
-                                @actionError error,action
-                    catch e
-                        console.error "Error running #{action.getType()}: #{e}"
-
-                    break unless action.allowOtherActions()
-            catch e
-                console.error "Error testing #{action.getType()}: #{e}"
+            new RSVP.Promise (resolve, reject) ->
+                action.test message
+                    .catch (e) ->
+                        console.error "Error testing #{action.getType()}"
+                        console.log e.stack
+                        resolve false
+                    .then resolve
+            .then (match) =>
+                return done(false) unless match
+                done(true)
+                action.respondTo message
+            .then @sendResponse
+            .catch (error) =>
+                @actionError error,action
+        , (actionClass) ->
+            console.log "#{actionClass.name} is responding to “#{message.text}”" if actionClass
 
     # for storing state
     # The Action object must have a channel ID set

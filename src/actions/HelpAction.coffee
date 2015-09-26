@@ -56,8 +56,9 @@ class HelpAction extends Action
 
     # Returns TRUE if this action can respond to the message
     # No further actions will be tested if this returns TRUE
-    test: (message) =>
-        pattern = @jiri.createPattern Object.keys(@patternParts).join('|'), @patternParts
-        return message.text.match pattern.getRegex()
+    test: (message) ->
+        new RSVP.Promise (resolve) =>
+            pattern = @jiri.createPattern Object.keys(@patternParts).join('|'), @patternParts
+            return resolve message.text.match pattern.getRegex()
 
 module.exports = HelpAction

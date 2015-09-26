@@ -55,24 +55,27 @@ class IssueSearchAction extends IssueInfoAction
     describe: ->
         return 'find Jira tickets for you, e.g. “Jiri, show me bugs in progress for warrington”'
 
-    test: (message) =>
-        return false unless message.type is 'message' and message.text? and message.channel?
+    test: (message) ->
+        new RSVP.Promise (resolve) =>
+            return resolve false unless message.type is 'message' and message.text? and message.channel?
 
-        @lastOutcome = @jiri.getLastOutcome @
-        if @lastOutcome?.outcome is @OUTCOME_TRUNCATED_RESULTS and message.text.match @getMoreRegex()
-            # if Jiri was the last user to speak, assume 'more' is talking to him
-            if message.channel.latest.user is @jiri.slack.self.id
-                @matched = @MATCH_MORE
-                return true
-            # otherwise require mention of his name
-            pattern = @jiri.createPattern "(?=.*\\bjiri\\b).*more", @morePattern.parts
-            if message.text.match pattern.getRegex()
-                @matched = @MATCH_MORE
-                return true
+            @lastOutcome = @jiri.getLastOutcome @
+            if @lastOutcome?.outcome is @OUTCOME_TRUNCATED_RESULTS and message.text.match @getMoreRegex()
+                # if Jiri was the last user to speak, assume 'more' is talking to him
+                if message.channel.latest.user is @jiri.slack.self.id
+                    @matched = @MATCH_MORE
+                    return resolve true
+                # otherwise require mention of his name
+                pattern = @jiri.createPattern "(?=.*\\bjiri\\b).*more", @morePattern.parts
+                if message.text.match pattern.getRegex()
+                    @matched = @MATCH_MORE
+                    return resolve true
 
-        if message.text.match @getTestRegex()
-            @matched = @MATCH_NORMAL
-            return true
+            @getTestRegex().then (regex) =>
+                if message.text.match regex
+                    @matched = @MATCH_NORMAL
+                    resolve true
+                resolve false
 
     getTestRegex: =>
         unless @pattern

@@ -269,19 +269,20 @@ class CustomerSetInfoAction extends Action
 
     # Returns TRUE if this action can respond to the message
     # No further actions will be tested if this returns TRUE
-    test: (message) =>
-        mainRegexMatch = message.text.match @getTestRegex()
-        cancelCommand = message.text.match(@jiri.createPattern('^jiri (cancel|undo|stop|ignore|nothing)').getRegex())
-        @lastOutcome = @jiri.getLastOutcome @
-        if @lastOutcome?.outcome is @OUTCOME_NO_VALUE_SPECIFIED
-            @mode = if mainRegexMatch or cancelCommand then @MODE_CANCEL else @MODE_SET_VALUE
-            return true
-        if (@lastOutcome?.outcome is @OUTCOME_SUGGESTIONS and message.text.match @getRegex('numberChoice')) or
-           (@lastOutcome?.outcome is @OUTCOME_SUGGESTION and message.text.match @getRegex('yes'))
-            @mode = @MODE_USE_SUGGESTION
-            return true
+    test: (message) ->
+        new RSVP.Promise (resolve) =>
+            mainRegexMatch = message.text.match @getTestRegex()
+            cancelCommand = message.text.match(@jiri.createPattern('^jiri (cancel|undo|stop|ignore|nothing)').getRegex())
+            @lastOutcome = @jiri.getLastOutcome @
+            if @lastOutcome?.outcome is @OUTCOME_NO_VALUE_SPECIFIED
+                @mode = if mainRegexMatch or cancelCommand then @MODE_CANCEL else @MODE_SET_VALUE
+                return resolve true
+            if (@lastOutcome?.outcome is @OUTCOME_SUGGESTIONS and message.text.match @getRegex('numberChoice')) or
+               (@lastOutcome?.outcome is @OUTCOME_SUGGESTION and message.text.match @getRegex('yes'))
+                @mode = @MODE_USE_SUGGESTION
+                return resolve true
 
-        @mode = @MODE_NEW
-        return mainRegexMatch
+            @mode = @MODE_NEW
+            return resolve mainRegexMatch
 
 module.exports = CustomerSetInfoAction

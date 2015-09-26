@@ -48,17 +48,15 @@ class UnknownAction extends Action
 
     # Returns TRUE if this action can respond to the message
     # No further actions will be tested if this returns TRUE
-    test: (message) =>
-        return false unless message.type is 'message' and message.text? and message.channel?
+    test: (message) ->
+        new RSVP.Promise (resolve) =>
+            return resolve false unless message.type is 'message' and message.text? and message.channel?
 
-        return false if message.subtype is 'bot_message'
+            return resolve false if message.subtype is 'bot_message'
 
-        # this is only if nothing else has responded
-        return false unless @jiri.matchingActions is 0
+            return resolve true if @channel.is_im
 
-        return true if @channel.is_im
-
-        pattern = @jiri.createPattern '^jiri\\b.+'
-        return message.text.match pattern.getRegex()
+            pattern = @jiri.createPattern '^jiri\\b.+'
+            return resolve message.text.match pattern.getRegex()
 
 module.exports = UnknownAction

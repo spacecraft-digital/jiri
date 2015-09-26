@@ -162,12 +162,13 @@ class CustomerListAction extends Action
 
     # Returns TRUE if this action can respond to the message
     # No further actions will be tested if this returns TRUE
-    test: (message) =>
-        @lastOutcome = @jiri.getLastOutcome @
-        if @lastOutcome?.outcome is @OUTCOME_COUNTED and message.text.match @getRegex('yes')
-            message.text = @lastOutcome.data
-            return true
-        return true if @lastOutcome?.outcome is @OUTCOME_COUNTED and message.text.match @getRegex('no')
-        return message.text.match @getTestRegex()
+    test: (message) ->
+        new RSVP.Promise (resolve) =>
+            @lastOutcome = @jiri.getLastOutcome @
+            if @lastOutcome?.outcome is @OUTCOME_COUNTED and message.text.match @getRegex('yes')
+                message.text = @lastOutcome.data
+                return resolve true
+            return resolve true if @lastOutcome?.outcome is @OUTCOME_COUNTED and message.text.match @getRegex('no')
+            return resolve message.text.match @getTestRegex()
 
 module.exports = CustomerListAction

@@ -15,10 +15,11 @@ class ReceiveJiraWebhooksAction extends Action
     # Returns TRUE if this action can respond to the message
     # No further actions will be tested if this returns TRUE
     test: (message) ->
-        return message.subtype is 'bot_message' and
-               message.channel.is_im and
-               message.channel.name is 'slackbot' and
-               message.username is 'Jira'
+        new RSVP.Promise (resolve) =>
+            resolve message.subtype is 'bot_message' and
+                   message.channel.is_im and
+                   message.channel.name is 'slackbot' and
+                   message.username is 'Jira'
 
     # Returns a promise that will resolve to a response if successful
     respondTo: (message) ->
