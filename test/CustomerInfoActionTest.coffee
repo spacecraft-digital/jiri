@@ -35,6 +35,12 @@ validMessages = {
         'show oxford’s PM'
         'show the QA URL for Oxford City Council'
 
+        # should match customer names in various abbreviations
+        'show warrington borough council’s url'
+        'show warrington council’s url'
+        'show warrington’s url'
+        'show WBC’s url'
+
         'find Maldon slackChannel'
         'what\'s Maldon\'s slack channel'
         'what’s Maldon’s slack channel'
@@ -56,6 +62,11 @@ validMessages = {
         'show Maldon servers'
         'show Maldon urls'
         'show Maldon modules'
+
+        'show Oxford sites'
+        'where is the UAT site for oxford?'
+        'where is oxford’s UAT site?'
+        'where is oxford’s UAT?'
     ]
     'Special cases': [
         'is Maldon\'s intranet live?'
@@ -72,6 +83,7 @@ invalidMessages = [
     'more'
     'when is the Oxford QA URL'
     'what I was wondering is what\'s oxford\'s slack channel'
+    'show 3'
 ]
 
 describe 'CustomerInfoAction', ->

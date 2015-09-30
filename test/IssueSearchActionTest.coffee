@@ -68,6 +68,7 @@ validMessages = {
         'find bugs for oxford'
         'find epics for oxford'
         'show bugs for oxford'
+        'show 2 bugs for oxford'
         'get oxford bugs'
         'find oxford epics'
         'find issues for oxford'
