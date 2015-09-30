@@ -1,5 +1,5 @@
 stringUtils = require './string'
-inflect = require('i')()
+inflect = require './inflect'
 converter = require 'number-to-words'
 moment = require 'moment'
 

@@ -1,4 +1,4 @@
-inflect = require('i')()
+inflect = require './utils/inflect'
 RSVP = require 'rsvp'
 mongoose = require '../database_init'
 Customer = mongoose.model 'Customer'

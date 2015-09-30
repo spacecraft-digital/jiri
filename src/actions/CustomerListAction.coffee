@@ -7,7 +7,7 @@ stringUtils = require '../utils/string'
 humanize = require '../utils/humanize'
 regexEscape = require 'escape-string-regexp'
 converter = require 'number-to-words'
-inflect = require('i')()
+inflect = require '../utils/inflect'
 
 # Query Customer database in natural language
 #

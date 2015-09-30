@@ -6,7 +6,7 @@ Customer = mongoose.model 'Customer'
 stringUtils = require '../utils/string'
 humanize = require '../utils/humanize'
 NaturalLanguageObjectReference = require '../NaturalLanguageObjectReference'
-inflect = require('i')()
+inflect = require '../utils/inflect'
 converter = require 'number-to-words'
 
 # Query Customer database in natural language
