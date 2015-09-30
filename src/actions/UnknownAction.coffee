@@ -38,9 +38,6 @@ class UnknownAction extends Action
             # is a question
             if message.text.match /\?$/
                 text.push "Good question. No idea, I'm afraid."
-            else
-                text.push "Good point, well made."
-                text.push "That's an interesting perspective. Although not one I have anything to input on."
 
             resolve
                 text: text[Math.floor(Math.random() * text.length)]
