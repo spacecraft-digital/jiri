@@ -6,6 +6,8 @@ unless mongoose.modelNames().length
     mongoose.connection.on 'error', (error) -> console.error "Database error: #{error}"
     mongoose.connection.once 'open', (callback) -> console.log 'Database connected'
 
+    mongoose.connection.once 'disconnected', -> console.log '** Mongoose has been disconnected **'
+
     customerSchema = require './schema/Customer'
     projectSchema = require './schema/Project'
     stageSchema = require './schema/Stage'
