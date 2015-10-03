@@ -39,7 +39,7 @@ module.exports =
     #
     # @param    array   matches An array of {target: x, property: y}
     # @params   boolean showCountForLast    If true and the last target is an array, the length of that array will be included
-    getRelationalPath: (matches, showCountForLast = true) ->
+    getRelationalPath: (matches, showCountForLast = true, forcePluralLast = false) ->
         targets = []
 
         for match, i in matches
@@ -51,9 +51,16 @@ module.exports =
                 targets.push match.property
             else
                 property = match.property
+                if isLastMatch and forcePluralLast
+                    property = inflect.pluralize property
+
                 if showCountForLast and isLastMatch and typeof match.target is 'object' and match.target.length
-                    targets.push converter.toWords match.target.length
-                    property = inflect.singularize match.property if match.target.length is 1
+                    if match.target.length is 1
+                        property = inflect.singularize property
+                    else if not forcePluralLast
+                        targets.push converter.toWords match.target.length
+                        property = inflect.pluralize property
+
                 property = stringUtils.uncamelize(property).toLowerCase()
 
                 targets.push @_fixCapitalisation(property)
