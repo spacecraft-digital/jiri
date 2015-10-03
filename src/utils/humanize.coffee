@@ -22,7 +22,7 @@ moment = require 'moment'
 module.exports =
 
     # words that should have certain capitalisation
-    allCaps: 'URL SSH PM CMS XFP LAMP ID HTTP HTTPS Jadu QA UAT'
+    allCaps: 'URL URLs SSH PM CMS XFP LAMP ID HTTP HTTPS Jadu QA UAT'
 
     # general string replacements to perform
     #
