@@ -46,12 +46,14 @@ class Jiri
         pattern
 
     normaliseMessage: (message) ->
-        message.channel = @slack.getChannelGroupOrDMByID message.channel
-        message.channelName = if message.channel?.is_channel then '#' else ''
-        message.channelName = message.channelName + if message.channel then message.channel.name else 'UNKNOWN_CHANNEL'
+        if typeof message.channel is 'string'
+            message.channel = @slack.getChannelGroupOrDMByID message.channel
+            message.channelName = if message.channel?.is_channel then '#' else ''
+            message.channelName = message.channelName + if message.channel then message.channel.name else 'UNKNOWN_CHANNEL'
 
-        message.user = @slack.getUserByID message.user
-        message.userName = if message.user?.name? then "@#{message.user.name}" else "UNKNOWN_USER"
+        if typeof message.user is 'string'
+            message.user = @slack.getUserByID message.user
+            message.userName = if message.user?.name? then "@#{message.user.name}" else "UNKNOWN_USER"
 
         # to simplify matching, if Jiri is addresses via a DM, we'll ensure "@jiri " is prefixed, so we
         # can use the same patterns to match there as in other channels
