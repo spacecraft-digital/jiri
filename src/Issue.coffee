@@ -7,6 +7,9 @@ moment = require 'moment'
 # Wraps a standard Jira issue object (as returned by the API) to normalise
 # some Jaduisms
 class Issue
+
+    isExtended: true
+
     constructor: (issueData) ->
         return unless issueData
 

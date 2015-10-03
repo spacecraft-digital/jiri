@@ -22,9 +22,16 @@ class IssueOutput
         'updated'
     ]
 
-    constructor: (@issues) ->
-        unless @issues.length?
-            @issues = [@issues]
+    constructor: (issues) ->
+        @issues = []
+
+        unless issues.length?
+            issues = [issues]
+
+        for issue in issues
+            issue = new Issue issue unless issue.isExtended
+            @issues.push issue
+
     lowercaseRelativeDays: (s) -> return s.replace /(yesterday|today|tomorrow|last|next)/gi, (word) -> word.toLowerCase()
 
     getSlackMessage: () ->
