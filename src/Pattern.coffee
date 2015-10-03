@@ -48,7 +48,8 @@ class Pattern
     getRegex: ->
         new RegExp(@metaPattern
                 .replace /\? /g, '?\\s*'
-                .replace /\s/, '\\s+'
+                # allow multiple spaces wherever one is allowed
+                .replace /[ ]+\+?/g, ' +'
                 .replace /(\\b|\b)([a-z0-9_]{2,})(\b|\s)/ig, (m,prefix,partName) =>
                     s = prefix + @getRegexStringForPart partName
                     if s then return s else return m
