@@ -126,6 +126,8 @@ module.exports =
                     if count is 1 and not property
                         output = output[Object.keys(output)[0]]
 
+                    return '(an empty array)' if count is 0
+
                     return output
 
                 # other object
