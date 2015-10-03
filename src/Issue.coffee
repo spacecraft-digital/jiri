@@ -43,4 +43,10 @@ class Issue
 
             Customer.findOne "projects._mappingId_jira": @clientName
 
+    isToDo: -> @status?.statusCategory?.key is "new"
+    isInProgress: ->
+        console.log @status.statusCategory
+        return @status?.statusCategory?.key is "indeterminate"
+    isDone: -> @status?.statusCategory?.key is "done"
+
 module.exports = Issue
