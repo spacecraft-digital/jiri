@@ -32,8 +32,8 @@ module.exports =
         "Git Hub": "GitHub"
 
     # Returns a human readable string representation of the object parameter
-    dump: (object) ->
-        @_cleanJson(JSON.stringify(@_humanizeObject(object), null, 4)).trim()
+    dump: (object, showHiddenProperties = false) ->
+        @_cleanJson(JSON.stringify(@_humanizeObject(object, showHiddenProperties), null, 4)).trim()
 
     # Returns a human-readable path of the match targets
     #
@@ -92,7 +92,7 @@ module.exports =
         s = stringUtils.upperCaseFirst stringUtils.uncamelize(key).trim()
         @_fixCapitalisation s
 
-    _humanizeObject: (object, depth = 0) ->
+    _humanizeObject: (object, showHiddenProperties = false, depth = 0) ->
         switch typeof object
             # represent boolean as yes/no
             when 'boolean'
@@ -112,7 +112,7 @@ module.exports =
                     output = {}
                     count = 0
                     for property, v of @_unpackArraysForOutput '', object
-                        @_addValueToOutput property, v, depth, output
+                        @_addValueToOutput property, v, depth, output, showHiddenProperties
                         count++
 
                     # if the result is an array of one object, collapse it into the parent
@@ -139,11 +139,20 @@ module.exports =
 
                     keys = Object.keys(object)
 
+                    # if we're showing hidden properties, ensure all properties are presented
+                    if showHiddenProperties
+                        for key in keys when key != '_id'
+                            if typeof object[key] is 'object' and object[key].length?
+                                output[@_humanizeKey key] = '[]'
+                            else if typeof object[key] != 'object'
+                                output[@_humanizeKey key] = ' '
+
                     # get the property used in the getName() method, to avoid including it twice
                     nameProperty = if originalObject.getNameProperty then originalObject.getNameProperty() else null
 
-                    # remove keys we want to ignore
-                    delete object[key] for key in keys when key[0] is '_' or key is nameProperty
+                    for key in keys when key is '_id' or (not showHiddenProperties and (key[0] is '_' or key is nameProperty))
+                        # remove keys we want to ignore
+                        delete object[key]
 
                     keys = Object.keys(object)
 
@@ -156,13 +165,12 @@ module.exports =
                         }
 
                     for own key, value of object
-                        # we'll defer arrays and objects til later for nicer ordering
                         if value and typeof value is 'object' and value.length?
                             newProperties = @_unpackArraysForOutput key, originalObject[key]
                             for property, v of newProperties
-                                @_addValueToOutput property, v, depth, output
+                                @_addValueToOutput property, v, depth, output, showHiddenProperties
                         else if key and value and (typeof value != 'object' or value instanceof Date or Object.keys(value).length)
-                            @_addValueToOutput key, value, depth, output
+                            @_addValueToOutput key, value, depth, output, showHiddenProperties
 
                     return output
 
@@ -177,8 +185,8 @@ module.exports =
     #
     # e.g. {"CMS": {"version": "1.12.1.15"}}
     # can be flattened to {"CMS version": "1.12.1.15"}
-    _addValueToOutput: (key, value, depth, output) ->
-        value = @_humanizeObject value, depth+1
+    _addValueToOutput: (key, value, depth, output, showHiddenProperties = false) ->
+        value = @_humanizeObject value, showHiddenProperties, depth+1
 
         # an object with a single value should be displayed as a string
         if value.__object_as_string

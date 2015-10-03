@@ -60,6 +60,12 @@ class CustomerInfoAction extends Action
                             # remove trailing question mark
                             .replace /[!.?\s]+$/, ''
 
+                    # a flag to show properties that would otherwise be hidden
+                    showHiddenRegex = /[ ](full|includ(ing|e) hidden)$/i
+                    if query.match showHiddenRegex
+                        query = query.replace showHiddenRegex, ''
+                        @showHiddenProperties = true
+
             # remove any 'apostrophe s'
             query = query.replace /(\w)['’]+s /g, '$1 '
 
