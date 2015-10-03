@@ -178,7 +178,11 @@ class Jiri
         # ignore messages Jiri sends
         return if message.user is @slack.self.id
 
-        return if message.userName = '@slackbot' and message.text?.match /^You have been removed/
+        return if message.userName is '@slackbot' and message.text?.match /^You have been removed/
+
+        # Ignore some bots
+        config.slack_botsToIgnore = slack_botsToIgnore.split(/[ ,;]+/) if typeof config.slack_botsToIgnore is 'string'
+        return if message.subtype is 'bot_message' and message.username in config.slack_botsToIgnore
 
         # for development, only respond to Matt Dolan
         return if @debugMode and message.subtype != 'bot_message' and message.user != config.debugSlackUserId
