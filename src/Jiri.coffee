@@ -9,6 +9,7 @@ class Jiri
     actions: [
         # require './actions/IssueStatusAction'
         require './actions/FindIssueForSupportTicketAction'
+        require './actions/ReleaseAction'
         require './actions/IssueSearchAction'
         require './actions/HelpAction'
         require './actions/ReceiveJiraWebhooksAction'

@@ -6,6 +6,8 @@ Customer = mongoose.model 'Customer'
 async = require 'async'
 stringUtils = require './utils/string'
 Issue = require './Issue'
+ReleaseIssue = require './ReleaseIssue'
+IssueOutput = require './IssueOutput'
 semver = require 'semver'
 
 class Jira
@@ -83,20 +85,6 @@ class Jira
     # Integrated methods
     ##########
 
-    _normaliseVersion: (version) ->
-        n = String(version).split /\./
-        switch n.length
-            # 4 points must be a core product: CMS/XFP/etc
-            when 4
-                return false
-            when 2
-                n.push '0'
-            when 1
-                n.push '0'
-                n.push '0'
-        console.log version, 'becomes', n
-        return n.join '.'
-
     getReleaseTicket: (project, targetVersion = 'latest') ->
         return new RSVP.Promise (resolve, reject) =>
             project.getJiraMappingId(@)
@@ -108,38 +96,46 @@ class Jira
                 jql = "'Reporting Customers' = '#{stringUtils.escape jiraMappingName}' AND issueType = 'Release'"
 
                 @search jql,
-                    fields: ['summary',config.jira_field_release_version,'status']
+                    fields: IssueOutput.prototype.FIELDS
 
             .catch reject
             .then (result) =>
                 try
-                    latestVersion = @_normaliseVersion 0
-                    latestRelease = null
+                    targetVersion = stringUtils.normaliseVersion(targetVersion, 2) if stringUtils.isNumericVersion(targetVersion)
+
+                    releases = []
                     for issue in result.issues
-                        version = issue.fields[config.jira_field_release_version]?[0]
-                        unless version
-                            m = issue.fields.summary.match /\s(\d+\.\d+)/
-                            version = m[1] if m
+                        release = new ReleaseIssue issue
 
-                        continue unless version
-                        version = @_normaliseVersion version
+                        # exact match -> resolve immediately
+                        if release.version is targetVersion
+                            return resolve release
 
-                        # A version of x.x.x.x is a non-customer project
-                        continue if version is false
+                        releases.push release
 
-                        # need to add a patch number for the semver comparision
-                        if targetVersion is 'latest' and semver.gt(version, latestVersion)
-                            latestVersion = version
-                            latestRelease = issue
-                        else if version is targetVersion
-                            return resolve new Issue(issue)
+                    return reject "no releases found" unless releases.length
 
-                    if targetVersion is 'latest' and latestRelease
-                        return resolve new Issue(latestRelease)
+                    if stringUtils.isNumericVersion targetVersion
+                        return reject "cannot find release `#{targetVersion}` for #{customer.name}"
+
+                    releases.sort (one, two) -> semver.rcompare(one.semver, two.semver)
+
+                    # the most recent release, regardless of status
+                    if targetVersion in ReleaseIssue.prototype.synonyms.latest
+                        return resolve releases[0]
+                    # the most recent completed release
+                    else if targetVersion in ReleaseIssue.prototype.synonyms.previous
+                        return resolve release for release in releases when release.isDone()
+                    # return the latest release if it's not Done
+                    else if targetVersion in ReleaseIssue.prototype.synonyms.next
+                        return resolve if releases[0].isDone() then null else releases[0]
+                    else
+                        return reject "I don't know what a ‘#{targetVersion}’ release is"
 
                     reject "#{targetVersion} release not found"
                 catch e
-                    reject e.stack
+                    console.log e.stack
+                    reject "something went wrong"
 
 
     getReportingCustomerValues: ->
