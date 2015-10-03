@@ -45,14 +45,7 @@ class IssueOutput
 
                 # Spacecraft Release ticket
                 if issue.key.match(/^(SPC|SUP)-/) and issue.issuetype?.name is "Release"
-                    text = "<#{issue.url}|#{issue.key}>"
-
-                    versionMatch = issue.summary.match /(\d+\.\d+)/
-                    if versionMatch and not issue.clientName
-                        versionNumber = versionMatch[1]
-                        text += " *#{issue.clientName} #{versionNumber}*"
-                    else
-                        text += " #{issue.summary}"
+                    text = "<#{issue.url}|#{issue.key}> *#{issue.summary}*"
 
                     text += " `#{issue.status.name}`" if issue.status?.name
 
