@@ -44,6 +44,7 @@ validMessages = {
         'find Maldon slackChannel'
         'what\'s Maldon\'s slack channel'
         'what’s Maldon’s slack channel'
+        'what platform is Bromley?'
 
         'show Maldon repo'
         'show Maldon repos'
