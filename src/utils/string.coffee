@@ -34,4 +34,24 @@ stringUtils =
         return s if typeof s != 'string'
         s.replace new RegExp("(^|[^\\\\])([#{regexEscape chars}])",'g'), "$1#{escapeChar}$2"
 
+    # normalises a version string to be a specifified number of points
+    # e.g.
+    #     normaliseVersion('1', 3) -> '1.0.0'
+    #     normaliseVersion('1.2', 3) -> '1.2.0'
+    #     normaliseVersion('1.2.3', 3) -> '1.2.3'
+    #     normaliseVersion('1.2.3', 2) -> '1.2'
+    #     normaliseVersion('1.2.3', 1) -> '1'
+    #     normaliseVersion(0, 3) -> '0.0.0'
+    normaliseVersion: (version, numberOfPoints = 3) ->
+        n = String(version).split /\./
+        return null if not n or n.length is 0
+
+        while n.length < numberOfPoints
+            n.push '0'
+
+        return n.slice(0, numberOfPoints).join('.')
+
+    # return true if the parameter is in the form of 0, 0.0, 0.00.00, 0.000.00.000, etc
+    isNumericVersion: (s) -> !!s.match(/^\d+(\.\d+)*$/)
+
 module.exports = stringUtils
