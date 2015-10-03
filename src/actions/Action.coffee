@@ -24,11 +24,6 @@ class Action
     setLoading: () =>
         @jiri.slack.setTyping @channel.id
 
-    # Return true if other actions can run
-    # Return false if this action has handled this message, and no other actions should be triggered
-    allowOtherActions: ->
-        false
-
     # returns a Pattern made from the specified patternPart
     getRegex: (part, whole = true) ->
         return null unless @patternParts[part]
