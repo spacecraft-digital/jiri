@@ -82,7 +82,8 @@ class CustomerInfoAction extends Action
                                     else if typeof result.target is 'number' or (typeof result.target is 'string' and result.target.length < 60)
                                         text = "*#{targetPath}*: `#{humanize.dump(result.target).replace(/\\n/g, "; ")}`"
                                     else
-                                        text = "*#{targetPath}*:\n```#{humanize.dump(result.target).replace(/\\n/g, "; ")}```"
+                                        output = humanize.dump(result.target, @showHiddenProperties).replace(/\\n/g, "; ")
+                                        text = if output then "*#{targetPath}*:\n```#{output}```" else "*#{targetPath}*: _(empty)_"
                                     @jiri.recordOutcome @, @OUTCOME_FOUND
 
                             when NaturalLanguageObjectReference.prototype.RESULT_SUGGESTION
