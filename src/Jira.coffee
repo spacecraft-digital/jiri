@@ -67,9 +67,13 @@ class Jira
         return new RSVP.Promise (resolve, reject) =>
             @api.updateIssue issueNum, issueUpdate, @_getCallback(resolve,reject)
 
-    issueLink: (link) =>
+    createLink: (from, to, type = 'Blocks') =>
         return new RSVP.Promise (resolve, reject) =>
-            @api.issueLink link, @_getCallback(resolve,reject)
+            options =
+                linkType: type
+                fromIssueKey: from
+                toIssueKey: to
+            @api.issueLink options, @_getCallback(resolve,reject)
 
     addComment: (issueId, comment) =>
         return new RSVP.Promise (resolve, reject) =>
