@@ -120,7 +120,7 @@ class CustomerInfoAction extends Action
     getTestRegexes: =>
         unless @patterns
             @patterns =
-                find: @jiri.createPattern('^jiri find\\s+\\S', @patternParts),
+                find: @jiri.createPattern("^jiri find +.*(?=#{Customer.schema.statics.allNameRegexString}).*", @patternParts),
                 whatVersion: @jiri.createPattern('^jiri whatVersion\\s+(\\S.+?)(?: on| running| at)?\\?*$', @patternParts, true),
         output = {}
         output[name] = pattern.getRegex() for own name, pattern of @patterns
