@@ -1,5 +1,8 @@
 regexEscape = require 'escape-string-regexp'
 
+#
+#  Various string utility functions
+#
 stringUtils =
     # Returns a more useful typeof, returning the class name for objects
     typeOf: (object) ->
@@ -12,8 +15,12 @@ stringUtils =
 
     # Like Array.join, but with a different glue for the last item
     join: (array, glue = ', ', lastGlue = ' and ') ->
-        last = array.pop()
-        return array.join(glue) + lastGlue + last
+        switch array.length
+            when 0 then return ''
+            when 1 then return array.pop()
+            else
+                last = array.pop()
+                return array.join(glue) + lastGlue + last
 
     uncamelize: (s) ->
         (''+s).replace(/((?=.)[a-z])([A-Z])(?=[^A-Z])/g, '$1 $2').trim()
