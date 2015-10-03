@@ -21,8 +21,6 @@ class Jiri
         require './actions/UnknownAction'
     ]
 
-    matchingActions: 0
-
     constructor: (@slack, @jira, @db) ->
         @debugMode = '--debug' in process.argv
 
