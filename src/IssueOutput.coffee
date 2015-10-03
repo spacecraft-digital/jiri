@@ -17,12 +17,15 @@ class IssueOutput
         'customfield_12302', # Server(s)
         'customfield_10004', # Story points
         'issuelinks',
-        'assignee'
+        'assignee',
+        'created',
+        'updated'
     ]
 
     constructor: (@issues) ->
         unless @issues.length?
             @issues = [@issues]
+    lowercaseRelativeDays: (s) -> return s.replace /(yesterday|today|tomorrow|last|next)/gi, (word) -> word.toLowerCase()
 
     getSlackMessage: () ->
         attachments = []
@@ -45,6 +48,8 @@ class IssueOutput
                         text += " #{issue.summary}"
 
                     text += " `#{issue.status.name}`" if issue.status?.name
+
+                    text += "\n_Created #{@lowercaseRelativeDays issue.created.calendar()}, updated #{@lowercaseRelativeDays issue.updated.calendar()}._"
 
                     for link in issue.issuelinks
                         linkedIssue = new Issue link.inwardIssue||link.outwardIssue
