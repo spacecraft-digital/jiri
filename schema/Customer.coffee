@@ -4,6 +4,7 @@ regexEscape = require 'escape-string-regexp'
 projectSchema = require './Project'
 baseSchema = require './_Base'
 SubTargetMatch = require '../src/SubTargetMatch'
+fuzzy = require 'fuzzy'
 
 customerSchema = mongoose.Schema
     # Full name of the Customer
@@ -100,6 +101,22 @@ customerSchema.statics.getAllNameRegexString = ->
             return resolve customerSchema.static.allNameRegexString
 
         @find()
+# Finds a Customer by fuzzy matching its name and aliases
+# Returns the highest scoring Customer or null if not found
+customerSchema.statics.fuzzyFindOneByName = (name) ->
+    # remove 's
+    name = name.replace /['’]s?$/i, ''
+    return new RSVP.Promise (resolve, reject) =>
+        @find().then (customers) ->
+            results = fuzzy.filter name, customers, extract: (customer) -> "#{customer.name} #{customer.aliases.join ' '}"
+            return resolve null unless results.length
+
+            bestMatch = score: 0
+            for result in results
+                bestMatch = result if result.score > bestMatch.score
+
+            resolve bestMatch.original
+
         .then (customers) =>
             names = []
             for customer in customers
