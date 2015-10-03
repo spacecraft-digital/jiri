@@ -185,7 +185,10 @@ class Jiri
         return if message.subtype is 'bot_message' and message.username in config.slack_botsToIgnore
 
         # for development, only respond to Matt Dolan
-        return if @debugMode and message.subtype != 'bot_message' and message.user != config.debugSlackUserId
+        if @debugMode
+            if message.user is config.debugSlackUserId or (message.subtype is 'bot_message' and message.username in ['Jiri', 'Slackbot'])
+                @actOnMessage message
+            return
 
         @actOnMessage message
 
