@@ -218,6 +218,7 @@ customerSchema.methods.findSubtarget = (query) ->
 #
 
 customerSchema.virtual('project').get -> @getProject()
+customerSchema.virtual('alias').get -> @aliases
 
 
 module.exports = customerSchema
