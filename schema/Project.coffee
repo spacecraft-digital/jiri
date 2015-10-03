@@ -98,7 +98,15 @@ projectSchema.methods.getJiraMappingId = (jira) ->
 # projectSchema.virtual('url').get -> @getDefault('stages').url
 projectSchema.virtual('repo')
     .get -> @getDefault 'repos'
-    .set (value) ->
+
+projectSchema.virtual('sites')
+    .get -> @stages
+    .set (sites) ->
+        @stages = sites
+        @markModified 'stages'
+
+projectSchema.virtual('hostedAtJadu').get( -> @hostedByJadu).set((value) -> @hostedByJadu = value)
+projectSchema.virtual('hostedByUs').get( -> @hostedByJadu).set((value) -> @hostedByJadu = value)
 
 projectSchema.virtual('pm')
     .get -> @projectManager

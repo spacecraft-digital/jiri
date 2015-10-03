@@ -51,12 +51,9 @@ stageSchema.methods.getNameRegexString = ->
     return "(#{names.join('|')})(?: site)?"
 
 stageSchema.virtual('url')
-    .get -> @urls[0]
-    .set (url) ->
-        if @urls[0]
-            @urls[0] = url
-        else
-            @urls.push url
+    .get -> @urls
+    .set (urls) ->
+        @urls = urls
         @markModified 'urls'
 
 stageSchema.virtual('server').get -> @servers[0]
