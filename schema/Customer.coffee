@@ -94,13 +94,7 @@ customerSchema.statics.findBySimplifiedName = (name, property = 'name') ->
     o[property] = new RegExp("#{regexEscape(@simplifyName(name))}", 'i')
     @find(o).sort(name: 1)
 
-# returns a Promise which resolves to a regular expression containing all customer names and aliases
-customerSchema.statics.getAllNameRegexString = ->
-    new RSVP.Promise (resolve, reject) =>
-        if customerSchema.static.allNameRegexString
-            return resolve customerSchema.static.allNameRegexString
 
-        @find()
 # Finds a Customer by fuzzy matching its name and aliases
 # Returns the highest scoring Customer or null if not found
 customerSchema.statics.fuzzyFindOneByName = (name) ->
@@ -117,23 +111,51 @@ customerSchema.statics.fuzzyFindOneByName = (name) ->
 
             resolve bestMatch.original
 
+customerSchema.statics.getAllNames = (forceReload) ->
+    new RSVP.Promise (resolve, reject) ->
+        if not forceReload and customerSchema.statics.allNames
+            return resolve customerSchema.statics.allNames
+
+        Customer = mongoose.model 'Customer', customerSchema
+        Customer.find()
         .then (customers) =>
+
             names = []
+            addUniqueName = (name) ->
+                name = name.toLowerCase()
+                names.push name if names.indexOf(name) is -1
+
             for customer in customers
-                names.push regexEscape(customer.name)
-                names.push alias for alias in customer.aliases
-                names.push @simplifyName(customer.name)
+                addUniqueName regexEscape(customer.name)
+                addUniqueName alias for alias in customer.aliases
+                addUniqueName customerSchema.statics.simplifyName(customer.name)
 
             # sort long -> short
             names.sort (a, b) -> b.length - a.length
 
-            customerSchema.static.allNameRegexString = "(#{names.join('|')})"
-            resolve customerSchema.static.allNameRegexString
+            customerSchema.statics.allNames = names
 
+            resolve names
 
-# Clear cached regex string if data is changed
-customerSchema.post 'save', (doc) ->
-    customerSchema.static.allNameRegexString = null
+        .catch (error) -> console.log error.stack or error
+
+# returns a Promise which resolves to a regular expression containing all customer names and aliases
+customerSchema.statics.getAllNameRegexString = (forceReload) ->
+    new RSVP.Promise (resolve, reject) ->
+        if not forceReload and customerSchema.statics.allNameRegexString
+            return resolve customerSchema.statics.allNameRegexString
+
+        console.log 'loading all Customer names'
+        customerSchema.statics.getAllNames(forceReload).then (names) ->
+            console.log "found #{names.length} names, storing regex"
+            customerSchema.statics.allNameRegexString = "[\"'“‘]?(#{names.join('|')})[\"'”’]?"
+            resolve customerSchema.statics.allNameRegexString
+
+# load the 'all name regex string' on connect
+mongoose.connection.once 'open', (callback) -> customerSchema.statics.getAllNameRegexString(true)
+
+# Refresh cached regex string if data is changed
+customerSchema.post 'save', (doc) => customerSchema.statics.getAllNameRegexString(true)
 
 ########################################################
 #
