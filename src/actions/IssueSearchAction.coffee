@@ -42,8 +42,6 @@ class IssueSearchAction extends IssueInfoAction
             'to review': '(?:ready )?(to|for|awaiting|needing) review'
             'release': '(?:ready )?(to|for) release|releaseable'
             'in progress': 'open|in progress|being worked on|underway'
-        client:
-            _: 'for ([a-z0-9\\-\'.: ]+|"[^"]+")'
         _search:
             _: '(?:containing|like|matching|with|about) +(?:[“"]([^"]+)[”"]|([^" ]+)(?= |$)) *'
 
@@ -74,13 +72,14 @@ class IssueSearchAction extends IssueInfoAction
             @getTestRegex().then (regex) =>
                 if message.text.match regex
                     @matched = @MATCH_NORMAL
-                    resolve true
+                    return resolve true
                 resolve false
 
     getTestRegex: =>
-        unless @pattern
-            @pattern = @jiri.createPattern '^jiri (find after_find?)? (\\d+|(?:the )?latest|one)? ?(issueType ?|status ?|client ?|_search ?)+\\??$', @patternParts
-        return @pattern.getRegex()
+        new RSVP.Promise (resolve, reject) =>
+            unless @pattern
+                @pattern = @jiri.createPattern "^jiri (find after_find?)? (\\d+|(?:the )?latest|one)? ?(issueType ?|status ?|for #{Customer.schema.statics.allNameRegexString} ?|_search ?)+\\??$", @patternParts
+            return resolve @pattern.getRegex()
 
     getMoreRegex: =>
         unless @morePattern
@@ -124,125 +123,123 @@ class IssueSearchAction extends IssueInfoAction
 
     # Returns a promise that will resolve to a response if successful
     respondTo: (message) =>
-        try
-            switch @matched
-                when @MATCH_NORMAL
-                    return new RSVP.Promise (resolve, reject) =>
+        return new RSVP.Promise (resolve, reject) =>
+            if @matched is @MATCH_NORMAL
+                @getTestRegex().then (regex) =>
+                    matches = message.text.match regex
 
-                        matches = message.text.match @getTestRegex()
-                        if matches[2]
-                            if matches[2].match /^\d+$/
-                                @MAX_RESULTS = parseInt matches[2]
-                            else
-                                @MAX_RESULTS = 10
-
-                        async.parallel([
-                            (callback) =>
-                                pattern = @jiri.createPattern "\\bclient\\b", @patternParts, true
-                                matches = message.text.match pattern.getRegex()
-                                @setLoading()
-                                if matches
-                                    Customer.findOneByName matches[1]
-                                        .then @_curryGetJiraMappingIdForCustomer(matches[1], callback)
-                                        .then resolve
-                                        .catch callback
-                                else
-                                    # ignore the blacklist of channels
-                                    if message.channel.name in config.slack_nonCustomerChannels.split(/ /)
-                                        return callback null, null
-
-                                    Customer.findOne(slackChannel: new RegExp("^#{message.channel.name}$",'i'))
-                                        .then @_curryGetJiraMappingIdForCustomer(message.channel.name, callback)
-                                        .then resolve
-                                        .catch (error) => callback null
-
-                            (callback) =>
-                                pattern = @jiri.createPattern "\\bissueType\\b", @patternParts, true
-                                matches = message.text.match pattern.getRegex()
-                                if matches? and matches[0] != 'issue'
-                                    for own key, value of @patternParts.issueType
-                                        continue if key is 'issue'
-                                        if matches[0].match new RegExp "(#{value})", 'i'
-                                            return callback null, "issuetype = #{key}"
-
-                                callback null, null
-
-                            (callback) =>
-                                pattern = @jiri.createPattern "\\bstatus\\b", @patternParts, true
-                                matches = message.text.match pattern.getRegex()
-                                if matches?
-                                    status = null
-                                    for own key, value of @patternParts.status when matches[0].match new RegExp "(#{value})", 'i'
-                                        switch key
-                                            when 'in progress'
-                                                status = config.jira_status_inProgress
-                                            when 'test'
-                                                status = config.jira_status_toTest
-                                            when 'webdev'
-                                                status = config.jira_status_webdevToDo
-                                            when 'ux'
-                                                status = config.jira_status_uxToDo
-                                            when 'merge'
-                                                status = config.jira_status_awaitingMerge
-                                            when 'to review'
-                                                status = config.jira_status_awaitingReview
-                                            when 'release'
-                                                status = config.jira_status_readyToRelease
-
-                                        if status?
-                                            if typeof status is 'string'
-                                                status = "'#{status}'"
-                                            else if status.length
-                                                status = ("'#{s}'" for s in status)
-                                                status = status.join ', '
-                                            return callback null, "status IN (#{status})"
-
-                                callback null, null
-
-                            (callback) =>
-                                pattern = @jiri.createPattern "\\bsearch\\b", @patternParts, true
-                                matches = message.text.match pattern.getRegex()
-                                if matches?
-                                    if matches[0].match new RegExp "(#{@patternParts.search._})", 'i'
-                                        term = matches[1] || matches[2]
-                                        return callback null, "text ~ '#{term}'"
-
-                                callback null, null
-
-                            ],
-                            (error, queryBits) =>
-                                reject error if error
-
-                                query = queryBits.filter((n) -> n?).join(' AND ') +
-                                        ' ORDER BY createdDate DESC'
-
-                                message.jiri_jira_query = query
-                                message.jiri_jira_startAt = 0
-                                message.jiri_jira_limit = @MAX_RESULTS
-
-                                @setLoading()
-                                resolve @getJiraIssues query, {maxResults: @MAX_RESULTS + 1}, message
-
-                        )
-                when @MATCH_MORE
-                    return new RSVP.Promise (resolve, reject) =>
-                        match = message.text.match @getMoreRegex()
-                        if match[2]?.match /^\d+$/
-                            @MAX_RESULTS = parseInt match[2]
+                    if matches[2]
+                        if matches[2].match /^\d+$/
+                            @MAX_RESULTS = parseInt matches[2]
                         else
-                            @MAX_RESULTS = @lastOutcome.data.limit
+                            @MAX_RESULTS = 10
 
-                        message.jiri_jira_query = @lastOutcome.data.query
-                        message.jiri_jira_startAt = @lastOutcome.data.startAt + @lastOutcome.data.limit
-                        message.jiri_jira_limit = @MAX_RESULTS
+                    async.parallel([
+                        (callback) =>
+                            pattern = @jiri.createPattern "\\b#{Customer.schema.statics.allNameRegexString}\\b", @patternParts, true
+                            matches = message.text.match pattern.getRegex()
 
-                        resolve @getJiraIssues @lastOutcome.data.query, {
-                                maxResults: message.jiri_jira_limit + 1,
-                                startAt: message.jiri_jira_startAt
-                            },
-                            message
-        catch
-            console.log "Error building query"
+                            @setLoading()
+
+                            if matches
+                                customerName = matches[1]
+                                promise = Customer.findOneByName matches[1]
+                            # use channel name, is not in the blacklist of channels
+                            else if message.channel.name not in config.slack_nonCustomerChannels.split(/ /)
+                                customerName = message.channel.name
+                                promise = Customer.findOne(slackChannel: new RegExp("^#{message.channel.name}$",'i'))
+                            else
+                                return callback null, null
+
+                            promise.then @_curryGetJiraMappingIdForCustomer(message.channel.name, callback)
+                                .catch (error) => callback null
+
+                        (callback) =>
+                            pattern = @jiri.createPattern "\\bissueType\\b", @patternParts, true
+                            matches = message.text.match pattern.getRegex()
+                            if matches? and matches[0] != 'issue'
+                                for own key, value of @patternParts.issueType
+                                    continue if key is 'issue'
+                                    if matches[0].match new RegExp "(#{value})", 'i'
+                                        return callback null, "issuetype = #{key}"
+
+                            callback null, null
+
+                        (callback) =>
+                            pattern = @jiri.createPattern "\\bstatus\\b", @patternParts, true
+                            matches = message.text.match pattern.getRegex()
+                            if matches?
+                                status = null
+                                for own key, value of @patternParts.status when matches[0].match new RegExp "(#{value})", 'i'
+                                    switch key
+                                        when 'in progress'
+                                            status = config.jira_status_inProgress
+                                        when 'test'
+                                            status = config.jira_status_toTest
+                                        when 'webdev'
+                                            status = config.jira_status_webdevToDo
+                                        when 'ux'
+                                            status = config.jira_status_uxToDo
+                                        when 'merge'
+                                            status = config.jira_status_awaitingMerge
+                                        when 'to review'
+                                            status = config.jira_status_awaitingReview
+                                        when 'release'
+                                            status = config.jira_status_readyToRelease
+
+                                    if status?
+                                        if typeof status is 'string'
+                                            status = "'#{status}'"
+                                        else if status.length
+                                            status = ("'#{s}'" for s in status)
+                                            status = status.join ', '
+                                        return callback null, "status IN (#{status})"
+
+                            callback null, null
+
+                        (callback) =>
+                            pattern = @jiri.createPattern "\\b_search\\b", @patternParts, true
+                            matches = message.text.match pattern.getRegex()
+                            if matches and matches[0].match new RegExp "(#{@patternParts._search._})", 'i'
+                                term = matches[1] || matches[2]
+                                return callback null, "text ~ '#{term}'"
+
+                            callback null, null
+
+                        ],
+                        (error, queryBits) =>
+                            reject error if error
+
+                            query = queryBits.filter((n) -> n?).join(' AND ') +
+                                    ' ORDER BY createdDate DESC'
+
+                            message.jiri_jira_query = query
+                            message.jiri_jira_startAt = 0
+                            message.jiri_jira_limit = @MAX_RESULTS
+
+                            @setLoading()
+                            resolve @getJiraIssues query, {maxResults: @MAX_RESULTS + 1}, message
+                        )
+
+            else if @matched is @MATCH_MORE
+                match = message.text.match @getMoreRegex()
+                if match[2]?.match /^\d+$/
+                    @MAX_RESULTS = parseInt match[2]
+                else
+                    @MAX_RESULTS = @lastOutcome.data.limit
+
+                message.jiri_jira_query = @lastOutcome.data.query
+                message.jiri_jira_startAt = @lastOutcome.data.startAt + @lastOutcome.data.limit
+                message.jiri_jira_limit = @MAX_RESULTS
+
+                resolve @getJiraIssues @lastOutcome.data.query, {
+                        maxResults: message.jiri_jira_limit + 1,
+                        startAt: message.jiri_jira_startAt
+                    },
+                    message
+
+            else
+                reject new Error "Unknown match type"
 
     issuesLoaded: (result, message) =>
 
@@ -254,13 +251,17 @@ class IssueSearchAction extends IssueInfoAction
 
         count = result.issues.length
 
+        if count is 0
+            return {
+                text: "I'm afraid I couldn't find any. This is the query I tried: \n```\n#{message.jiri_jira_query}\n```"
+                channel: @channel.id
+            }
+
         response = super result, message
 
         return unless response
 
-        if count is 0
-            response.text = "I'm afraid I couldn't find any. This is the query I tried: \n```\n#{message.jiri_jira_query}\n```"
-        else if message.jiri_jira_startAt > 0
+        if message.jiri_jira_startAt > 0
             startAt = message.jiri_jira_startAt
             if count is 1
                 response.text = "Here is result #{startAt+1}. "
