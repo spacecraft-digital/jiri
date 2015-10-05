@@ -69,14 +69,14 @@ repositorySchema.virtual('host')
             return 'unknown'
 
 # alias url -> webUrl
-repositorySchema.virtual('url')
+repositorySchema.virtual('url', _jiri_aliasTarget: 'webUrl')
     .get -> @webUrl
     .set (value) ->
         @webUrl = value
         @markModified 'webUrl'
 
 # alias url -> webUrl
-repositorySchema.virtual('cloneUrl')
+repositorySchema.virtual('cloneUrl', _jiri_aliasTarget: 'sshUrl')
     .get -> @sshUrl
     .set (value) ->
         @sshUrl = value

@@ -50,19 +50,21 @@ stageSchema.methods.getNameRegexString = ->
 
     return "(#{names.join('|')})(?: site)?"
 
-stageSchema.virtual('url')
+stageSchema.virtual('url', _jiri_aliasTarget: 'urls')
     .get -> @urls
     .set (urls) ->
         @urls = urls
         @markModified 'urls'
 
-stageSchema.virtual('server').get -> @servers[0]
+stageSchema.virtual('server', _jiri_aliasTarget: 'servers')
+    .get -> @servers[0]
 
 stageSchema.virtual('cmsVersion').get -> @getModule('cms')?.version
 stageSchema.virtual('clientVersion').get -> @getModule('client')?.version
 stageSchema.virtual('customerVersion').get -> @getModule('client')?.version
 stageSchema.virtual('xfpVersion').get -> @getModule('xfp')?.version
 
-stageSchema.virtual('versions').get -> @modules
+stageSchema.virtual('versions', _jiri_aliasTarget: 'modules')
+    .get -> @modules
 
 module.exports = stageSchema

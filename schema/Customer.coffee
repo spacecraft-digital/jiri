@@ -217,8 +217,10 @@ customerSchema.methods.findSubtarget = (query) ->
 # Virtual properties
 #
 
-customerSchema.virtual('project').get -> @getProject()
-customerSchema.virtual('alias').get -> @aliases
+customerSchema.virtual('project', _jiri_aliasTarget: 'projects')
+    .get -> @getProject()
+customerSchema.virtual('alias', _jiri_aliasTarget: 'aliases')
+    .get -> @aliases
 
 
 module.exports = customerSchema
