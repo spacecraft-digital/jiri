@@ -59,10 +59,14 @@ stageSchema.virtual('url', _jiri_aliasTarget: 'urls')
 stageSchema.virtual('server', _jiri_aliasTarget: 'servers')
     .get -> @servers[0]
 
-stageSchema.virtual('cmsVersion').get -> @getModule('cms')?.version
-stageSchema.virtual('clientVersion').get -> @getModule('client')?.version
-stageSchema.virtual('customerVersion').get -> @getModule('client')?.version
-stageSchema.virtual('xfpVersion').get -> @getModule('xfp')?.version
+stageSchema.virtual('cmsVersion')
+    .get -> @getModule('cms')?.version
+stageSchema.virtual('clientVersion')
+    .get -> @getModule('client')?.version
+stageSchema.virtual('customerVersion')
+    .get -> @getModule('client')?.version
+stageSchema.virtual('xfpVersion')
+    .get -> @getModule('xfp')?.version
 
 stageSchema.virtual('versions', _jiri_aliasTarget: 'modules')
     .get -> @modules
