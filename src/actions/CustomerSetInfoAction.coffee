@@ -107,26 +107,28 @@ class CustomerSetInfoAction extends Action
                 query = matches[2]
                 arrayIndex = if matches[3] then parseInt matches[3], 10
 
-                console.log
-                    verb: verb
-                    query: query
-                    newValue: newValue
-                console.log @getTestRegex()
-
                 # set Foo to "bar"
-                if verb in @verbSynonyms.set or verb in @verbSynonyms.add
+                if verb in @verbSynonyms.set
                     newValue = matches[4]
                 # add (value) "bar" to (array) Foo
                 # add (array) Bar to (object) Foo (via a subrequest)
-                # else if verb in @verbSynonyms.add
-                #     newValue = matches[1]
+                else if verb in @verbSynonyms.add and matches[1]
+                    # add "bar" to Foo (with quote marks -> treat bar as a value)
+                    if matches[1].match /^['"“‘`].*['"”’`]$/
+                        newValue = matches[1]
+                    # add bar to Foo (assume bar is an array property of Foo)
+                    else
+                        # flag that we're treated it as a “split query”
+                        @assumedSplitAddQuery =
+                            query: query
+                            newValue: matches[1]
+                        query += " #{matches[1]}"
                 # convert 'remove bar from Foo' -> 'remove Foo bar'
                 else if matches[1] and verb in @verbSynonyms.remove
                     query += " #{matches[1]}"
                 # remove Foo to "bar"
                 else if matches[4] and verb in @verbSynonyms.remove
                     return @respond "Sorry, your request doesn't make sense to me:\n>>>#{verb} #{query}"
-
 
             # trim quote marks
             newValue = newValue.replace(/(^['"“‘`]|['"”’`]$)/g, '').trim() if newValue
@@ -140,6 +142,9 @@ class CustomerSetInfoAction extends Action
         if verb in @verbSynonyms.add and m = query.match /^(?:new )?customers?\b(?: +(.+?)?( --ignoreExisting)?)?$/i
             return @addCustomer newValue or m[1], !!m[2]
 
+        # convert redundant 'add to' -> 'add'
+        query = query.replace /^to +/i, '' if verb in @verbSynonyms.add
+
         @setLoading()
         ref = new NaturalLanguageObjectReference query
         ref.findTarget()
@@ -151,10 +156,33 @@ class CustomerSetInfoAction extends Action
             switch result.outcome
                 when NaturalLanguageObjectReference.prototype.RESULT_FOUND
 
-                    property = result.matches[result.matches.length-1].property
+                    lastMatch = result.matches[result.matches.length-1]
+                    penultimateMatch = result.matches[result.matches.length-2]
+                    property = lastMatch.property
+                    pluralProperty = inflect.pluralize lastMatch.keyword
+
+                    if typeof result.target is 'object'
+                        propertyType = if result.target.length? then 'Array' else 'Object'
+
+                    else if typeof result.target is 'undefined'
+                        propertyType = 'undefined'
+                        # For aliases, we'll switch to the 'real' property,
+                        # if the Mongoose virtuals specifies a _jiri_aliasTarget option
+                        if penultimateMatch.target.schema?.virtuals[property]
+                            if penultimateMatch.target.schema?.virtuals[property].options?._jiri_aliasTarget
+                                property = penultimateMatch.target.schema.virtuals[property].options._jiri_aliasTarget
+                                result.matches[result.matches.length-1].property = property
+                                result.target = penultimateMatch.target[property]
+                            else
+                                return @respond "I'm afraid you can't set #{property}. That's just the way it is for now."
+
+                        propertyType = penultimateMatch.target.schema?.paths[property]?.instance
+
+                    else
+                        propertyType = typeof result.target
 
                     # ARRAY
-                    if typeof result.target is 'object' and result.target.length?
+                    if propertyType is 'Array'
                         # catch out of range / invalid index
                         if arrayIndex? and not result.target[arrayIndex]?
                             return @respondOutOfRange property, arrayIndex, result.target
@@ -172,24 +200,28 @@ class CustomerSetInfoAction extends Action
                             return @respondWithError "I don't understand how to #{verb} an array"
 
                     # OBJECT
-                    else if typeof result.target is 'object'
+                    else if propertyType is 'Object'
 
                         if verb in @verbSynonyms.set
                             return @setObject query, newValue, result
-                        # handle “add Foo to Bar” form, where Foo is an array property of object Bar
-                        else if verb in @verbSynonyms.add and result.target[newValue]?
-                            return @parseQuery verb, "#{query} #{newValue}", arrayIndex, null
-                        # else if verb in @verbSynonyms.add and result.matches[result.matches.length-2].target[inflect.pluralize property]?
-                        #     return @parseQuery verb, query.replace(new RegExp("\\b#{property}\\b"), pluralize property), arrayIndex, newValue
+
+                        else if verb in @verbSynonyms.add
+                            if newValue
+                                return @respondWithError "I don't understand how to add #{newValue} to the #{property} object"
+                            else
+                                return @respondWithError "I don't understand how to add to the #{property} object"
 
                         # can't add or remove an object
                         else
-                            return @respondWithError "I don't understand how to #{verb} an object"
+                            console.log result
+                            return @respondWithError "I don't understand how to #{verb} the #{property} object"
 
                     else
                         if verb in @verbSynonyms.set or verb in @verbSynonyms.add
                             return @setScalar query, newValue, result
-                        # can't add or remove an object
+                        # remove === empty
+                        else if verb in @verbSynonyms.remove
+                            return @setScalar query, '', result
                         else
                             return @respondWithError "I don't understand how to #{verb} a scalar value"
 
@@ -198,13 +230,16 @@ class CustomerSetInfoAction extends Action
 
                     if result.suggestions.length is 1
                         @jiri.recordOutcome @, @OUTCOME_SUGGESTION, {suggestion: result.suggestions[0], newValue: newValue}
-                        text = "Did you mean “#{result.formattedSuggestions[0]}”?"
+                        text = "Did you mean `#{result.formattedSuggestions[0]}`?"
                     else
                         @jiri.recordOutcome @, @OUTCOME_SUGGESTIONS, {suggestions: result.suggestions, newValue: newValue}
                         result.formattedSuggestions = result.formattedSuggestions.map (r, i) -> "`#{i+1}` #{r}"
                         text = "Did you mean one of these?\n>>>\n#{result.formattedSuggestions.join "\n"}"
 
                 when NaturalLanguageObjectReference.prototype.RESULT_UNKNOWN
+                    # try again, now assuming it was a value
+                    if @assumedSplitAddQuery
+                        return @parseQuery verb, @assumedSplitAddQuery.query, arrayIndex, @assumedSplitAddQuery.newValue
                     bits = humanize.explainMatches result.matches
                     lastMatch = result.matches[result.matches.length-1]
                     text = "I understood that #{stringUtils.join bits}, but I'm not sure I get the `#{lastMatch.query}` bit.\n\nCould you try rephrasing it?"
@@ -251,8 +286,9 @@ class CustomerSetInfoAction extends Action
         # user asked to 'set' whole array, which is an invalid operation. Need to be more specific
         else
             options = []
+            count = if result.target? then result.target.length else 0
             if newValue
-                for child, i in result.target
+                for child, i in result.target?
                     # scalar values can be set directly
                     if typeof child in ['string','number', 'boolean']
                         options.push
@@ -265,24 +301,25 @@ class CustomerSetInfoAction extends Action
                             label: "`#{i+1}` Edit #{childName}"
                             command: "set #{query} #{childName} = #{newValue}"
                 options.push
-                    label: "`#{result.target.length+1}` Add a new #{inflect.singularize property}"
+                    label: "`#{count+1}` Add a new #{inflect.singularize property}"
                     command: "add \"#{newValue}\" to #{query}"
 
             else
-                for child, i in result.target
-                    # scalar values can be set directly
-                    if typeof child in ['string','number', 'boolean']
-                        options.push
-                            label: "`#{i+1}` Change `#{child}`"
-                            command: "set #{query}[#{i}]"
-                    # objects will prompt for which property to change
-                    else
-                        childName = if child.getName then child.getName() else child
-                        options.push
-                            label: "`#{i+1}` Edit #{childName}"
-                            command: "set #{query} #{childName}"
+                if result.target
+                    for child, i in result.target
+                        # scalar values can be set directly
+                        if typeof child in ['string','number', 'boolean']
+                            options.push
+                                label: "`#{i+1}` Change `#{child}`"
+                                command: "set #{query}[#{i}]"
+                        # objects will prompt for which property to change
+                        else
+                            childName = if child.getName then child.getName() else child
+                            options.push
+                                label: "`#{i+1}` Edit #{childName}"
+                                command: "set #{query} #{childName}"
                 options.push
-                    label: "`#{result.target.length+1}` Add a new #{inflect.singularize property}"
+                    label: "`#{count+1}` Add a new #{inflect.singularize property}"
                     command: "add #{query}"
 
             # get ancestors for a path with all except the last
@@ -297,23 +334,65 @@ class CustomerSetInfoAction extends Action
         targetPath = humanize.getRelationalPath result.matches, false, true
         parent = result.matches[result.matches.length-2].target
         property = result.matches[result.matches.length-1].property
+        # we'll assume that the property is plural
+        singularProperty = inflect.singularize property
         array = result.target
         customer = result.matches[0].target
 
-        if newValue?
-            return @addArrayValue parent, property, newValue, targetPath, customer
+        # if it's an array of SubDocuments, we'll need to create a new instance
+        if parent.schema.paths[property]?.schema
+            try
+                member = parent.schema.paths[property]
+                nameProperty = member.schema.methods.getNameProperty()
+                return @respondWithError "I don't know how to specify the name of a #{singularProperty}" unless nameProperty
+
+                if newValue?
+
+                    object = {}
+                    object[nameProperty] = newValue
+
+                    return @addArrayValue parent, property, object, targetPath, customer
+
+                else
+                    @jiri.recordOutcome @, @OUTCOME_NO_VALUE_SPECIFIED, {query: query, verb: 'add'}
+
+                    # knock off the last match for the target path, so we can say “projects in Oxford” rather than “Oxford's projects”
+                    result.matches.pop()
+                    targetPath = humanize.getRelationalPath result.matches, false, true
+
+                    if array.length is 0
+                        text = "There currently aren't any #{property} in #{targetPath}"
+                    else
+                        if array.length is 1
+                            text = "There is currently one #{singularProperty} in #{targetPath}"
+                        else
+                            text = "There are currently #{converter.toWords array.length} #{property} in #{targetPath}"
+
+                        if array.length <= 3
+                            text += ": \n```#{stringUtils.join (o[nameProperty] for o in array)}```"
+
+                    text += "\n*What's the #{stringUtils.uncamelize nameProperty} of the new #{singularProperty}?* (type `cancel` to cancel)"
+
+                    return @respond text
+            catch e
+                console.log e.stack
+
+        # a scalar value
         else
-            @jiri.recordOutcome @, @OUTCOME_NO_VALUE_SPECIFIED, {query: query, verb: 'add'}
-            if array.length is 0
-                text = "_#{targetPath}_ is currently an empty list\n"
-            else if array.length <= 3
-                text = "_#{targetPath}_ are currently: \n```#{stringUtils.join array}```\n"
+            if newValue?
+                return @addArrayValue parent, property, newValue, targetPath, customer
             else
-                text = "_#{targetPath}_ are currently: \n```#{stringUtils.join array.slice(0,3)}```\n(and #{array.length - 3} more)\n"
+                @jiri.recordOutcome @, @OUTCOME_NO_VALUE_SPECIFIED, {query: query, verb: 'add'}
+                if array.length is 0
+                    text = "_#{targetPath}_ is currently an empty list\n"
+                else if array.length <= 3
+                    text = "_#{targetPath}_ are currently: \n```#{stringUtils.join array}```\n"
+                else
+                    text = "_#{targetPath}_ are currently: \n```#{stringUtils.join array.slice(0,3)}```\n(and #{array.length - 3} more)\n"
 
-            text += "*What do you want to add?* (type `nothing` to cancel)"
+                text += "*What do you want to add?* (type `nothing` to cancel)"
 
-            return @respond text
+                return @respond text
 
     removeFromArray: (query, arrayIndex, result) ->
         if arrayIndex?
@@ -322,8 +401,15 @@ class CustomerSetInfoAction extends Action
             previousValue = result.target[arrayIndex]
             customer = result.matches[0].target
 
-            parent[property] = parent[property].splice arrayIndex, 1
+            parent[property].splice arrayIndex, 1
             saveMessage = "I've removed #{@formatValueForDisplay previousValue} from _#{humanize.getRelationalPath result.matches, false, true}_"
+
+            if parent[property].length is 0
+                saveMessage += ". All gone."
+            else if parent[property].length is 1
+                saveMessage += ". There's just one left now."
+            else
+                saveMessage += ". There are #{converter.toWords parent[property].length} now."
 
             @setLoading()
             return customer.save().then (customer) =>
@@ -345,21 +431,29 @@ class CustomerSetInfoAction extends Action
     # we can't assign a scalar value to an object, so we need to prompt for a slightly different action
     # Either start to edit the object as a whole, or set a specific option
     setObject: (query, newValue, result) ->
-        unless newValue?
-            targetPath = humanize.getRelationalPath result.matches, true, true
-            return @promptForValue query, null, 'set', targetPath
+        # unless newValue?
+        #     targetPath = humanize.getRelationalPath result.matches, true, true
+        #     return @promptForValue query, null, 'set', targetPath
 
         o = if result.target.toObject then result.target.toObject() else result.target
 
         options = []
         index = 1
-        for own p, v of o
-            if typeof v is 'object'
-                options.push "`#{index++}` Edit #{humanize._humanizeKey p}"
-            else
-                options.push "`#{index++}` Set #{humanize._humanizeKey p} to #{@formatValueForDisplay newValue}"
 
-        text = "What do you want to do with _#{humanize.getRelationalPath result.matches}_?\n>>>\n#{options.join "\n"}"
+        for own p, v of o when p not in humanize.privateKeys
+            if typeof v is 'object'
+                options.push
+                    label: "`#{index++}` Edit #{humanize._humanizeKey p}"
+                    command: "set #{query} #{p}"
+            else
+                label = "`#{index++}` Set #{humanize._humanizeKey p}"
+                label += " to #{@formatValueForDisplay newValue}" if newValue?
+                options.push
+                    label: label
+                    command: "set #{query} #{p}"
+
+        text = "What do you want to do with _#{humanize.getRelationalPath result.matches}_?\n>>>\n#{(o.label for o in options).join "\n"}"
+        @jiri.recordOutcome @, @OUTCOME_SUGGESTIONS, suggestions: (o.command for o in options)
 
         return @respond text
 
@@ -433,7 +527,17 @@ class CustomerSetInfoAction extends Action
         @jiri.recordOutcome @, @OUTCOME_CHANGED
 
         parent[property].push value
-        saveMessage = "I've added #{@formatValueForDisplay value} to #{targetPath}"
+
+        if typeof value is 'object'
+            values = (v for own key, v of value)
+            saveMessage = "I've added a new #{inflect.singularize property} #{@formatValueForDisplay values[0]} to #{targetPath}"
+        else
+            saveMessage = "I've added #{@formatValueForDisplay value} to #{targetPath}"
+
+        if parent[property].length is 1
+            saveMessage += ". It's the only one at present."
+        else
+            saveMessage += ". There are #{converter.toWords parent[property].length} now."
 
         @setLoading()
         return customer.save().then => @respond saveMessage
@@ -476,8 +580,8 @@ class CustomerSetInfoAction extends Action
 
     getTestRegex: =>
         unless @pattern
-            valueRegex = '[\'"“‘`<_]?(.+?)[>\'"”’`_]?'
-            @pattern = @jiri.createPattern "^jiri set (?:#{valueRegex} (?:to|from) )??(.+?)(?:\\[(\\d+)\\])?(?: _to #{valueRegex})?$", @patternParts
+            valueRegex = '[\'"“‘`<]?(.+?)[>\'"”’`]?'
+            @pattern = @jiri.createPattern "^jiri set (?:#{valueRegex} (?:to|from) )?(.+?)(?:\\[(\\d+)\\])?(?: _to #{valueRegex})?$", @patternParts
         return @pattern.getRegex()
 
     # Returns TRUE if this action can respond to the message
@@ -485,10 +589,10 @@ class CustomerSetInfoAction extends Action
     test: (message) ->
         new RSVP.Promise (resolve) =>
             mainRegexMatch = message.text.match @getTestRegex()
-            cancelCommand = message.text.match(@jiri.createPattern('^jiri (cancel|undo|stop|ignore|nothing)').getRegex())
+            cancelCommand = message.text.match(@jiri.createPattern('^jiri (cancel|undo|stop|ignore|nothing|none|neither)').getRegex())
             @lastOutcome = @jiri.getLastOutcome @
-            if @lastOutcome?.outcome is @OUTCOME_NO_VALUE_SPECIFIED
-                @mode = if mainRegexMatch or cancelCommand then @MODE_CANCEL else @MODE_SET_VALUE
+            if @lastOutcome?.outcome is @OUTCOME_NO_VALUE_SPECIFIED and not mainRegexMatch
+                @mode = if cancelCommand then @MODE_CANCEL else @MODE_SET_VALUE
                 return resolve true
             if (@lastOutcome?.outcome is @OUTCOME_SUGGESTIONS and message.text.match @getRegex('numberChoice')) or
                (@lastOutcome?.outcome is @OUTCOME_SUGGESTION and message.text.match @getRegex('yes'))
