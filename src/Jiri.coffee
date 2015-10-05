@@ -138,7 +138,9 @@ class Jiri
         validData
 
     sendResponse: (response) =>
-        @slack.postMessage response if response
+        return unless response
+        console.log "Response to #{response.channel}: #{response.text}" if @debugMode and '--show-response' in process.argv
+        @slack.postMessage response
 
     actionError: (error, action) =>
         if action
