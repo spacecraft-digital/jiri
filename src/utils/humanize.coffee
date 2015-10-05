@@ -31,6 +31,9 @@ module.exports =
         "Git Lab": "GitLab"
         "Git Hub": "GitHub"
 
+    # some object keys that should never been displayed to the user
+    privateKeys: ['_id', '_creator', '__v']
+
     # Returns a human readable string representation of the object parameter
     dump: (object, showHiddenProperties = false) ->
         @_cleanJson(JSON.stringify(@_humanizeObject(object, showHiddenProperties), null, 4)).trim()
@@ -96,6 +99,9 @@ module.exports =
         return s
 
     _humanizeKey: (key) ->
+        # don't try and humanise internal properties
+        return key if key[0] is '_'
+
         s = stringUtils.upperCaseFirst stringUtils.uncamelize(key).trim()
         @_fixCapitalisation s
 
@@ -146,40 +152,47 @@ module.exports =
 
                     output = {}
 
-                    keys = Object.keys(object)
-
                     # if we're showing hidden properties, ensure all properties are presented
                     if showHiddenProperties
-                        for key in keys when key != '_id'
-                            if typeof object[key] is 'object' and object[key].length?
-                                output[@_humanizeKey key] = '[]'
-                            else if typeof object[key] != 'object'
-                                output[@_humanizeKey key] = ' '
+                        if originalObject.schema
+                            for own key of originalObject.schema.paths when key not in @privateKeys
+                                # ensure each key is represented
+                                @_addValueToOutput key, object[key], depth, output, showHiddenProperties
+                        else
+                            for own key, value of object when key not in @privateKeys
+                                @_addValueToOutput key, value, depth, output, showHiddenProperties
 
-                    # get the property used in the getName() method, to avoid including it twice
-                    nameProperty = if originalObject.getNameProperty then originalObject.getNameProperty() else null
+                        for own key, value of output
+                            if typeof value is 'undefined'
+                                output[key] = ''
 
-                    for key in keys when key is '_id' or (not showHiddenProperties and (key[0] is '_' or key is nameProperty))
-                        # remove keys we want to ignore
-                        delete object[key]
+                    else
 
-                    keys = Object.keys(object)
+                        # get the property used in the getName() method, to avoid including it twice
+                        nameProperty = if originalObject.getNameProperty then originalObject.getNameProperty() else null
 
-                    # if the object has a single scalar value, we'll collapse it with the parent property
-                    if keys.length is 1 and typeof object[keys[0]] != 'object' and depth > 0
-                        return {
-                            __object_as_string: true
-                            key: keys[0]
-                            value: object[keys[0]]
-                        }
+                        keys = Object.keys(object)
+                        for key in keys when key in @privateKeys or (not showHiddenProperties and (key[0] is '_' or key is nameProperty))
+                            # remove keys we want to ignore
+                            delete object[key]
 
-                    for own key, value of object
-                        if value and typeof value is 'object' and value.length?
-                            newProperties = @_unpackArraysForOutput key, originalObject[key]
-                            for property, v of newProperties
-                                @_addValueToOutput property, v, depth, output, showHiddenProperties
-                        else if key and value and (typeof value != 'object' or value instanceof Date or Object.keys(value).length)
-                            @_addValueToOutput key, value, depth, output, showHiddenProperties
+                        keys = Object.keys(object)
+
+                        # if the object has a single scalar value, we'll collapse it with the parent property
+                        if keys.length is 1 and typeof object[keys[0]] != 'object' and depth > 0
+                            return {
+                                __object_as_string: true
+                                key: keys[0]
+                                value: object[keys[0]]
+                            }
+
+                        for own key, value of object
+                            if value and typeof value is 'object' and value.length?
+                                newProperties = @_unpackArraysForOutput key, originalObject[key]
+                                for property, v of newProperties
+                                    @_addValueToOutput property, v, depth, output, showHiddenProperties
+                            else if key and value and (typeof value != 'object' or value instanceof Date or Object.keys(value).length)
+                                @_addValueToOutput key, value, depth, output, showHiddenProperties
 
                     return output
 
@@ -198,7 +211,7 @@ module.exports =
         value = @_humanizeObject value, showHiddenProperties, depth+1
 
         # an object with a single value should be displayed as a string
-        if value.__object_as_string
+        if value?.__object_as_string
             key = "#{key} #{value.key}"
             value = value.value
 
@@ -252,6 +265,8 @@ module.exports =
                 .replace(/: [{}[\]] *$/gm, ':')
                 # remove quotes
                 .replace(/"/g,'')
+                # replace {}
+                .replace(/\{\}/g, '(an empty object)')
 
         # read the indentation of the first line
         if m = json.match /^ +/
