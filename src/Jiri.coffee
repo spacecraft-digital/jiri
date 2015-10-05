@@ -145,11 +145,7 @@ class Jiri
         @slack.postMessage response
 
     actionError: (error, action) =>
-        if action
-            console.error "Action error in #{action.name}"
-            console.log error.stack
-        else
-            console.error error
+        console.log "Action error in #{action.getType()}: #{error.stack or error}"
 
         @slack.postMessage
             channel: action.channel.id
