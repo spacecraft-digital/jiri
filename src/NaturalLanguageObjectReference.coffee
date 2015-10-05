@@ -46,8 +46,8 @@ class NaturalLanguageObjectReference
                         # keep going soon long as we're still dealing with Documents
                         break unless match.target?.findSubtarget
 
-                    # FOUND!
-                    if match
+                    # If there's a match with no remainder, return it
+                    if match and not match.query
                         return resolve
                             matches: matches
                             outcome: @RESULT_FOUND
