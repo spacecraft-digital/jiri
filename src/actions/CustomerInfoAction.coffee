@@ -89,7 +89,12 @@ class CustomerInfoAction extends Action
                                         text = "*#{targetPath}*: `#{humanize.dump(result.target).replace(/\\n/g, "; ")}`"
                                     else
                                         output = humanize.dump(result.target, @showHiddenProperties).replace(/\\n/g, "; ")
-                                        text = if output then "*#{targetPath}*:\n```#{output}```" else "*#{targetPath}*: _(empty)_"
+                                        if output is '(an empty object)'
+                                            text = "*#{targetPath}*:\n```#{output}```\n(type `#{query} full` to show empty properties too)"
+                                        else if output
+                                            text = "*#{targetPath}*:\n```#{output}```"
+                                        else
+                                            text = "*#{targetPath}*: _(empty)_"
                                     @jiri.recordOutcome @, @OUTCOME_FOUND
 
                             when NaturalLanguageObjectReference.prototype.RESULT_SUGGESTION
