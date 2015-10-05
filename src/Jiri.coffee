@@ -3,6 +3,8 @@ ActionData = require './ActionData'
 Pattern = require './Pattern'
 Calendar = require './Calendar'
 Cron = require './Cron'
+async = require 'async'
+RSVP = require 'RSVP'
 
 class Jiri
 
