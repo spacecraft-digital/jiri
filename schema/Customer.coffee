@@ -116,6 +116,8 @@ customerSchema.statics.getAllNames = (forceReload) ->
         if not forceReload and customerSchema.statics.allNames
             return resolve customerSchema.statics.allNames
 
+        console.log 'Loading all Customer names…' if '--debug' in process.argv
+
         Customer = mongoose.model 'Customer', customerSchema
         Customer.find()
         .then (customers) =>
@@ -145,9 +147,8 @@ customerSchema.statics.getAllNameRegexString = (forceReload) ->
         if not forceReload and customerSchema.statics.allNameRegexString
             return resolve customerSchema.statics.allNameRegexString
 
-        console.log 'loading all Customer names'
         customerSchema.statics.getAllNames(forceReload).then (names) ->
-            console.log "found #{names.length} names, storing regex"
+            console.log "Found #{names.length} customer names/aliases — storing regex" if '--debug' in process.argv
             customerSchema.statics.allNameRegexString = "[\"'“‘]?(#{names.join('|')})[\"'”’]?"
             resolve customerSchema.statics.allNameRegexString
 
