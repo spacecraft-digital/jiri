@@ -51,12 +51,6 @@ projectSchema.methods.getStage = (stage) ->
     regex = new RegExp "^#{stage}$", "i"
     return s for s in @.stages when s.name.match regex
 
-projectSchema.methods.toString = ->
-    bits = [
-        "#{@name} project (#{@state} —"
-    ]
-    productionStage = @getStage 'production'
-
 # Returns a default single member of array property 'property'
 # For projects, this is the one named 'default'
 projectSchema.methods.getDefault = (property) ->

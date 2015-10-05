@@ -87,9 +87,7 @@ _Base =
                     query: query.replace m[0], ''
                     property: property
 
-        toString: ->
-            object = @.toObject virtuals: false, versionKey: false
-            return stringUtils.objectToString object
+        toString: -> @getName()
 
         toJSON: ->
             @.toObject()
