@@ -48,7 +48,7 @@ stageSchema.methods.getNameRegexString = ->
         when 'uat'
             names.push 'u[\.\-]?a[\.\-]?t\.?'
 
-    return "(#{names.join('|')})(?: site)?"
+    return "(#{names.join('|')})(?: (?:website|site|stage))?"
 
 stageSchema.virtual('url', _jiri_aliasTarget: 'urls')
     .get -> @urls
