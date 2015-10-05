@@ -129,6 +129,7 @@ class NaturalLanguageObjectReference
                                         query: query
                                         keyword: m[1].trim()
                                         target: customer
+                                        property: 'customer'
                                 .catch (error) ->
                                     console.log error.stack
                                     return reject "Sorry, I couldn't load data about #{m[1]}"
