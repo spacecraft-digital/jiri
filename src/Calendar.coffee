@@ -15,7 +15,10 @@ class Calendar
     peopleCalendarLoaded: (err, response) =>
         now = moment()
 
-        people = {}
+        # initialise these two to fix the order
+        people =
+            "on holiday": []
+            "working from home": []
 
         for own key, data of response
             for own id, event of data
