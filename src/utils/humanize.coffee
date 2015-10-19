@@ -98,11 +98,13 @@ module.exports =
 
         return s
 
-    _humanizeKey: (key) ->
+    _humanizeKey: (key, upperCaseFirst = true) ->
         # don't try and humanise internal properties
         return key if key[0] is '_'
 
-        s = stringUtils.upperCaseFirst stringUtils.uncamelize(key).trim()
+        s = stringUtils.uncamelize(key).trim()
+        s = stringUtils.upperCaseFirst s if upperCaseFirst
+
         @_fixCapitalisation s
 
     _humanizeObject: (object, showHiddenProperties = false, depth = 0) ->
