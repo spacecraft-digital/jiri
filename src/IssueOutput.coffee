@@ -53,7 +53,7 @@ class IssueOutput
 
                     text += " `#{issue.status.name}`" if issue.status?.name
 
-                    text += "\n_Created #{@lowercaseRelativeDays issue.created.calendar()}, updated #{@lowercaseRelativeDays issue.updated.calendar()}._"
+                    text += "\n_Created #{@lowercaseRelativeDays issue.created.calendar()} by #{issue.creator.displayName}, updated #{@lowercaseRelativeDays issue.updated.calendar()}._"
 
                     for link in issue.issuelinks
                         linkedIssue = new Issue link.inwardIssue||link.outwardIssue
