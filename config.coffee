@@ -36,6 +36,7 @@ config =
     jira_field_server: 'customfield_12302'
     jira_field_deployment_version: 'customfield_11803'
     jira_field_release_version: 'customfield_12201'
+    jira_field_story_points: 'customfield_10004'
 
     gitlab_url: 'https://gitlab.hq.jadu.net/'
     gitlab_token: process.env.GITLAB_TOKEN

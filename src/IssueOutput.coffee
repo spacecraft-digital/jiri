@@ -1,4 +1,5 @@
 Issue = require './Issue'
+config = require '../config'
 
 class IssueOutput
 
@@ -8,16 +9,19 @@ class IssueOutput
 
     # the fields that should be requested in an api call to be processed by this class
     FIELDS: [
-        'customfield_10025', # Reporting Customer
+        config.jira_field_reportingCustomer, # Reporting Customer
         'issuetype',
         'summary',
         'status',
         'subtasks',
         'customfield_10202',
-        'customfield_12302', # Server(s)
-        'customfield_10004', # Story points
+        config.jira_field_story_points, # Story points
+        config.jira_field_server,
+        config.jira_field_deployment_version,
+        config.jira_field_release_version,
         'issuelinks',
         'assignee',
+        'creator', # AKA reporter
         'created',
         'updated'
     ]
