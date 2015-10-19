@@ -68,7 +68,7 @@ projectSchema.methods.getNameRegexString = ->
             names.push '1\\.12'
             names.push '(main )?website'
 
-    return "(#{names.join('|')})(?: project)?"
+    return "(#{names.join('|')})"
 
 ###
  # Get the Jira mapping ID for this project
