@@ -4,7 +4,7 @@ Pattern = require './Pattern'
 Calendar = require './Calendar'
 Cron = require './Cron'
 async = require 'async'
-RSVP = require 'RSVP'
+RSVP = require 'rsvp'
 
 class Jiri
 
