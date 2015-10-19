@@ -162,7 +162,7 @@ class Jiri
         if @debugMode then console.log """
 
             ******************** DEBUG MODE **************************
-            ** I ain't listening to no one other than #{@slack.getUserByID(config.debugSlackUserId).real_name}
+            ** I ain't listening to no one other than #{(@slack.getUserByID(u)?.real_name for u in config.debugSlackUserIds).join(', ')}
             **********************************************************
 
             """
@@ -184,7 +184,7 @@ class Jiri
 
         # for development, only respond to Matt Dolan
         if @debugMode
-            if message.user is config.debugSlackUserId or (message.subtype is 'bot_message' and message.username in ['Jiri', 'Slackbot'])
+            if message.user in config.debugSlackUserIds or (message.subtype is 'bot_message' and message.username in ['Jiri', 'Slackbot'])
                 @actOnMessage message
             return
 
