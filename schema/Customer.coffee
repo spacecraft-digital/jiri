@@ -202,7 +202,7 @@ customerSchema.methods.findSubtarget = (query) ->
     o = baseSchema.methods.findSubtarget.call this, query
     return o if o
 
-    # no match on property or project name, so assume it's a property of the default property
+    # no match on property or project name, so assume it's a property of the default project
     defaultProject = @getProject()
     return if defaultProject
         new SubTargetMatch
