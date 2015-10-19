@@ -75,7 +75,7 @@ _Base =
                             target: parent[property][i]
                             keyword: m[0]
                             query: query.replace m[0], ''
-                            property: property
+                            property: "#{property}[#{i}]"
 
             regexParts = parent.getPropertyRegexParts property
             m = query.match new RegExp "^(#{regexParts.join('|')})\\b\\s*", 'i'
