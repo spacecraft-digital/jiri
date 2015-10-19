@@ -57,7 +57,7 @@ module.exports =
                 if isLastMatch and forcePluralLast
                     property = inflect.pluralize property
 
-                if showCountForLast and isLastMatch and typeof match.target is 'object' and match.target.length
+                if showCountForLast and isLastMatch and typeof match.target is 'object' and match.target?.length?
                     if match.target.length is 1
                         property = inflect.singularize property
                     else if not forcePluralLast
