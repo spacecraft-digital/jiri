@@ -574,8 +574,17 @@ class CustomerSetInfoAction extends Action
                 customer = new Customer name: name
                 customer.save()
                     .then (customer) =>
-                        return @respond "Sorted. Ladies and gentlemen, allow me to introduce… `#{customer.name}` :tada:"
-                    .catch (error) =>
+                        strings = [
+                            "Ladies and gentlemen, allow me to introduce our latest customer… *#{customer.name}* :tada:"
+                            "Sorted. *#{customer.name}* it is."
+                            "Introducing our latest customer… *#{customer.name}* :dancers:"
+                            "A warm welcome to *#{customer.name}*, our latest customer :cheer:"
+                            "Our latest customer: :star2: *#{customer.name}* :star2:"
+                        ]
+                        text = strings[Math.floor(Math.random() * strings.length)]
+                        text += getAvailablePropertiesString customer
+                        return @respond text
+                    , (error) =>
                         return @respondWithError error
 
     getTestRegex: =>
