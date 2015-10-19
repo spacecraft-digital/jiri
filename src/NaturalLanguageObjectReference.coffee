@@ -33,6 +33,7 @@ class NaturalLanguageObjectReference
 
                 try
                     while match.query
+                        query = match.query
                         match = match.target.findSubtarget match.query
 
                         # exit loop once we get no more matches
