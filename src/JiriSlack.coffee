@@ -66,7 +66,7 @@ class JiriSlack extends Slack
 
     # escape any formatting characters
     escape: (s) ->
-        s.replace /`/g, '%60'
+        String(s).replace /`/g, '%60'
          .replace /_/g, '%5F'
          .replace /\*/g, '%2A'
 
