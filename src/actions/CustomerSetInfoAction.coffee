@@ -8,6 +8,7 @@ humanize = require '../utils/humanize'
 NaturalLanguageObjectReference = require '../NaturalLanguageObjectReference'
 inflect = require '../utils/inflect'
 converter = require 'number-to-words'
+moment = require 'moment'
 
 # Modify Customer database in natural language
 #
@@ -42,7 +43,7 @@ class CustomerSetInfoAction extends Action
     verbSynonyms:
         set: ['set', 'change', 'update', 'assign', 'edit', 'amend']
         add: ['add', 'append']
-        remove: ['remove', 'delete', 'drop']
+        remove: ['unset', 'remove', 'delete', 'drop']
         empty: ['empty', 'truncate', 'clear']
 
     # should return the class name as a string
@@ -151,32 +152,38 @@ class CustomerSetInfoAction extends Action
             .then (result) => @doVerbToTarget verb, query, arrayIndex, newValue, result
             .catch (error) => @respond error
 
+    getObjectType: (object) ->
+        m = {}.toString.call(object).match(/^\[object (.+)\]$/)
+        return if m then m[1] else 'Object'
+
     doVerbToTarget: (verb, query, arrayIndex, newValue, result) =>
         try
+            lastMatch = result.matches[result.matches.length-1]
+
             switch result.outcome
                 when NaturalLanguageObjectReference.prototype.RESULT_FOUND
 
-                    lastMatch = result.matches[result.matches.length-1]
-                    penultimateMatch = result.matches[result.matches.length-2]
+                    parent = result.matches[result.matches.length-2]?.target
                     property = lastMatch.property
-                    pluralProperty = inflect.pluralize lastMatch.keyword
 
-                    if typeof result.target is 'object'
-                        propertyType = if result.target.length? then 'Array' else 'Object'
+                    # For aliases, we'll switch to the 'real' property,
+                    # assuming the Mongoose virtuals specifies a _jiri_aliasTarget option
+                    if parent?.schema?.virtuals[property]
+                        aliasedProperty = parent?.schema?.virtuals[property]?.options?._jiri_aliasTarget
+                        return @respond "I'm afraid you can't set `#{property}`. That's just the way it is for now." unless aliasedProperty
+                        @switchTarget result, aliasedProperty
+                        query = query.replace new RegExp("\\b#{property}\\b"), aliasedProperty
+                        console.log "Silently switching #{property} to #{aliasedProperty}" if @jiri.debugMode
+                        property = aliasedProperty
+
+                    if parent?.schema?.paths[property]?.instance
+                        propertyType = parent.schema?.paths[property]?.instance
+
+                    else if typeof result.target is 'object'
+                        propertyType = @getObjectType result.target
 
                     else if typeof result.target is 'undefined'
                         propertyType = 'undefined'
-                        # For aliases, we'll switch to the 'real' property,
-                        # if the Mongoose virtuals specifies a _jiri_aliasTarget option
-                        if penultimateMatch.target.schema?.virtuals[property]
-                            if penultimateMatch.target.schema?.virtuals[property].options?._jiri_aliasTarget
-                                property = penultimateMatch.target.schema.virtuals[property].options._jiri_aliasTarget
-                                result.matches[result.matches.length-1].property = property
-                                result.target = penultimateMatch.target[property]
-                            else
-                                return @respond "I'm afraid you can't set #{property}. That's just the way it is for now."
-
-                        propertyType = penultimateMatch.target.schema?.paths[property]?.instance
 
                     else
                         propertyType = typeof result.target
@@ -199,6 +206,20 @@ class CustomerSetInfoAction extends Action
                         else
                             return @respondWithError "I don't understand how to #{verb} an array"
 
+                    # DATE
+                    else if propertyType is 'Date'
+                        if verb in @verbSynonyms.set or verb in @verbSynonyms.add
+                            if newValue?
+                                date = moment(new Date newValue)
+                                unless date.isValid()
+                                    # by not recording a new outcome, the user should be able to enter the date again
+                                    return @respond "Sorry, I'm not sure how to understand `#{newValue}` as a date. It's best to enter it as YYYY-MM-DD. Try again if you like:"
+                                newValue = date
+
+                            return @setScalar query, newValue, result
+                        else if verb in @verbSynonyms.delete or verb in @verbSynonyms.empty
+                            return @unsetScalar result
+
                     # OBJECT
                     else if propertyType is 'Object'
 
@@ -206,22 +227,16 @@ class CustomerSetInfoAction extends Action
                             return @setObject query, newValue, result
 
                         else if verb in @verbSynonyms.add
-                            if newValue
-                                return @respondWithError "I don't understand how to add #{newValue} to the #{property} object"
-                            else
-                                return @respondWithError "I don't understand how to add to the #{property} object"
-
-                        # can't add or remove an object
+                            return @respondWithError "I don't understand how to add #{if newValue then "#{newValue} to" else "to"} a #{property}"
                         else
-                            console.log result
-                            return @respondWithError "I don't understand how to #{verb} the #{property} object"
+                            return @respondWithError "I don't understand how to #{verb} a #{property}"
 
                     else
                         if verb in @verbSynonyms.set or verb in @verbSynonyms.add
                             return @setScalar query, newValue, result
                         # remove === empty
-                        else if verb in @verbSynonyms.remove
-                            return @setScalar query, '', result
+                        else if verb in @verbSynonyms.remove or verb in @verbSynonyms.empty
+                            return @unsetScalar result
                         else
                             return @respondWithError "I don't understand how to #{verb} a scalar value"
 
@@ -241,25 +256,53 @@ class CustomerSetInfoAction extends Action
                     if @assumedSplitAddQuery
                         return @parseQuery verb, @assumedSplitAddQuery.query, arrayIndex, @assumedSplitAddQuery.newValue
                     bits = humanize.explainMatches result.matches
-                    lastMatch = result.matches[result.matches.length-1]
                     text = "I understood that #{stringUtils.join bits}, but I'm not sure I get the `#{lastMatch.query}` bit.\n\nCould you try rephrasing it?"
                     @jiri.recordOutcome @, @OUTCOME_INVALID
 
             text = "Sorry, I'm not able to decipher `#{verb} #{query}`. Try rephrasing?" unless text
         catch e
             console.log e.stack
+            console.log result
             text = "I should be able to do that, but I'm not feeling at all well today. (That's an error, by the way)"
 
         return @respond text
 
-    formatValueForDisplay: (value) -> if value then "`#{@jiri.slack.escape(value)}`" else '_empty_'
+    # changes the result object to replace the existing target & last match to use the given property
+    switchTarget: (result, newProperty) ->
+        parent = result.matches[result.matches.length-2].target
+        result.matches[result.matches.length-1].property = newProperty
+        result.target = parent[newProperty]
+        result
 
-    promptForValue: (query, arrayIndex, verb, targetPath) =>
+    formatValueForDisplay: (value) ->
+        unless value
+            return '_empty_'
+
+        if typeof value is 'object'
+            type = @getObjectType value
+            value = moment(value) if type is 'Date'
+
+            if moment.isMoment value
+                # if the time is midnight, assume we only care about the date
+                if value.format('HH:mm:ss') is "00:00:00"
+                    value = value.format('ll')
+                else
+                    value = value.format('llll')
+
+            else if value.getName
+                value = value.getName()
+            else
+                value = value.toString()
+
+        return "`#{@jiri.slack.escape(value)}`"
+
+    promptForValue: (query, arrayIndex, verb, targetPath, existingValue) =>
         @jiri.recordOutcome @, @OUTCOME_NO_VALUE_SPECIFIED, {query: query, arrayIndex: arrayIndex, verb: verb}
         if arrayIndex?
-            text = "What do you want to change the #{converter.toWordsOrdinal arrayIndex+1} of _#{targetPath}_ to?\n(or type `cancel`)"
+            text = "What do you want to change the #{converter.toWordsOrdinal arrayIndex+1} of _#{targetPath}_ to?"
         else
-            text = "What do you want to change _#{targetPath}_ to?\n(or type `cancel`)"
+            text = "What do you want to change _#{targetPath}_ to?"
+        text += "\n(it's currently #{@formatValueForDisplay existingValue}. Type `cancel` to cancel.)"
         return @respond text
 
     respondOutOfRange: (property, arrayIndex, array) ->
@@ -279,14 +322,14 @@ class CustomerSetInfoAction extends Action
 
             # Target found, but no new value specified
             if typeof newValue is 'undefined'
-                return @promptForValue query, arrayIndex, 'set', targetPath
+                return @promptForValue query, arrayIndex, 'set', targetPath, parent[property][arrayIndex]
             else
                 return @setArrayValue parent, property, arrayIndex, newValue, targetPath, result.matches[0].target
 
         # user asked to 'set' whole array, which is an invalid operation. Need to be more specific
         else
             options = []
-            count = if result.target? then result.target.length else 0
+            count = if result.target?.length? then result.target.length else 0
             if newValue
                 for child, i in result.target?
                     # scalar values can be set directly
@@ -299,7 +342,7 @@ class CustomerSetInfoAction extends Action
                         childName = if child.getName then child.getName() else child
                         options.push
                             label: "`#{i+1}` Edit #{childName}"
-                            command: "set #{query} #{childName} = #{newValue}"
+                            command: "set #{query.replace new RegExp("\\b#{property}\\b"), ''} #{childName} = #{newValue}"
                 options.push
                     label: "`#{count+1}` Add a new #{inflect.singularize property}"
                     command: "add \"#{newValue}\" to #{query}"
@@ -317,14 +360,17 @@ class CustomerSetInfoAction extends Action
                             childName = if child.getName then child.getName() else child
                             options.push
                                 label: "`#{i+1}` Edit #{childName}"
-                                command: "set #{query} #{childName}"
+                                command: "set #{query.replace new RegExp("\\b#{property}\\b"), ''} #{childName}"
                 options.push
                     label: "`#{count+1}` Add a new #{inflect.singularize property}"
                     command: "add #{query}"
 
-            # get ancestors for a path with all except the last
-            ancestors = (r for r, i in result.matches when i < result.matches.length-1)
-            text = "What do you want to do with _#{humanize.getRelationalPath ancestors} #{inflect.pluralize property}_?\n>>>\n#{(o.label for o in options).join "\n"}"
+            if result.target.length
+                options.push
+                    label: "`#{count+2}` Remove a #{inflect.singularize property}"
+                    command: "remove #{query}"
+
+            text = "What do you want to do with _#{humanize.getRelationalPath result.matches, false, true}_?\n>>>\n#{(o.label for o in options).join "\n"}"
 
             @jiri.recordOutcome @, @OUTCOME_SUGGESTIONS, suggestions: (o.command for o in options)
 
@@ -431,22 +477,22 @@ class CustomerSetInfoAction extends Action
     # we can't assign a scalar value to an object, so we need to prompt for a slightly different action
     # Either start to edit the object as a whole, or set a specific option
     setObject: (query, newValue, result) ->
-        # unless newValue?
-        #     targetPath = humanize.getRelationalPath result.matches, true, true
-        #     return @promptForValue query, null, 'set', targetPath
-
-        o = if result.target.toObject then result.target.toObject() else result.target
-
         options = []
         index = 1
 
-        for own p, v of o when p not in humanize.privateKeys
-            if typeof v is 'object'
-                options.push
-                    label: "`#{index++}` Edit #{humanize._humanizeKey p}"
-                    command: "set #{query} #{p}"
+        for own p, o of result.target.schema?.paths when p not in humanize.privateKeys
+            value = result.target[p]
+            if o.instance is 'Array'
+                if value.length is 0
+                    options.push
+                        label: "`#{index++}` Add #{inflect.singularize humanize._humanizeKey(p, false).toLowerCase()}"
+                        command: "add #{query} #{p}"
+                else
+                    options.push
+                        label: "`#{index++}` Change #{humanize._humanizeKey(p, false).toLowerCase()}"
+                        command: "set #{query} #{p}"
             else
-                label = "`#{index++}` Set #{humanize._humanizeKey p}"
+                label = "`#{index++}` #{if value then "Change" else "Set"} #{humanize._humanizeKey(p, false).toLowerCase()}"
                 label += " to #{@formatValueForDisplay newValue}" if newValue?
                 options.push
                     label: label
@@ -459,15 +505,24 @@ class CustomerSetInfoAction extends Action
 
     setScalar: (query, newValue, result) ->
         targetPath = humanize.getRelationalPath result.matches, true
+        parent = result.matches[result.matches.length-2].target
+        property = result.matches[result.matches.length-1].property
 
         unless newValue?
-            return @promptForValue query, null, 'set', targetPath
+            return @promptForValue query, null, 'set', targetPath, parent[property]
+
+        customer = result.matches[0].target
+
+        return @setValue parent, property, newValue, targetPath, customer
+
+    unsetScalar: (result) ->
+        targetPath = humanize.getRelationalPath result.matches, true
 
         parent = result.matches[result.matches.length-2].target
         property = result.matches[result.matches.length-1].property
         customer = result.matches[0].target
 
-        return @setValue parent, property, newValue, targetPath, customer
+        return @setValue parent, property, null, targetPath, customer
 
 
     # Sets a scalar value and saves the customer
@@ -494,7 +549,10 @@ class CustomerSetInfoAction extends Action
 
         @jiri.recordOutcome @, @OUTCOME_CHANGED
 
-        parent[property] = value
+        if value is null
+            parent[property] = undefined
+        else
+            parent[property] = value
         saveMessage = "_#{targetPath}_ is now #{@formatValueForDisplay value}\n(it was #{@formatValueForDisplay previousValue})"
 
         @setLoading()
@@ -526,18 +584,21 @@ class CustomerSetInfoAction extends Action
 
         @jiri.recordOutcome @, @OUTCOME_CHANGED
 
+        # add a plain object
         parent[property].push value
 
-        if typeof value is 'object'
-            values = (v for own key, v of value)
-            saveMessage = "I've added a new #{inflect.singularize property} #{@formatValueForDisplay values[0]} to #{targetPath}"
-        else
-            saveMessage = "I've added #{@formatValueForDisplay value} to #{targetPath}"
+        # get back the subdocument
+        value = parent[property][parent[property].length-1]
+
+        saveMessage = "I've added #{@formatValueForDisplay value} to #{targetPath}"
 
         if parent[property].length is 1
             saveMessage += ". It's the only one at present."
         else
             saveMessage += ". There are #{converter.toWords parent[property].length} now."
+
+        if typeof value is 'object' and not moment.isDate(value)
+            saveMessage += @getAvailablePropertiesString value
 
         @setLoading()
         return customer.save().then => @respond saveMessage
@@ -586,6 +647,10 @@ class CustomerSetInfoAction extends Action
                         return @respond text
                     , (error) =>
                         return @respondWithError error
+
+    getAvailablePropertiesString: (object) ->
+        o = if object.schema?.paths? then object.schema.paths else object
+        "\n(properties you can set: #{(k for own k of o when k[0] != '_').map((s)->"`#{s}`").join(', ')})"
 
     getTestRegex: =>
         unless @pattern
