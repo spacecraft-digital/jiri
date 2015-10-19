@@ -2,5 +2,6 @@
 inflect = require('i')()
 
 inflect.inflections.singular 'alias', 'alias'
+inflect.inflections.singular 'aliases', 'alias'
 
 module.exports = inflect
