@@ -32,11 +32,10 @@ _Base =
                 parts.push property
             else
                 # allow dashes and spaces to be used interchangeably
-                makeFlexibleWordDividers = (s) -> s.replace(/[-_ ]/g,'[ \\-_]')
+                makeFlexibleWordDividers = (s) -> s.replace(/[-_ ]/g,'[ \\-_]*')
 
-                parts.push makeFlexibleWordDividers(property)
                 uncamelizedPropertyRegex = stringUtils.uncamelize(property)
-                parts.push makeFlexibleWordDividers(uncamelizedPropertyRegex) if uncamelizedPropertyRegex != property
+                parts.push makeFlexibleWordDividers(uncamelizedPropertyRegex)
 
             if typeof @[property] is 'object' and @[property]?.getNameRegexString
                 parts.push @[property].getNameRegexString()
