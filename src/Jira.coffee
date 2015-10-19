@@ -91,7 +91,7 @@ class Jira
             .catch (error) ->
                 reject "No Jira mapping ID available"
             .then (jiraMappingName) =>
-                return reject "Sorry, I don't know what Jira knows #{project.fullName} as" unless jiraMappingName
+                return reject "Sorry, I don't know what Jira knows #{project.name} as" unless jiraMappingName
 
                 jql = "'Reporting Customers' = '#{stringUtils.escape jiraMappingName}' AND issueType = 'Release'"
 
