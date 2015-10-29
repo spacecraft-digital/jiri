@@ -111,7 +111,7 @@ class IsoSpreadsheet
             customer.addAlias simplifiedName if simplifiedName != row.title
 
             # add simplified name as alias
-            andAsWord = row.title.replace / & /, ' and '
+            andAsWord = row.title.replace /[ ]&[ ]/, ' and '
             customer.addAlias andAsWord if andAsWord != row.title
 
             project = customer.getProject(row.projectName) or new Project name: row.projectName
