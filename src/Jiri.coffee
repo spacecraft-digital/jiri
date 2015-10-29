@@ -108,9 +108,16 @@ class Jiri
     # The Action object must have a channel ID set
     # The outcome is a string which is meaningful to the Action
     # The data parameter is an object to be used however the Action wants
-    recordOutcome: (action, outcome, data = {}) =>
-        @channelState[action.channel.id] =
-            action: action.getType()
+    # @param action     Action object OR action type string
+    # @param outcome    integer     Specifies the type of outcome, meaningful to the Action class
+    # @param data       object      Any state data required
+    # @param channel    object      Optional Channel object. Only required if action is a string
+    recordOutcome: (action, outcome, data = {}, channel = null) =>
+        actionType = action.getType() unless typeof action is 'string'
+        channel = action.channel if channel is null and typeof action is 'object'
+
+        @channelState[channel.id] =
+            action: actionType
             outcome: outcome
             data: data
 
