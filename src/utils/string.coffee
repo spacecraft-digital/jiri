@@ -43,8 +43,8 @@ stringUtils =
     #     normaliseVersion('1.2.3', 1) -> '1'
     #     normaliseVersion(0, 3) -> '0.0.0'
     normaliseVersion: (version, numberOfPoints = 3) ->
-        n = String(version).split /\./
-        return null if not n or n.length is 0
+        n = (version||'').split /\./
+        return null if not n or n.length is 0 or (n.length is 1 and n[0] is '')
 
         while n.length < numberOfPoints
             n.push '0'
