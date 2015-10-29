@@ -98,7 +98,11 @@ class Jiri
             .catch (error) =>
                 @actionError error,action
         , (actionClass) ->
-            console.log "#{actionClass.name} is responding to “#{message.text}”" if actionClass
+            return unless actionClass
+            d = new Date
+            console.log "[#{d.toISOString()}] #{message.userName}
+                         in #{if message.channel.is_im then "DM" else message.channel.name}:
+                         “#{message.text}” -> #{actionClass.name}"
 
     # for storing state
     # The Action object must have a channel ID set
