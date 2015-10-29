@@ -90,7 +90,7 @@ class CustomerInfoAction extends Action
                                     else
                                         output = humanize.dump(result.target, @showHiddenProperties).replace(/\\n/g, "; ")
                                         if output is '(an empty object)'
-                                            text = "*#{targetPath}*:\n```#{output}```\n(type `#{query} full` to show empty properties too)"
+                                            text = "*#{targetPath}*:\n```#{output}```\nType `#{query} full` to show empty properties too"
                                         else if output
                                             text = "*#{targetPath}*:\n```#{output}```"
                                         else
