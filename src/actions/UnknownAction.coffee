@@ -70,12 +70,7 @@ class UnknownAction extends Action
             @jiri.recordOutcome @
             delete message._client
             delete message.user._client
-            console.log "I don't understand this:\n",
-                type: message.type,
-                subtype: message.subtype,
-                channelName: message.channelName,
-                userName: message.userName,
-                text: message.text,
+            console.log "I don't understand this #{((message.subtype or '') + ' ' + message.type).trim()} from #{message.userName} in #{message.channelName}\n  #{message.text}"
 
             text = [
                 "Sorry, I don't understand",
