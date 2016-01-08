@@ -1,5 +1,21 @@
+A helpful assistant for Jadu/Spacecraft development. Integrates Jira, Gitlab, etc
 
-A small app for outputing useful Jira details to Slack.
+Jiri is an internal tool, and is very much involved in everyday life on our Slack team.
+However it should be considered a work in progress, so there may be a few rough edges here and there!
+
+Features
+--------
+ - Each morning posts who is on holiday/working from home today to Slack
+ - listens for when people mention Jira tickets, and unfurls them to give easy access
+   to information and a link to the full ticket
+ - provides information from its
+ - Jiri also uses a MongoDB database to store information about customer projects,
+   including URLs, server names, installed module versions, etc, etc.
+   These data can be retrieved _and stored_ via the Slack chat interface, in natural language.
+   e.g. "@jiri what's the url for Oxford?",
+   "@jiri set oxford's dev server"
+   "@jiri add alias to oxford"
+
 
 Integrations
 ------------
@@ -11,16 +27,8 @@ Integrations
 
  - Jira: for bugs/issues
  - Gitlab: for merge requests and repo actions
- - Jenkins*
 
-Features
---------
-
-### Information
-
-In these examples,
- - "Oxford" is a Customer. It can also refer to the primary project of that customer.
-
-Who is the project manager for Oxford?
-Who is the PM for Oxford?
-Which PM is Oxford?
+Author
+------
+Written by Matt Dolan
+Twitter: @_MattDolan
