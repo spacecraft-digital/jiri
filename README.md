@@ -1,5 +1,7 @@
 A helpful assistant for Jadu/Spacecraft development. Integrates Jira, Gitlab, etc
 
+[![Jiri demo](https://raw.github.com/spacecraft-digital/jiri/develop/docs/jiri-demo-player.png)](https://youtu.be/_LD4PweO_Z8)
+
 Jiri is an internal tool, and is very much involved in everyday life on our Slack team.
 However it should be considered a work in progress, so there may be a few rough edges here and there!
 
