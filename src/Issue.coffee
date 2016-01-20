@@ -11,7 +11,7 @@ class Issue
     isExtended: true
 
     constructor: (issueData) ->
-        return unless issueData
+        return unless issueData and issueData.fields?
 
         for own key, value of issueData
             # put 'fields' directly on issue

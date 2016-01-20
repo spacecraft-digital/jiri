@@ -69,7 +69,7 @@ class ReleaseReadAction extends Action
                     @jiri.jira.getReleaseTicket customer.project, releaseVersion
                 .catch reject
                 .then (releaseTicket) =>
-                    return releaseTicket if releaseTicket
+                    return releaseTicket if releaseTicket and typeof releaseTicket is 'object'
 
                     # no 'next' ticket, suggest we create one
                     if releaseVersion in ReleaseIssue.prototype.synonyms.next
