@@ -11,6 +11,7 @@ class Jiri
     actions: [
         # require './actions/IssueStatusAction'
         require './actions/FindIssueForSupportTicketAction'
+        require './actions/DependenciesAction'
         require './actions/ReleaseReadAction'
         require './actions/ReleaseWriteAction'
         require './actions/IssueSearchAction'
