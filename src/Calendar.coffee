@@ -54,7 +54,9 @@ class Calendar
             response =
                 channel: config.calendarChannel
 
-            if people.length is 1
+            if people.length is 0
+                response.text = "No one is *#{type}* today"
+            else if people.length is 1
                 response.text = "There is #{converter.toWords(people.length)} person *#{type}* today:"
             else
                 response.text = "There are #{converter.toWords(people.length)} people *#{type}* today:"
