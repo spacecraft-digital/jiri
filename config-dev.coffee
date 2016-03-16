@@ -3,6 +3,7 @@
 
 config =
     calendarChannel: 'zapier-test'
+    sshPrivateKeyPath: '/Users/mattd/.ssh/jadu_webdev_key'
 
 console.log "Using DEV config for #{Object.keys(config).join(', ')}"
 
