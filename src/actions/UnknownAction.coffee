@@ -60,11 +60,6 @@ class UnknownAction extends Action
                             return resolve
                                 text: "Did you mean `#{query}`?"
                                 channel: @channel.id
-                        else
-                            @jiri.recordOutcome @
-                            return resolve
-                                text: "I'm not sure which customer `#{customerName}` is"
-                                channel: @channel.id
 
             # no idea what the message means
             @jiri.recordOutcome @
