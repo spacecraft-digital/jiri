@@ -29,6 +29,10 @@ stringUtils =
         return s unless s
         s[0].toUpperCase() + s.slice(1)
 
+    titleCase: (s) ->
+        s.replace /\w\S*/g, (word) ->
+            word[0].toUpperCase() + word[1..word.length - 1].toLowerCase()
+
     # escape each of the chars in s by preceding it with escapeChar
     escape: (s, chars = '\'', escapeChar = '\\') ->
         return s if typeof s != 'string'
