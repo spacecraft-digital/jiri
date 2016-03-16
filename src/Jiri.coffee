@@ -25,7 +25,7 @@ class Jiri
         require './actions/UnknownAction'
     ]
 
-    constructor: (@slack, @jira, @db) ->
+    constructor: (@slack, @jira, @gitlab) ->
         @debugMode = '--debug' in process.argv
 
         @slack.on 'open', @onSlackOpen

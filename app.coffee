@@ -1,15 +1,9 @@
 
 config = require './config'
-
-Jira = require './src/Jira'
-
 JiriSlack = require './src/JiriSlack'
 
+jira = new (require './src/Jira') config
 Jiri = require './src/Jiri'
-
-############
-
-jira = new Jira config
 
 slack = new JiriSlack(
     config.slack_apiToken,
@@ -17,6 +11,10 @@ slack = new JiriSlack(
     config.slack_autoMark
 )
 
+gitlab = (require 'gitlab')
+  url:   config.gitlab_url
+  token: config.gitlab_token
+
 ############
 
-jiri = new Jiri slack, jira, db
+jiri = new Jiri slack, jira, gitlab
