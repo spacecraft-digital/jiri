@@ -3,7 +3,7 @@
   "version": "1.1.0",
   "description": "A helpful assistant for Jadu development. Integrates Jira, Gitlab, etc",
   "main": "app.coffee",
-  "repository": "https://gitlab.hq.jadu.net/matt.dolan/jiri",
+  "repository": "https://github.com/spacecraft-digital/jiri",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "clear && coffee app.coffee 2>&1 >> logs/jiri.log",
