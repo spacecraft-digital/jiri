@@ -120,7 +120,7 @@ class ReleaseReadAction extends Action
 
     noNextReleaseTicket: (customer, forceCreate = false) =>
         new RSVP.Promise (resolve, reject) =>
-            @jiri.recordOutcome writeAction, @OUTCOME_SUGGESTION, {suggestion: "create release for #{customer.name}"}
+            @jiri.recordOutcome 'ReleaseWriteAction', @OUTCOME_SUGGESTION, {suggestion: "create release for #{customer.name}"}, @channel
             resolve "It doesn't look like there is an active release for #{customer.name}. Would you like to create one?"
 
     test: (message) ->
