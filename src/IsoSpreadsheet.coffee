@@ -90,7 +90,7 @@ class IsoSpreadsheet
     # this function curries row
     curryOnFindCustomer: (row) ->
         (customers) =>
-            if customers.length
+            if customers and customers.length
                 return @importRow row, customers[0]
             else
                 return @importNewCustomer row
@@ -148,10 +148,11 @@ class IsoSpreadsheet
     importStage: (project, stageName, servers, urls, versions) ->
         stage = project.getStage(stageName) or new Stage name: stageName
 
-        urls = [urls] if typeof urls is 'string'
-        for url in urls
-            if url not in stage.urls and url.toLowerCase() not in ['-','','n/a']
-                stage.urls.push url
+        if urls
+            urls = [urls] if typeof urls is 'string'
+            for url in urls
+                if url not in stage.urls and url.toLowerCase() not in ['-','','n/a']
+                    stage.urls.push url
 
         servers = web: servers if typeof servers is 'string'
         for role, host of servers
