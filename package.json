@@ -6,7 +6,8 @@
   "repository": "https://gitlab.hq.jadu.net/matt.dolan/jiri",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "clear && coffee app.coffee"
+    "start": "clear && coffee app.coffee 2>&1 >> logs/jiri.log",
+    "start-dev": "clear && coffee app.coffee 2>&1"
   },
   "author": "matt.dolan@jadu.co.uk",
   "license": "ISC",
