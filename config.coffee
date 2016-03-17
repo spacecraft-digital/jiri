@@ -48,6 +48,7 @@ config =
 
     peopleCalendarUrl: process.env.PEOPLE_CALENDAR_URL
 
+    sshUser: 'root'
     sshPrivateKeyPath: '/root/.ssh/jadu_webdev_key'
 
     timezone: 'Europe/London'
