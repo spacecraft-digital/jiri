@@ -16,7 +16,7 @@ class ServerVersionsAction extends AbstractSshAction
     # if one of these matches, this Action will be run
     getPatterns: ->
         [
-            'which versions? are? (?:installed)? on (server)$',
+            'which versions? are? (?:installed)? on (server)\\??$',
         ]
 
     getPatternParts: ->
@@ -66,6 +66,8 @@ class ServerVersionsAction extends AbstractSshAction
                         channel: @channel.id
 
             .catch (error) =>
+                if error.match /I wasn't allowed into/
+                    error += " Try http://#{server}/jadu/version.php"
                 resolve
                     text: error
                     channel: @channel.id

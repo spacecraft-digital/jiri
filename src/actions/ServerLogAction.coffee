@@ -15,21 +15,23 @@ class ServerLogAction extends AbstractSshAction
 
     getPatterns: ->
         [
-            "whats wrong with (server)",
-            "what errors are on (server)",
-            "show errors on (server)",
+            "whats wrong with (server)\\??$",
+            "what errors are on (server)\\??$",
+            "show errors on (server)\\??$",
             "show (server) log",
-            "show log for (server)",
-            "whats in the log for (server)"
+            "show log for (server)\\??$",
+            "whats in the log for (server)\\??$"
         ]
 
     getPatternParts: ->
-        "show": "show|list"
-        "whats": "what['’]?s|what is"
-        "wrong": "wrong|up|failing|erroring|logged|broken?|borked"
-        "for": "for|on"
-        "with": "with|on"
-        "server": "(<http[^|]+\\|)?([a-z.0-9\\-]+)>? ?(qa|uat|dev)? ?(site|server)?"
+        parts = super()
+        parts["show"] = "show|list"
+        parts["whats"] = "what's|what is"
+        parts["wrong"] = "wrong|up|failing|erroring|logged|broken?|borked"
+        parts["for"] = "for|on"
+        parts["with"] = "with|on"
+        parts["log"] = "logs?"
+        parts
 
     # Returns a promise that will resolve to a response if successful
     respondTo: (message) ->
