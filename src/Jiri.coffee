@@ -18,6 +18,7 @@ class Jiri
         require './actions/HelpAction'
         require './actions/ReceiveJiraWebhooksAction'
         require './actions/ServerVersionsAction'
+        require './actions/ServerLogAction'
         require './actions/IssueInfoAction'
         require './actions/CustomerListAction'
         require './actions/CustomerInfoAction'
