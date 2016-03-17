@@ -53,6 +53,31 @@ class ServerLogAction extends AbstractSshAction
                 @setLoading()
                 @ssh.execCommand(tailCommand, {stream: 'both'})
                 .then (result) =>
+                    if result.stderr.match /cannot open .+No such file/i
+                        if server.match /\.pods\.jadu\.net$/i
+                            # read pods for that customer
+                            cmd = "ls -1 #{jaduPath.replace /\/[a-z0-9\-]+$/, '/'}"
+                            return @ssh.execCommand(cmd, {stream: 'both'})
+                            .then (result) =>
+                                # something's wrong
+                                if result.stderr
+                                    return resolve
+                                        text: "There is no pod #{server} — something's wrong somewhere…"
+                                        channel: @channel.id
+                                # we've got a list of pods
+                                else
+                                    pods = (pod for pod in result.stdout.split "\n" when not pod.match /^(\s*|dev|logs)$/)
+                                    return resolve
+                                        text: """
+                                            There is no pod #{server}. Did you mean one of these?
+                                            #{stringUtils.join pods, ', ', ' or '}
+                                        """
+                                        channel: @channel.id
+                        else
+                            return resolve
+                                text: "I expected there to be a log at #{jaduPath}#{logPath} on #{server}, but it wasn't there :confused:"
+                                channel: @channel.id
+
                     errors = []
                     now = moment()
                     for line in result.stdout.split('\n') when line.match /PHP (Warning|.+\bError)/i
