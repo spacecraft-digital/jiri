@@ -47,13 +47,15 @@ class Pattern
 
     getRegex: ->
         new RegExp(@metaPattern
-                .replace /\? /g, '?\\s*'
-                # allow multiple spaces wherever one is allowed
-                .replace /[ ]+\+?/g, ' +'
-                .replace /(\\b|\b)([a-z0-9_]{2,})(\b|\s)/ig, (m,prefix,partName) =>
-                    s = prefix + @getRegexStringForPart partName
-                    if s then return s else return m
-            'i')
+            .replace /\? /g, '?\\s*'
+            # allow multiple spaces wherever one is allowed
+            .replace /[ ]+\+?/g, ' +'
+            .replace /(\\b|\b)([a-z0-9_]{2,})(\b|\s)/ig, (m,prefix,partName) =>
+                s = prefix + @getRegexStringForPart partName
+                if s then return s else return m
+            # allow 'smart apostrophes'
+            .replace /([a-z])'s\b/gi, "$1['’]s"
+        'i')
 
     # Updates the 'jiri' part to allow the Slack user ID mention
     setSlack: (slack) =>
