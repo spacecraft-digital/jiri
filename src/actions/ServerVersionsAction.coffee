@@ -36,9 +36,10 @@ class ServerVersionsAction extends AbstractSshAction
                     break
 
             customer = @deriveCustomerName server
+            jaduPath = @getJaduPath server
 
             versionsCommand = """
-                cd /var/www/jadu;for f in $(ls -1 *VERSION);do;echo -n "$f: ";head -n1 $f|tr -d '\n';echo;done
+                cd #{jaduPath};for f in $(ls -1 *VERSION);do;echo -n "$f: ";head -n1 $f|tr -d '\n';echo;done
             """
 
             @connectToServer(server)

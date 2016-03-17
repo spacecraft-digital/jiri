@@ -16,7 +16,7 @@ class AbstractSshAction extends Action
         []
 
     getPatternParts: ->
-        "server": "(?:<http[^|]+\\|)?([a-z.0-9\\-]+)>?( (qa|uat|dev))? ?(?:site|server)?"
+        "server": "(the )?(<http[^|]+\\|)?([a-z.0-9\\-]+)>?(['’]s)?( (qa|uat|dev pod|dev|[a-z]{3,4}-\\d{3,}\\b))? ?(site|server)?"
 
     # if one of these matches, this Action will be run
     getTestRegex: =>
@@ -26,17 +26,31 @@ class AbstractSshAction extends Action
     # full server domain name (e.g. foo--dev.ntn.jadu.net)
     # IP address
     # first part of the server name (e.g. foo--dev)
-    # customer name and server role (e.g. foo, dev)
+    # customer name and server role (e.g. foo dev)
     #
     # and returns a full server hostname (e.g. foo--dev.ntn.jadu.net)
-    normaliseServerName: (server, role) ->
-        if role and not server.match /\./
-            server += '--' + role
+    normaliseServerName: (server) ->
+        # remove hyperlink markup
+        server = server.replace /^(?:<http[^|]+\|)?([a-z.0-9\-]+)>?$/i, '$1'
+                       # remove meaningless leading words
+                       .replace /^the +/i, ''
+                       # remove meaningless trailing words
+                       .replace /[ ]+(site|server)$/i, ''
+                       # remove apostrophe-s of possession
+                       .replace /['’]s\b/, ''
+                       .toLowerCase()
+
+        # assume a JIRA ref means a pod
+        if m = server.match /^([^ ]+) +(dev pod|[a-z]{3,4}-\d{3,})$/i
+            [x, client, role] = m
+            role = 'dev' if role is 'dev pod'
+            return "#{role}.#{client}.pods.jadu.net"
         else if server.indexOf(' ') > -1
             server = server.split(' ').join('--')
+
         if not server.match /\./
             server = server + '.ntn.jadu.net'
-        server.toLowerCase()
+        server
 
     deriveCustomerName: (server) ->
         # if the server name is an IP Address, we can't extract the customer name
@@ -44,6 +58,18 @@ class AbstractSshAction extends Action
             return 'Client'
         else
             return server.replace /^(\w+).+/, '$1'
+
+    # Guess the Jadu installation path
+    # If it's a pod, return the pod path.
+    # Otherwise assume /var/www/jadu
+    #
+    # Pass a *normalised* server name (i.e. the full domain name)
+    getJaduPath: (server) ->
+        if m = server.match /^([a-z0-9\-]+)\.([a-z0-9\-]+)\.pods\.jadu\.net$/
+            [x, pod, client] = m
+            return "/var/www/clients/#{client}/#{pod}"
+        else
+            return "/var/www/jadu"
 
     # returns a Promise that will resolve upon connection
     connectToServer: (server) =>
@@ -59,10 +85,10 @@ class AbstractSshAction extends Action
                 if error.errno is 'ENOTFOUND'
                     return reject "#{error.hostname} isn't available — have you spelt it right?"
                 else if error.level is 'client-authentication'
-                    return reject "Sorry — I wasn't allowed in to #{server} with my key, so I don't know. Try http://#{server}/jadu/version.php"
+                    return reject "Sorry — I wasn't allowed into #{server} with my key, so I don't know."
                 else
                     console.log error
-                    return reject "I tried to SSH into #{server} to get the versions. It didn't work. :cry:"
+                    return reject "I tried to SSH into #{server}. It didn't work. :cry:"
 
     test: (message) ->
         new RSVP.Promise (resolve) =>

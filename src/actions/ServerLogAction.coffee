@@ -41,8 +41,11 @@ class ServerLogAction extends AbstractSshAction
 
             customer = @deriveCustomerName server
 
+            jaduPath = @getJaduPath server
+            logPath = '/logs/php_log'
+
             tailCommand = """
-                tail -n100 /var/www/jadu/logs/php_log
+                tail -n100 #{jaduPath}#{logPath}
             """
 
             @connectToServer(server)
@@ -58,7 +61,7 @@ class ServerLogAction extends AbstractSshAction
                         date = moment date, 'DD-MMM-YYYY HH:mm:ss'
                         if now.diff(date, 'hours') < 1
                             message = message
-                                        .replace new RegExp('/var/www/jadu/','g'), ''
+                                        .replace new RegExp("#{jaduPath}/",'g'), ''
                                         .replace ' in Unknown on line 0', ''
 
                             errors.push """
