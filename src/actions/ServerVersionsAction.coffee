@@ -1,11 +1,11 @@
 RSVP = require 'rsvp'
-Action = require './Action'
+AbstractSshAction = require './AbstractSshAction'
 config = require '../../config'
 https = require 'https'
 node_ssh = require 'node-ssh'
 stringUtils = require '../utils/string'
 
-class ServerVersionsAction extends Action
+class ServerVersionsAction extends AbstractSshAction
 
     getType: ->
         return 'ServerVersionsAction'
@@ -14,42 +14,37 @@ class ServerVersionsAction extends Action
         return 'reads installation version numbers from servers via SSH'
 
     # if one of these matches, this Action will be run
-    getTestRegex: ->
+    getPatterns: ->
         [
-            '^jiri (?:which|what|show) versions? (?:are|is)? (?:installed)? on (?:<http[^|]+\\|)?([a-z.0-9\\-]+)>?(?: (qa|uat|dev))? ?(?:site|server)?\\??$',
+            'which versions? are? (?:installed)? on (server)$',
         ]
+
+    getPatternParts: ->
+        parts = super()
+        parts.which = "which|what|show"
+        parts.are = "are|is"
+        parts
 
     constructor: (@jiri, @channel) ->
 
     # Returns a promise that will resolve to a response if successful
     respondTo: (message) ->
         return new RSVP.Promise (resolve, reject) =>
-            sshUser = 'root'
-
             for regex in @getTestRegex()
-                if m = message.text.toLowerCase().match @jiri.createPattern(regex).getRegex()
-                    server = m[1]
-                    if m[2] and not server.match /\./
-                        server += '--' + m[2]
-                    if not server.match /\./
-                        server = server + '.ntn.jadu.net'
+                if m = message.text.toLowerCase().match regex
+                    server = @normaliseServerName m[1], m[2]
+                    break
 
-            customer = server.replace /^(\w+).+/, '$1'
-
-            ssh = new node_ssh
+            customer = @deriveCustomerName server
 
             versionsCommand = """
                 cd /var/www/jadu;for f in $(ls -1 *VERSION);do;echo -n "$f: ";head -n1 $f|tr -d '\n';echo;done
             """
 
-            @setLoading()
-            ssh.connect(
-                host: server,
-                username: sshUser,
-                privateKey: config.sshPrivateKeyPath
-            ).then =>
+            @connectToServer(server)
+            .then =>
                 @setLoading()
-                ssh.execCommand(versionsCommand, {stream: 'both'})
+                @ssh.execCommand(versionsCommand, {stream: 'both'})
                 .then (result) =>
                     versions = for line in result.stdout.split('\n')
                         [file, version] = line.split(': ', 2)
@@ -70,29 +65,8 @@ class ServerVersionsAction extends Action
                         channel: @channel.id
 
             .catch (error) =>
-                if error.errno is 'ENOTFOUND'
-                    return resolve
-                        text: "#{error.hostname} isn't available — have you spelt it right?"
-                        channel: @channel.id
-                else if error.level is 'client-authentication'
-                    return resolve
-                        text: "Sorry — I wasn't allowed in to #{server} with my :key:, so I don't know. Try http://#{server}/jadu/version.php"
-                        channel: @channel.id
-                else
-                    console.log error
-                    return resolve
-                        text: "I tried to SSH into #{server} to get the versions. It didn't work. :cry:"
-                        channel: @channel.id
-
-    test: (message) ->
-        new RSVP.Promise (resolve) =>
-            return resolve false unless message.type is 'message' and message.text? and message.channel?
-
-            for regex in @getTestRegex()
-                console.log @jiri.createPattern(regex).getRegex()
-                if message.text.match @jiri.createPattern(regex).getRegex()
-                    return resolve true
-
-            return resolve false
+                resolve
+                    text: error
+                    channel: @channel.id
 
 module.exports = ServerVersionsAction
