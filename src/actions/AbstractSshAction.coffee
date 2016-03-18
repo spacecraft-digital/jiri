@@ -50,6 +50,10 @@ class AbstractSshAction extends Action
 
         server = server + '.ntn.jadu.net' unless server.indexOf('.') > -1
 
+        # as a security measure,
+        # only allow ntn.jadu.net and pods.jadu.net domains
+        return null unless server.match /(ntn|pods)\.jadu\.net$/
+
         server
 
     deriveCustomerName: (server) ->
