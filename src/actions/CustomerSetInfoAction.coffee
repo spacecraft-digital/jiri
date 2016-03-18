@@ -643,7 +643,7 @@ class CustomerSetInfoAction extends Action
                             "Our latest customer: :star2: *#{customer.name}* :star2:"
                         ]
                         text = strings[Math.floor(Math.random() * strings.length)]
-                        text += getAvailablePropertiesString customer
+                        text += @getAvailablePropertiesString customer
                         return @respond text
                     , (error) =>
                         return @respondWithError error
