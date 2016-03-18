@@ -42,7 +42,7 @@ class ServerVersionsAction extends AbstractSshAction
             jaduPath = @getJaduPath server
 
             versionsCommand = """
-                cd #{jaduPath};for f in $(ls -1 *VERSION);do;echo -n "$f: ";head -n1 $f|tr -d '\n';echo;done
+                cd #{jaduPath};for f in $(ls -1 *VERSION);do echo -n "$f: ";head -n1 $f|tr -d '\n';echo;done
             """
 
             @connectToServer(server)
