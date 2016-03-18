@@ -48,8 +48,8 @@ class AbstractSshAction extends Action
         else if server.indexOf(' ') > -1
             server = server.split(' ').join('--')
 
-        if not server.match /\./
-            server = server + '.ntn.jadu.net'
+        server = server + '.ntn.jadu.net' unless server.indexOf('.') > -1
+
         server
 
     deriveCustomerName: (server) ->
