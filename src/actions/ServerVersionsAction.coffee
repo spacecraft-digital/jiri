@@ -25,8 +25,6 @@ class ServerVersionsAction extends AbstractSshAction
         parts.are = "are|is"
         parts
 
-    constructor: (@jiri, @channel) ->
-
     # Returns a promise that will resolve to a response if successful
     respondTo: (message) ->
         return new RSVP.Promise (resolve, reject) =>
