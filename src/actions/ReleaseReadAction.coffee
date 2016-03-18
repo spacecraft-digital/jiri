@@ -13,8 +13,8 @@ class ReleaseReadAction extends Action
     # show oxford's latest release
     # show oxford release 1.3
     regex:
-        get1: '^jiri (?:what(?:[\'’]s| is)|show|find|get) (?:the )?(latest|last|previous|next|\\d.\\d(?:.\\d)?)? ?release(?: for (__customer__))?\\??$'
-        get2: '^jiri (?:what(?:[\'’]s| is)|show|find|get) (?:(__customer__)(?:[\'’]s)? )(latest|last|previous|next|[\\d.]+)? ?release\\??$'
+        get1: '^jiri (?:what(?:[\'’]s| is)|show|find|get) (?:the )?(latest|last|previous|next|\\d.\\d(?:.\\d)?)? ?release(?: for __customer__)?\\??$'
+        get2: '^jiri (?:what(?:[\'’]s| is)|show|find|get) (?:__customer__(?:[\'’]s)? )(latest|last|previous|next|[\\d.]+)? ?release\\??$'
         when: '^jiri (?:when(?:[\'’]s| was| is)) (?:(.+?)(?:[\'’]s)? )(latest|last|previous|next|[\\d.]+)? ?release\\??$'
 
     getType: ->

@@ -10,7 +10,7 @@ class ReleaseWriteAction extends Action
 
     regex:
         add: '^jiri add ([A-Z]{2,5}-[0-9]{2,5}) to (?:(.+) )release(?: ([\\d.]+))?$'
-        create: '^jiri (?:create|make|new) (?:a )?(?:new )?release for (__customer__)$'
+        create: '^jiri (?:create|make|new) (?:a )?(?:new )?release for __customer__$'
 
     getType: ->
         return 'ReleaseWriteAction'
