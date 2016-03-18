@@ -41,6 +41,11 @@ class ServerLogAction extends AbstractSshAction
                     server = @normaliseServerName m[1], m[2]
                     break
 
+            if server is null
+                return resolve
+                    text: "Sorry, that's not a server I can work with"
+                    channel: @channel.id
+
             customer = @deriveCustomerName server
 
             jaduPath = @getJaduPath server

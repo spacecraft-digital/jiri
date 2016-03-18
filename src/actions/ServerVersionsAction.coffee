@@ -35,6 +35,11 @@ class ServerVersionsAction extends AbstractSshAction
                     server = @normaliseServerName m[1], m[2]
                     break
 
+            if server is null
+                return resolve
+                    text: "Sorry, that isn't a server I can work with :no_entry:"
+                    channel: @channel.id
+
             customer = @deriveCustomerName server
             jaduPath = @getJaduPath server
 
