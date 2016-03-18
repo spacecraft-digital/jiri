@@ -110,7 +110,7 @@ class CustomerListAction extends Action
 
             search.then (results) =>
                 try
-                    if results.length
+                    if results?.length
 
                         # if there are lots of results, we'll check that the user wants to see them
                         if mode is @MODE_LIST and results.length >= @RATHER_A_LOT and not force
