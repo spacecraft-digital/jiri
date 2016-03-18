@@ -38,7 +38,7 @@ class ServerLogAction extends AbstractSshAction
         return new RSVP.Promise (resolve, reject) =>
             for regex in @getTestRegex()
                 if m = message.text.toLowerCase().match regex
-                    server = @normaliseServerName m[1], m[2]
+                    server = @normaliseServerName m[1]
                     break
 
             if server is null
