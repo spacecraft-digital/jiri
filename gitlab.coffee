@@ -7,12 +7,9 @@ gitlab = (require 'gitlab')
   url:   config.gitlab_url
   token: config.gitlab_token
 
-mongoose = require './database_init'
 IsoSpreadsheet = require './src/IsoSpreadsheet'
 
-Customer = mongoose.model 'Customer'
-Project = mongoose.model 'Project'
-Repository = mongoose.model 'Repository'
+Customer = require('spatabase-customers')(config.mongo_url).model 'Customer'
 
 translateApiData = (data) ->
     id: data.id

@@ -5,9 +5,8 @@ IssueOutput = require '../IssueOutput'
 config = require '../../config'
 Pattern = require '../Pattern'
 async = require 'async'
-mongoose = require '../../database_init'
-Customer = mongoose.model 'Customer'
 stringUtils = require '../utils/string'
+Customer = require('spatabase-customers')(config.mongo_url).model 'Customer'
 
 class IssueSearchAction extends IssueInfoAction
 

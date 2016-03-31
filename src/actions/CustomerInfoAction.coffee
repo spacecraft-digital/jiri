@@ -1,11 +1,9 @@
 RSVP = require 'rsvp'
 Action = require './Action'
 Pattern = require '../Pattern'
-mongoose = require '../../database_init'
-Customer = mongoose.model 'Customer'
 stringUtils = require '../utils/string'
+Customer = require('spatabase-customers')(config.mongo_url).model 'Customer'
 humanize = require '../utils/humanize'
-NaturalLanguageObjectReference = require '../NaturalLanguageObjectReference'
 
 # Query Customer database in natural language
 #
@@ -70,12 +68,11 @@ class CustomerInfoAction extends Action
             query = query.replace /(\w)['’]+s /g, '$1 '
 
             @setLoading()
-            ref = new NaturalLanguageObjectReference query
-            ref.findTarget()
+            Customer.resolveNaturalLanguage query
                 .then (result) =>
                     try
                         switch result.outcome
-                            when NaturalLanguageObjectReference.prototype.RESULT_FOUND
+                            when 'found'
                                 targetPath = humanize.getRelationalPath result.matches
 
                                 if typeof result.target is 'undefined'
@@ -97,7 +94,7 @@ class CustomerInfoAction extends Action
                                             text = "*#{targetPath}*: _(empty)_"
                                     @jiri.recordOutcome @, @OUTCOME_FOUND
 
-                            when NaturalLanguageObjectReference.prototype.RESULT_SUGGESTION
+                            when 'suggestion'
                                 if result.suggestions.length is 1
                                     @jiri.recordOutcome @, @OUTCOME_SUGGESTION, result.suggestions[0]
                                     text = "Did you mean “#{result.formattedSuggestions[0]}”?"
@@ -106,7 +103,7 @@ class CustomerInfoAction extends Action
                                     result.formattedSuggestions = result.formattedSuggestions.map (r, i) -> "`#{i+1}` #{r}"
                                     text = "Did you mean one of these?\n>>>\n#{result.formattedSuggestions.join "\n"}"
 
-                            when NaturalLanguageObjectReference.prototype.RESULT_UNKNOWN
+                            when 'unknown'
                                 match = result.matches[result.matches.length-1]
                                 bits = humanize.explainMatches result.matches
                                 text = "I understood that #{stringUtils.join bits}, but I'm not sure I get the `#{match.query}` bit.\n\nCould you try rephrasing it?"

@@ -1,7 +1,6 @@
 Jira = require './Jira'
 config = require '../config'
-mongoose = require '../database_init'
-Customer = mongoose.model 'Customer'
+Customer = require('spatabase-customers')(config.mongo_url).model 'Customer'
 moment = require 'moment'
 
 # Wraps a standard Jira issue object (as returned by the API) to normalise

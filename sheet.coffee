@@ -1,7 +1,5 @@
-mongoose = require './database_init'
+Customer = require('spatabase-customers')(config.mongo_url).model 'Customer'
 IsoSpreadsheet = require './src/IsoSpreadsheet'
-
-Customer = mongoose.model 'Customer'
 
 if 'find' in process.argv
     query = process.argv[process.argv.indexOf('find')+1]

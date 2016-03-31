@@ -3,12 +3,13 @@ Action = require './Action'
 Pattern = require '../Pattern'
 CustomerInfoAction = require './CustomerInfoAction'
 CustomerSetInfoAction = require './CustomerSetInfoAction'
-mongoose = require '../../database_init'
-Customer = mongoose.model 'Customer'
-Project = mongoose.model 'Project'
-Repository = mongoose.model 'Repository'
-Stage = mongoose.model 'Stage'
 stringUtils = require '../utils/string'
+
+customer_database = require('spatabase-customers')(config.mongo_url)
+Customer = customer_database.model 'Customer'
+Project = customer_database.model 'Project'
+Repository = customer_database.model 'Repository'
+Stage = customer_database.model 'Stage'
 
 # Unknown Action, so Jiri can say "I don't understand" if directly addressed
 # with an unknown command

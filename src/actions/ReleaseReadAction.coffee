@@ -1,8 +1,7 @@
 RSVP = require 'rsvp'
 Action = require './Action'
 config = require '../../config'
-mongoose = require '../../database_init'
-Customer = mongoose.model 'Customer'
+Customer = require('spatabase-customers')(config.mongo_url).model 'Customer'
 ReleaseIssue = require '../ReleaseIssue'
 IssueOutput = require '../IssueOutput'
 

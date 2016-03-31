@@ -1,11 +1,9 @@
 RSVP = require 'rsvp'
 Action = require './Action'
 Pattern = require '../Pattern'
-mongoose = require '../../database_init'
-Customer = mongoose.model 'Customer'
 stringUtils = require '../utils/string'
+Customer = require('spatabase-customers')(config.mongo_url).model 'Customer'
 humanize = require '../utils/humanize'
-NaturalLanguageObjectReference = require '../NaturalLanguageObjectReference'
 inflect = require '../utils/inflect'
 converter = require 'number-to-words'
 moment = require 'moment'
@@ -147,8 +145,7 @@ class CustomerSetInfoAction extends Action
         query = query.replace /^to +/i, '' if verb in @verbSynonyms.add
 
         @setLoading()
-        ref = new NaturalLanguageObjectReference query
-        ref.findTarget()
+        Customer.resolveNaturalLanguage query
             .then (result) => @doVerbToTarget verb, query, arrayIndex, newValue, result
             .catch (error) => @respond error
 
@@ -161,7 +158,7 @@ class CustomerSetInfoAction extends Action
             lastMatch = result.matches[result.matches.length-1]
 
             switch result.outcome
-                when NaturalLanguageObjectReference.prototype.RESULT_FOUND
+                when 'found'
 
                     parent = result.matches[result.matches.length-2]?.target
                     property = lastMatch.property
@@ -240,7 +237,7 @@ class CustomerSetInfoAction extends Action
                         else
                             return @respondWithError "I don't understand how to #{verb} a scalar value"
 
-                when NaturalLanguageObjectReference.prototype.RESULT_SUGGESTION
+                when 'suggestion'
                     result.suggestions = result.suggestions.map (r) -> "set #{r}"
 
                     if result.suggestions.length is 1
@@ -251,7 +248,7 @@ class CustomerSetInfoAction extends Action
                         result.formattedSuggestions = result.formattedSuggestions.map (r, i) -> "`#{i+1}` #{r}"
                         text = "Did you mean one of these?\n>>>\n#{result.formattedSuggestions.join "\n"}"
 
-                when NaturalLanguageObjectReference.prototype.RESULT_UNKNOWN
+                when 'unknown'
                     # try again, now assuming it was a value
                     if @assumedSplitAddQuery
                         return @parseQuery verb, @assumedSplitAddQuery.query, arrayIndex, @assumedSplitAddQuery.newValue

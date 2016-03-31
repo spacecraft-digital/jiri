@@ -2,16 +2,16 @@ config = require '../config'
 RSVP = require 'rsvp'
 async = require 'async'
 GoogleSpreadsheet = require 'google-spreadsheet'
-mongoose = require '../database_init'
+customer_database = require('spatabase-customers')(config.mongo_url)
 
-Customer = mongoose.model 'Customer'
-Project = mongoose.model 'Project'
-Stage = mongoose.model 'Stage'
-Module = mongoose.model 'Module'
+Customer = customer_database.model 'Customer'
+Project = customer_database.model 'Project'
+Stage = customer_database.model 'Stage'
+Module = customer_database.model 'Module'
 
 class IsoSpreadsheet
 
-    constructor: (mongoose) ->
+    constructor: ->
         @sheet = new GoogleSpreadsheet config.isoSpreadsheetId
         credentials =
             client_email: config.google_client_email
