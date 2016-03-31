@@ -87,19 +87,17 @@ class Jira
 
     getReleaseTicket: (project, targetVersion = 'latest') ->
         return new RSVP.Promise (resolve, reject) =>
-            project.getJiraMappingId(@)
-            .catch (error) ->
-                reject "No Jira mapping ID available"
+            project.getJiraMappingId @
             .then (jiraMappingName) =>
-                return reject "Sorry, I don't know what Jira knows #{project.name} as" unless jiraMappingName
+                return reject "Sorry, I don't know what JIRA knows #{project.name} as" unless jiraMappingName
 
                 jql = "'Reporting Customers' = '#{escape_quotes jiraMappingName}' AND issueType = 'Release'"
 
                 @search jql,
                     fields: IssueOutput.prototype.FIELDS
 
-            .catch reject
             .then (result) =>
+                return reject "no releases found" unless result and result.issues
                 try
                     isNumericVersion = !!String(targetVersion).match(/^\d+(\.\d+)*$/)
                     targetVersion = normalize_version(targetVersion, 2) if isNumericVersion
@@ -137,6 +135,9 @@ class Jira
                 catch e
                     console.log e.stack
                     reject "something went wrong"
+        .catch (error) ->
+            console.log "Unable to get latest project release: #{error}"
+
 
 
     getReportingCustomerValues: ->
@@ -159,7 +160,7 @@ class Jira
         return new RSVP.Promise (resolve, reject) =>
             @getReportingCustomerValues()
             .then (jiraCustomerNames) ->
-                console.log "I've got #{jiraCustomerNames.length} customer names from Jira"
+                console.log "I've got #{jiraCustomerNames.length} customer names from JIRA"
                 async.mapSeries jiraCustomerNames, (jiraCustomerName, callback) =>
                     Customer.findOneByName jiraCustomerName
                     .then (customer) ->
