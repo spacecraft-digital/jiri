@@ -168,6 +168,7 @@ class Jiri
     sendResponse: (response) =>
         return unless response
         console.log "Response to #{response.channel}: #{response.text}" if @debugMode and '--show-response' in process.argv
+        response.text = ":sparkles: " + response.text if @debugMode
         @slack.postMessage response
 
     actionError: (error, action) =>
