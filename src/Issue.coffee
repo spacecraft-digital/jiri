@@ -1,6 +1,5 @@
 Jira = require './Jira'
 config = require '../config'
-Customer = require('spatabase-customers')(config.mongo_url).model 'Customer'
 moment = require 'moment'
 
 # Wraps a standard Jira issue object (as returned by the API) to normalise
@@ -33,14 +32,6 @@ class Issue
             @supportRef = supportRefMatch[1]
             @supportUrl = config.supportUrl.replace(/#\{ref\}/i, @supportRef)
             @summary = @summary.replace /\s+Ref:(\d{8}-\d+)/i, ''
-
-    # Returns a promise that resolves to return the Customer document for this issue
-    getClient: ->
-        return new RSVP.Promise (resolve, reject) =>
-            return resolve @client if @client
-            return resolve null unless @clientName
-
-            Customer.findOne "projects._mappingId_jira": @clientName
 
     isToDo: -> @status?.statusCategory?.key is "new"
     isInProgress: ->
