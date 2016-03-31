@@ -7,7 +7,8 @@ node_ssh = require 'node-ssh'
 # an abstract action for SSH actions to extend
 class AbstractSshAction extends Action
 
-    constructor: (@jiri, @channel) ->
+    constructor: (jiri, customer_database, channel) ->
+        super jiri, customer_database, channel
         @ssh = new node_ssh
 
     # subclasses should override this
