@@ -8,25 +8,6 @@ RSVP = require 'rsvp'
 
 class Jiri
 
-    actions: [
-        # require './actions/IssueStatusAction'
-        require './actions/FindIssueForSupportTicketAction'
-        require './actions/DependenciesAction'
-        require './actions/ReleaseReadAction'
-        require './actions/ReleaseWriteAction'
-        require './actions/IssueSearchAction'
-        require './actions/HelpAction'
-        require './actions/ReceiveJiraWebhooksAction'
-        require './actions/ServerVersionsAction'
-        require './actions/ServerLogAction'
-        require './actions/IssueInfoAction'
-        require './actions/CustomerListAction'
-        require './actions/CustomerInfoAction'
-        require './actions/CustomerSetInfoAction'
-        require './actions/GeneralChatAction'
-        require './actions/UnknownAction'
-    ]
-
     constructor: (@slack, @customer_database, @jira, @gitlab) ->
         @debugMode = '--debug' in process.argv
 
@@ -43,6 +24,33 @@ class Jiri
 
         # Create a cron instance to which we can register callbacks
         @cron = new Cron
+
+        @loadActions()
+
+    loadActions: ->
+        @actions = []
+        actions = [
+            'IgnoreMeAction'
+            'FindIssueForSupportTicketAction'
+            'DependenciesAction'
+            'ReleaseReadAction'
+            'ReleaseWriteAction'
+            'IssueSearchAction'
+            'HelpAction'
+            'ReceiveJiraWebhooksAction'
+            'ServerVersionsAction'
+            'ServerLogAction'
+            'IssueInfoAction'
+            'CustomerListAction'
+            'CustomerInfoAction'
+            'CustomerSetInfoAction'
+            'GeneralChatAction'
+            'UnknownAction'
+        ]
+        for action in actions
+            actionPath = "./actions/#{action}"
+            delete require.cache[require.resolve actionPath] if @debugMode
+            @actions.push require actionPath
 
     createPattern: (metaPattern, parts, subpartMatches = false) ->
         pattern = new Pattern metaPattern, parts, subpartMatches
@@ -83,6 +91,9 @@ class Jiri
             return
 
         message = @normaliseMessage message
+
+        # in debug mode, reload action scripts each time — avoids having to restart Jiri for changes
+        @loadActions() if @debugMode
 
         # allow each Action to decide if they want to respond to the message
         async.detectSeries @actions, (actionClass, done) =>
