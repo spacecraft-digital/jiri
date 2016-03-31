@@ -1,7 +1,6 @@
 RSVP = require 'rsvp'
 Action = require './Action'
 Pattern = require '../Pattern'
-Customer = require('spatabase-customers')(config.mongo_url).model 'Customer'
 humanize = require '../utils/humanize'
 converter = require 'number-to-words'
 inflect = require '../utils/inflect'
@@ -74,6 +73,8 @@ class CustomerListAction extends Action
             searchProperty = 'name'
             if m = propertyMatch?.match @getRegex('where')
                 searchProperty = m[1]
+
+            Customer = @customer_database.model 'Customer'
 
             try
                 if set is 'customers'

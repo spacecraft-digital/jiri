@@ -8,8 +8,6 @@ Pattern = require '../Pattern'
 # This won't be triggered if he's not addressed by name
 class HelpAction extends Action
 
-    constructor: (@jiri, @channel) ->
-
     # should return the class name as a string
     getType: ->
         return 'HelpAction'

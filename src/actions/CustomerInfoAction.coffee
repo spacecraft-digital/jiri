@@ -2,7 +2,6 @@ RSVP = require 'rsvp'
 joinn = require 'joinn'
 Action = require './Action'
 Pattern = require '../Pattern'
-Customer = require('spatabase-customers')(config.mongo_url).model 'Customer'
 humanize = require '../utils/humanize'
 
 # Query Customer database in natural language
@@ -68,6 +67,7 @@ class CustomerInfoAction extends Action
             query = query.replace /(\w)['’]+s /g, '$1 '
 
             @setLoading()
+            Customer = @customer_database.model 'Customer'
             Customer.resolveNaturalLanguage query
                 .then (result) =>
                     try
@@ -126,6 +126,7 @@ class CustomerInfoAction extends Action
                         channel: @channel.id
 
     getTestRegexes: =>
+        Customer = @customer_database.model 'Customer'
         unless @patterns
             @patterns =
                 find: @jiri.createPattern("^jiri find +.*(?=#{Customer.schema.statics.allNameRegexString}).*", @patternParts),

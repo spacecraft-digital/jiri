@@ -2,7 +2,7 @@
 # abstract
 class Action
 
-    constructor: (@jiri, @channel) ->
+    constructor: (@jiri, @customer_database, @channel) ->
 
     # should return the class name as a string
     getType: ->

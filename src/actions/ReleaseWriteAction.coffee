@@ -1,7 +1,6 @@
 RSVP = require 'rsvp'
 Action = require './Action'
 config = require '../../config'
-Customer = require('spatabase-customers')(config.mongo_url).model 'Customer'
 ReleaseIssue = require '../ReleaseIssue'
 IssueOutput = require '../IssueOutput'
 
@@ -19,6 +18,7 @@ class ReleaseWriteAction extends Action
 
     # if one of these matches, this Action will be run
     getPatternRegex: (name = null) ->
+        Customer = @customer_database.model 'Customer'
         unless @patternRegexes
             @patternRegexes = {}
             for own key, regex of @regex
@@ -33,6 +33,7 @@ class ReleaseWriteAction extends Action
             message.text = message.text.replace /\?+$/, ''
 
             mode = null
+            Customer = @customer_database.model 'Customer'
 
             if m = message.text.match @getPatternRegex('add')
                 [..., ref, customerName, releaseVersion] = m

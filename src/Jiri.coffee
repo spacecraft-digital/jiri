@@ -27,7 +27,7 @@ class Jiri
         require './actions/UnknownAction'
     ]
 
-    constructor: (@slack, @jira, @gitlab) ->
+    constructor: (@slack, @customer_database, @jira, @gitlab) ->
         @debugMode = '--debug' in process.argv
 
         @slack.on 'open', @onSlackOpen
@@ -86,7 +86,7 @@ class Jiri
 
         # allow each Action to decide if they want to respond to the message
         async.detectSeries @actions, (actionClass, done) =>
-            action = new actionClass @, message.channel
+            action = new actionClass @, @customer_database, message.channel
             new RSVP.Promise (resolve, reject) ->
                 action.test message
                     .catch (e) ->

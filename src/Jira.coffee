@@ -12,7 +12,7 @@ normalize_version = require 'normalize-version'
 
 class Jira
 
-    constructor: (config) ->
+    constructor: (config, @customer_database) ->
         @api = new JiraApi(
             config.jira_protocol,
             config.jira_host,
@@ -162,6 +162,7 @@ class Jira
             .then (jiraCustomerNames) ->
                 console.log "I've got #{jiraCustomerNames.length} customer names from JIRA"
                 async.mapSeries jiraCustomerNames, (jiraCustomerName, callback) =>
+                    Customer = @customer_database.model 'Customer'
                     Customer.findOneByName jiraCustomerName
                     .then (customer) ->
                         try

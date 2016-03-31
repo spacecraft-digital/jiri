@@ -5,7 +5,6 @@ IssueOutput = require '../IssueOutput'
 config = require '../../config'
 Pattern = require '../Pattern'
 async = require 'async'
-Customer = require('spatabase-customers')(config.mongo_url).model 'Customer'
 escape_quotes = require 'escape-quotes'
 
 class IssueSearchAction extends IssueInfoAction
@@ -76,6 +75,7 @@ class IssueSearchAction extends IssueInfoAction
 
     getTestRegex: =>
         new RSVP.Promise (resolve, reject) =>
+            Customer = @customer_database.model 'Customer'
             unless @pattern
                 @pattern = @jiri.createPattern "^jiri (find after_find?)? (\\d+|(?:the )?latest|one)? ?(issueType ?|status ?|for #{Customer.schema.statics.allNameRegexString} ?|_search ?)+\\??$", @patternParts
             return resolve @pattern.getRegex()
@@ -96,6 +96,7 @@ class IssueSearchAction extends IssueInfoAction
             return new RSVP.Promise (resolve, reject) =>
                 return callback "Customer not found for #{query}" unless customer
 
+                Customer = @customer_database.model 'Customer'
                 jiraCustomerName = customer.getProject()?._mappingId_jira
 
                 if !jiraCustomerName and loadCustomerNames
@@ -135,6 +136,7 @@ class IssueSearchAction extends IssueInfoAction
 
                     async.parallel([
                         (callback) =>
+                            Customer = @customer_database.model 'Customer'
                             pattern = @jiri.createPattern "\\b#{Customer.schema.statics.allNameRegexString}\\b", @patternParts, true
                             matches = message.text.match pattern.getRegex()
 

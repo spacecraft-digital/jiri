@@ -1,7 +1,6 @@
 RSVP = require 'rsvp'
 Action = require './Action'
 Pattern = require '../Pattern'
-Customer = require('spatabase-customers')(config.mongo_url).model 'Customer'
 humanize = require '../utils/humanize'
 inflect = require '../utils/inflect'
 converter = require 'number-to-words'
@@ -146,6 +145,7 @@ class CustomerSetInfoAction extends Action
         query = query.replace /^to +/i, '' if verb in @verbSynonyms.add
 
         @setLoading()
+        Customer = @customer_database.model 'Customer'
         Customer.resolveNaturalLanguage query
             .then (result) => @doVerbToTarget verb, query, arrayIndex, newValue, result
             .catch (error) => @respond error
@@ -611,6 +611,8 @@ class CustomerSetInfoAction extends Action
             unless name?
                 @jiri.recordOutcome @, @OUTCOME_NO_VALUE_SPECIFIED, query: 'customer', verb: 'add'
                 return @respond "What's the name of the customer to add? (type `cancel` to cancel)"
+
+            Customer = @customer_database.model 'Customer'
 
             if ignoreExisting
                 promise = new RSVP.Promise (resolve) -> resolve()

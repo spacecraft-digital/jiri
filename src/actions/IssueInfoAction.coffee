@@ -21,8 +21,6 @@ class IssueInfoAction extends Action
     getTestRegex: ->
         return /\b(([A-Z]{2,5})-(?!112\.)[0-9]{2,5}\b)/ig
 
-    constructor: (@jiri, @channel) ->
-
     getRefsDataKey: =>
         return 'refs-' + @channel.id
 

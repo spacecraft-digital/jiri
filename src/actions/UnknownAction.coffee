@@ -5,12 +5,6 @@ Pattern = require '../Pattern'
 CustomerInfoAction = require './CustomerInfoAction'
 CustomerSetInfoAction = require './CustomerSetInfoAction'
 
-customer_database = require('spatabase-customers')(config.mongo_url)
-Customer = customer_database.model 'Customer'
-Project = customer_database.model 'Project'
-Repository = customer_database.model 'Repository'
-Stage = customer_database.model 'Stage'
-
 # Unknown Action, so Jiri can say "I don't understand" if directly addressed
 # with an unknown command
 #
@@ -25,6 +19,11 @@ class UnknownAction extends Action
 
     respondTo: (message) ->
         return new RSVP.Promise (resolve, reject) =>
+
+            Customer = @customer_database.model 'Customer'
+            Project = @customer_database.model 'Project'
+            Repository = @customer_database.model 'Repository'
+            Stage = @customer_database.model 'Stage'
 
             # if a suggestion has been accepted, pipe that message back to the start of the response process so other Actions can respond
             @lastOutcome = @jiri.getLastOutcome @

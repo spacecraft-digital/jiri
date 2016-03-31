@@ -8,8 +8,6 @@ moment = require 'moment'
 #
 class GeneralChatAction extends Action
 
-    constructor: (@jiri, @channel) ->
-
     patternParts:
         hello: "^(?=.*jiri).*\\b(say (hello|hi)( to the (nice )?people)?|are you there\\??|hi|hello|hey|yo|s\\'?up|what\\'?s up|greetings|oi)\\b.*"
         thanks: "^(?=.*jiri).*\\b(thank you( very much)?|thanks|ta|cheers|nice one|good work|ta muchly)\\b.*"
