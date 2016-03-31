@@ -539,6 +539,10 @@ class CustomerSetInfoAction extends Action
                 when 'no', 'n', 'false' then value = false
                 else throw "Could not convert `#{value}` to a boolean"
 
+        hyperlinkRegex = new RegExp '^<(https?://[^ ]+)>$', 'i'
+        if value.match hyperlinkRegex
+            value = value.replace hyperlinkRegex, '$1'
+
         previousValue = parent[property]
 
         if value is previousValue
