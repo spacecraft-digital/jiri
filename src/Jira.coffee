@@ -3,11 +3,12 @@ config = require '../config'
 JiraApi = require('jira').JiraApi
 Customer = require('spatabase-customers')(config.mongo_url).model 'Customer'
 async = require 'async'
-stringUtils = require './utils/string'
 Issue = require './Issue'
 ReleaseIssue = require './ReleaseIssue'
 IssueOutput = require './IssueOutput'
 semver = require 'semver'
+escape_quotes = require 'escape-quotes'
+normalize_version = require 'normalize-version'
 
 class Jira
 
@@ -92,7 +93,7 @@ class Jira
             .then (jiraMappingName) =>
                 return reject "Sorry, I don't know what Jira knows #{project.name} as" unless jiraMappingName
 
-                jql = "'Reporting Customers' = '#{stringUtils.escape jiraMappingName}' AND issueType = 'Release'"
+                jql = "'Reporting Customers' = '#{escape_quotes jiraMappingName}' AND issueType = 'Release'"
 
                 @search jql,
                     fields: IssueOutput.prototype.FIELDS
@@ -100,7 +101,8 @@ class Jira
             .catch reject
             .then (result) =>
                 try
-                    targetVersion = stringUtils.normaliseVersion(targetVersion, 2) if stringUtils.isNumericVersion(targetVersion)
+                    isNumericVersion = !!String(targetVersion).match(/^\d+(\.\d+)*$/)
+                    targetVersion = normalize_version(targetVersion, 2) if isNumericVersion
 
                     releases = []
                     for issue in result.issues
@@ -114,7 +116,7 @@ class Jira
 
                     return reject "no releases found" unless releases.length
 
-                    if stringUtils.isNumericVersion targetVersion
+                    if isNumericVersion
                         return reject "cannot find release `#{targetVersion}` for #{customer.name}"
 
                     releases.sort (one, two) -> semver.rcompare(one.semver, two.semver)

@@ -1,12 +1,13 @@
 RSVP = require 'rsvp'
 Action = require './Action'
 Pattern = require '../Pattern'
-stringUtils = require '../utils/string'
 Customer = require('spatabase-customers')(config.mongo_url).model 'Customer'
 humanize = require '../utils/humanize'
 inflect = require '../utils/inflect'
 converter = require 'number-to-words'
 moment = require 'moment'
+uncamelize = require 'uncamelize'
+joinn = require 'joinn'
 
 # Modify Customer database in natural language
 #
@@ -253,7 +254,7 @@ class CustomerSetInfoAction extends Action
                     if @assumedSplitAddQuery
                         return @parseQuery verb, @assumedSplitAddQuery.query, arrayIndex, @assumedSplitAddQuery.newValue
                     bits = humanize.explainMatches result.matches
-                    text = "I understood that #{stringUtils.join bits}, but I'm not sure I get the `#{lastMatch.query}` bit.\n\nCould you try rephrasing it?"
+                    text = "I understood that #{joinn bits}, but I'm not sure I get the `#{lastMatch.query}` bit.\n\nCould you try rephrasing it?"
                     @jiri.recordOutcome @, @OUTCOME_INVALID
 
             text = "Sorry, I'm not able to decipher `#{verb} #{query}`. Try rephrasing?" unless text
@@ -412,9 +413,9 @@ class CustomerSetInfoAction extends Action
                             text = "There are currently #{converter.toWords array.length} #{property} in #{targetPath}"
 
                         if array.length <= 3
-                            text += ": \n```#{stringUtils.join (o[nameProperty] for o in array)}```"
+                            text += ": \n```#{joinn (o[nameProperty] for o in array)}```"
 
-                    text += "\n*What's the #{stringUtils.uncamelize nameProperty} of the new #{singularProperty}?* (type `cancel` to cancel)"
+                    text += "\n*What's the #{uncamelize nameProperty} of the new #{singularProperty}?* (type `cancel` to cancel)"
 
                     return @respond text
             catch e
@@ -429,9 +430,9 @@ class CustomerSetInfoAction extends Action
                 if array.length is 0
                     text = "_#{targetPath}_ is currently an empty list\n"
                 else if array.length <= 3
-                    text = "_#{targetPath}_ are currently: \n```#{stringUtils.join array}```\n"
+                    text = "_#{targetPath}_ are currently: \n```#{joinn array}```\n"
                 else
-                    text = "_#{targetPath}_ are currently: \n```#{stringUtils.join array.slice(0,3)}```\n(and #{array.length - 3} more)\n"
+                    text = "_#{targetPath}_ are currently: \n```#{joinn array.slice(0,3)}```\n(and #{array.length - 3} more)\n"
 
                 text += "*What do you want to add?* (type `nothing` to cancel)"
 

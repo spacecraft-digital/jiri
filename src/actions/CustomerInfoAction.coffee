@@ -1,7 +1,7 @@
 RSVP = require 'rsvp'
+joinn = require 'joinn'
 Action = require './Action'
 Pattern = require '../Pattern'
-stringUtils = require '../utils/string'
 Customer = require('spatabase-customers')(config.mongo_url).model 'Customer'
 humanize = require '../utils/humanize'
 
@@ -106,7 +106,7 @@ class CustomerInfoAction extends Action
                             when 'unknown'
                                 match = result.matches[result.matches.length-1]
                                 bits = humanize.explainMatches result.matches
-                                text = "I understood that #{stringUtils.join bits}, but I'm not sure I get the `#{match.query}` bit.\n\nCould you try rephrasing it?"
+                                text = "I understood that #{joinn bits}, but I'm not sure I get the `#{match.query}` bit.\n\nCould you try rephrasing it?"
                                 @jiri.recordOutcome @, @OUTCOME_UNKNOWN
 
                     catch e

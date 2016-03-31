@@ -1,9 +1,9 @@
 RSVP = require 'rsvp'
+uncamelize = require 'uncamelize'
 Action = require './Action'
 Pattern = require '../Pattern'
 CustomerInfoAction = require './CustomerInfoAction'
 CustomerSetInfoAction = require './CustomerSetInfoAction'
-stringUtils = require '../utils/string'
 
 customer_database = require('spatabase-customers')(config.mongo_url)
 Customer = customer_database.model 'Customer'
@@ -37,7 +37,7 @@ class UnknownAction extends Action
             for model in [Customer, Project, Repository, Stage]
                 for property in Object.keys(model.schema.paths).concat(Object.keys(model.schema.virtuals))
                     properties.push property if properties.indexOf(property) is -1
-                    uncamelizedProperty = stringUtils.uncamelize property
+                    uncamelizedProperty = uncamelize property
                     properties.push uncamelizedProperty if properties.indexOf(uncamelizedProperty) is -1
 
             regexes = [

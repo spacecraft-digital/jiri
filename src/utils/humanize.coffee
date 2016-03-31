@@ -1,7 +1,8 @@
-stringUtils = require './string'
 inflect = require './inflect'
 converter = require 'number-to-words'
 moment = require 'moment'
+uncamelize = require 'uncamelize'
+ucfirst = require 'ucfirst'
 
 # Humanize
 #
@@ -64,7 +65,7 @@ module.exports =
                         targets.push converter.toWords match.target.length
                         property = inflect.pluralize property
 
-                property = stringUtils.uncamelize(property).toLowerCase()
+                property = uncamelize(property).toLowerCase()
 
                 targets.push @_fixCapitalisation(property)
 
@@ -102,8 +103,8 @@ module.exports =
         # don't try and humanise internal properties
         return key if key[0] is '_'
 
-        s = stringUtils.uncamelize(key).trim()
-        s = stringUtils.upperCaseFirst s if upperCaseFirst
+        s = uncamelize(key).trim()
+        s = ucfirst s if upperCaseFirst
 
         @_fixCapitalisation s
 

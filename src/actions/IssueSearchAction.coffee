@@ -5,8 +5,8 @@ IssueOutput = require '../IssueOutput'
 config = require '../../config'
 Pattern = require '../Pattern'
 async = require 'async'
-stringUtils = require '../utils/string'
 Customer = require('spatabase-customers')(config.mongo_url).model 'Customer'
+escape_quotes = require 'escape-quotes'
 
 class IssueSearchAction extends IssueInfoAction
 
@@ -113,7 +113,7 @@ class IssueSearchAction extends IssueInfoAction
                                 reject error
 
                 if jiraCustomerName
-                    callback null, "'Reporting Customers' = '#{stringUtils.escape jiraCustomerName}'"
+                    callback null, "'Reporting Customers' = '#{escape_quotes jiraCustomerName}'"
                 else
                     resolve
                         text: "I don't know what #{customer.name} is known as in Jira. Please `set #{customer.name}'s _mappingId_jira`"

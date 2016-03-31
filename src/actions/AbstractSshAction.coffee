@@ -3,7 +3,6 @@ Action = require './Action'
 config = require '../../config'
 https = require 'https'
 node_ssh = require 'node-ssh'
-stringUtils = require '../utils/string'
 
 # an abstract action for SSH actions to extend
 class AbstractSshAction extends Action

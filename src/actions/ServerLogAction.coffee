@@ -2,8 +2,8 @@ RSVP = require 'rsvp'
 AbstractSshAction = require './AbstractSshAction'
 config = require '../../config'
 moment = require 'moment'
+joinn = require 'joinn'
 node_ssh = require 'node-ssh'
-stringUtils = require '../utils/string'
 
 class ServerLogAction extends AbstractSshAction
 
@@ -77,7 +77,7 @@ class ServerLogAction extends AbstractSshAction
                                     return resolve
                                         text: """
                                             There is no pod #{server}. Did you mean one of these?
-                                            #{stringUtils.join pods, ', ', ' or '}
+                                            #{joinn pods, ', ', ' or '}
                                         """
                                         channel: @channel.id
                         else

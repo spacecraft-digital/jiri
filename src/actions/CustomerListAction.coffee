@@ -1,10 +1,8 @@
 RSVP = require 'rsvp'
 Action = require './Action'
 Pattern = require '../Pattern'
-stringUtils = require '../utils/string'
 Customer = require('spatabase-customers')(config.mongo_url).model 'Customer'
 humanize = require '../utils/humanize'
-regexEscape = require 'escape-string-regexp'
 converter = require 'number-to-words'
 inflect = require '../utils/inflect'
 

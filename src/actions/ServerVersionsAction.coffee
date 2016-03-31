@@ -2,8 +2,8 @@ RSVP = require 'rsvp'
 AbstractSshAction = require './AbstractSshAction'
 config = require '../../config'
 https = require 'https'
+titlecase = require 'titlecase'
 node_ssh = require 'node-ssh'
-stringUtils = require '../utils/string'
 
 class ServerVersionsAction extends AbstractSshAction
 
@@ -56,9 +56,9 @@ class ServerVersionsAction extends AbstractSshAction
                         switch file.toUpperCase()
                             when 'VERSION' then app = 'CMS'
                             when 'XFP_VERSION' then app = 'XFP'
-                            when 'CLIENT_VERSION' then app = stringUtils.titleCase customer
+                            when 'CLIENT_VERSION' then app = titlecase customer
                             else
-                                app = stringUtils.titleCase file.replace('_VERSION', '').replace('_', ' ')
+                                app = titlecase file.replace('_VERSION', '').replace('_', ' ')
                         "*#{app}* `#{version}`"
 
                     return resolve

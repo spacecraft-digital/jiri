@@ -63,6 +63,13 @@ config =
     # the number of seconds to ignore a Jira ref for after it is once unurled
     timeBeforeRepeatUnfurl: 1800
 
+    # passed to inflect.inflections
+    inflections:
+        # specify singular words for the given aliases
+        singular:
+            'alias': 'alias'
+            'aliases': 'alias'
+
 # Mix in dev config
 if '--debug' in process.argv
     devConfig = require './config-dev'
