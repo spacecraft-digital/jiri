@@ -94,6 +94,8 @@ class ServerLogAction extends AbstractSshAction
                         if now.diff(date, 'hours') < 1
                             message = message
                                         .replace new RegExp("#{jaduPath}/",'g'), ''
+                                        # special case for Hydrazine release folder paths
+                                        .replace new RegExp('^/var/www/clients/[^/]+/.pods/[^/]+/releases/\\d+/'), ''
                                         .replace ' in Unknown on line 0', ''
 
                             errors.push """
