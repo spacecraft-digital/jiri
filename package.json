@@ -1,13 +1,14 @@
 {
-  "name": "jadu-jiri",
+  "name": "jiri",
   "version": "1.1.0",
-  "description": "A helpful assistant for Jadu development. Integrates Jira, Gitlab, etc",
+  "private": true,
+  "description": "A helpful Slack bot assistant for Spacecraft development",
   "main": "app.coffee",
   "repository": "https://github.com/spacecraft-digital/jiri",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "clear && coffee app.coffee 2>&1 >> logs/jiri.log",
-    "start-dev": "clear && coffee app.coffee 2>&1"
+    "start-dev": "clear && coffee app.coffee --debug 2>&1"
   },
   "author": "matt.dolan@jadu.co.uk",
   "license": "ISC",
