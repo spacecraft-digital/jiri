@@ -25,8 +25,11 @@ class UnknownAction extends Action
             Repository = @customer_database.model 'Repository'
             Stage = @customer_database.model 'Stage'
 
+            resolve @jiri.getLastOutcome @
+
+        .then (lastOutcome) =>
+            @lastOutcome = lastOutcome
             # if a suggestion has been accepted, pipe that message back to the start of the response process so other Actions can respond
-            @lastOutcome = @jiri.getLastOutcome @
             if @lastOutcome and @lastOutcome.outcome is @OUTCOME_SUGGESTION and message.text.match @jiri.createPattern("^jiri yes$", CustomerSetInfoAction.patternParts).getRegex()
                 message.text = @lastOutcome.data.query
                 return @jiri.actOnMessage message

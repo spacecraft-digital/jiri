@@ -139,11 +139,13 @@ class CustomerInfoAction extends Action
     # No further actions will be tested if this returns TRUE
     test: (message) ->
         new RSVP.Promise (resolve) =>
-            @lastOutcome = @jiri.getLastOutcome @
-            return resolve true if @lastOutcome?.outcome is @OUTCOME_SUGGESTION and message.text.match @jiri.createPattern(@patternParts.yes).getRegex()
-            return resolve true if @lastOutcome?.outcome is @OUTCOME_SUGGESTIONS and message.text.match @jiri.createPattern(@patternParts.numberChoice).getRegex()
+            resolve @jiri.getLastOutcome @
+        .then (lastOutcome) =>
+            @lastOutcome = lastOutcome
+            return true if @lastOutcome?.outcome is @OUTCOME_SUGGESTION and message.text.match @jiri.createPattern(@patternParts.yes).getRegex()
+            return true if @lastOutcome?.outcome is @OUTCOME_SUGGESTIONS and message.text.match @jiri.createPattern(@patternParts.numberChoice).getRegex()
             for own name,regex of @getTestRegexes()
-                return resolve true if message.text.match regex
-            return resolve false
+                return true if message.text.match regex
+            return false
 
 module.exports = CustomerInfoAction

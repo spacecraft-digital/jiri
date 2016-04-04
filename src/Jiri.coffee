@@ -98,18 +98,16 @@ class Jiri
         # allow each Action to decide if they want to respond to the message
         async.detectSeries @actions, (actionClass, done) =>
             action = new actionClass @, @customer_database, message.channel
-            new RSVP.Promise (resolve, reject) ->
-                action.test message
-                    .catch (e) ->
-                        console.error "Error testing #{action.getType()}"
-                        console.log e.stack
-                        resolve false
-                    .then resolve
+            action.test message
             .then (match) =>
-                return done(false) unless match
-                done(true)
+                return done false unless match
+                done true
                 action.respondTo message
-            .then @sendResponse
+            .catch (e) ->
+                console.error "Error testing #{action.getType()}"
+                console.log e
+                done false
+                return false
             .catch (error) =>
                 @actionError error,action
         , (actionClass) ->

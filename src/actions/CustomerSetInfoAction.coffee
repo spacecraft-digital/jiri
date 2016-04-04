@@ -665,22 +665,23 @@ class CustomerSetInfoAction extends Action
     # Returns TRUE if this action can respond to the message
     # No further actions will be tested if this returns TRUE
     test: (message) ->
-        new RSVP.Promise (resolve) =>
+        @jiri.getLastOutcome @
+        .then (lastOutcome) =>
+            @lastOutcome = lastOutcome
             mainRegexMatch = message.text.match @getTestRegex()
             cancelCommand = message.text.match(@jiri.createPattern('^jiri (cancel|undo|stop|ignore|nothing|none|neither)').getRegex())
-            @lastOutcome = @jiri.getLastOutcome @
             if @lastOutcome?.outcome is @OUTCOME_NO_VALUE_SPECIFIED and not mainRegexMatch
                 @mode = if cancelCommand then @MODE_CANCEL else @MODE_SET_VALUE
-                return resolve true
+                return true
             if (@lastOutcome?.outcome is @OUTCOME_SUGGESTIONS and message.text.match @getRegex('numberChoice')) or
                (@lastOutcome?.outcome is @OUTCOME_SUGGESTION and message.text.match @getRegex('yes'))
                 @mode = @MODE_USE_SUGGESTION
-                return resolve true
+                return true
             if @lastOutcome?.outcome in [@OUTCOME_SUGGESTIONS, @OUTCOME_SUGGESTION] and (cancelCommand or message.text.match(@getRegex('no')))
                 @mode = @MODE_CANCEL
-                return resolve true
+                return true
 
             @mode = @MODE_NEW
-            return resolve mainRegexMatch
+            return mainRegexMatch
 
 module.exports = CustomerSetInfoAction

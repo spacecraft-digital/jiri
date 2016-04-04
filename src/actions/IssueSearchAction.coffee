@@ -55,23 +55,25 @@ class IssueSearchAction extends IssueInfoAction
         new RSVP.Promise (resolve) =>
             return resolve false unless message.type is 'message' and message.text? and message.channel?
 
-            @lastOutcome = @jiri.getLastOutcome @
+            resolve @jiri.getLastOutcome @
+        .then (lastOutcome) =>
+            @lastOutcome = lastOutcome
             if @lastOutcome?.outcome is @OUTCOME_TRUNCATED_RESULTS and message.text.match @getMoreRegex()
                 # if Jiri was the last user to speak, assume 'more' is talking to him
                 if message.channel.latest.user is @jiri.slack.self.id
                     @matched = @MATCH_MORE
-                    return resolve true
+                    return true
                 # otherwise require mention of his name
                 pattern = @jiri.createPattern "(?=.*\\bjiri\\b).*more", @morePattern.parts
                 if message.text.match pattern.getRegex()
                     @matched = @MATCH_MORE
-                    return resolve true
+                    return true
 
-            @getTestRegex().then (regex) =>
+            return @getTestRegex().then (regex) =>
                 if message.text.match regex
                     @matched = @MATCH_NORMAL
-                    return resolve true
-                resolve false
+                    return true
+                return false
 
     getTestRegex: =>
         new RSVP.Promise (resolve, reject) =>

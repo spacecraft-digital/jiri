@@ -52,7 +52,7 @@ class AbstractSshAction extends Action
 
         # as a security measure,
         # only allow ntn.jadu.net and pods.jadu.net domains
-        return null unless server.match /(ntn|pods)\.jadu\.net$/
+        return null unless server.match /\.(ntn|pods)\.jadu\.net$/
 
         server
 
@@ -79,20 +79,19 @@ class AbstractSshAction extends Action
     connectToServer: (server) =>
         return new RSVP.Promise (resolve, reject) =>
             @setLoading()
-            @ssh.connect(
+            resolve @ssh.connect(
                 host: server,
                 username: config.sshUser,
                 privateKey: config.sshPrivateKeyPath
             )
-            .then resolve
-            .catch (error) =>
-                if error.errno is 'ENOTFOUND'
-                    return reject "#{error.hostname} isn't available — have you spelt it right?"
-                else if error.level is 'client-authentication'
-                    return reject "Sorry — I wasn't allowed into #{server} with my key, so I don't know."
-                else
-                    console.log error
-                    return reject "I tried to SSH into #{server}. It didn't work. :cry:"
+        .catch (error) =>
+            if error.errno is 'ENOTFOUND'
+                return reject "#{error.hostname} isn't available — have you spelt it right?"
+            else if error.level is 'client-authentication'
+                return reject "Sorry — I wasn't allowed into #{server} with my key, so I don't know."
+            else
+                console.log error
+                return reject "I tried to SSH into #{server}. It didn't work. :cry:"
 
     test: (message) ->
         new RSVP.Promise (resolve) =>
