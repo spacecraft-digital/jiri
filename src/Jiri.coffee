@@ -1,22 +1,20 @@
 config = require './../config'
-ActionData = require './ActionData'
 Pattern = require './Pattern'
 Calendar = require './Calendar'
 Cron = require './Cron'
 async = require 'async'
 RSVP = require 'rsvp'
+mc_array = require 'mc-array'
 
 class Jiri
 
-    constructor: (@slack, @customer_database, @jira, @gitlab) ->
+    constructor: (@slack, @customer_database, @jira, @gitlab, @cache) ->
+        @cacheArrays = {}
         @debugMode = '--debug' in process.argv
 
         @slack.on 'open', @onSlackOpen
         @slack.on 'message', @onSlackMessage
         @slack.on 'error', @onSlackError
-
-        @channelState = {}
-        @actionData = {}
 
         @slack.login()
 
@@ -117,6 +115,9 @@ class Jiri
                          in #{if message.channel.is_im then "DM" else message.channel.name}:
                          “#{message.text}” -> #{actionClass.name}"
 
+    channelStateCacheKey: (channel) ->
+        "channel-state:#{channel.id}"
+
     # for storing state
     # The Action object must have a channel ID set
     # The outcome is a string which is meaningful to the Action
@@ -129,39 +130,58 @@ class Jiri
         actionType = action.getType() unless typeof action is 'string'
         channel = action.channel if channel is null and typeof action is 'object'
 
-        @channelState[channel.id] =
+        o = JSON.stringify {
             action: actionType
             outcome: outcome
             data: data
+        }
+        @cache.set @channelStateCacheKey(channel), o, (err, response) ->
 
     # Action action — Action object
     # Returns an object with outcome and data
-    getLastOutcome: (action) =>
-        state = @channelState[action.channel.id]
-        if state? and state.action is action.getType()
-            return {
-                outcome: state.outcome
-                data: state.data
-            }
+    getLastOutcome: (action) ->
+        return new RSVP.Promise (resolve, reject) =>
+            cacheKey = @channelStateCacheKey action.channel
+            @cache.get cacheKey, (err, response) ->
+                return resolve null if err
+                state = JSON.parse response[cacheKey]
+                if state? and state.action is action.getType()
+                    return resolve
+                        outcome: state.outcome
+                        data: state.data
+                else
+                    return resolve null
+
+    getCacheArray: (key) ->
+        unless @cacheArrays[key]
+            @cacheArrays[key] = new mc_array @cache, "action-data:#{key}"
+        @cacheArrays[key]
+
+    actionDataCacheKey: (action, key) ->
+        action = action.getType() unless action is 'string'
+        return action + ':' + key
+
+    getTimeFromNow: (s = 0) ->
+        Math.floor(Date.now()/1000) + s
 
     storeActionData: (action, key, value, ttl = 60) =>
-        a = action.getType()
-        unless @actionData[a]
-            @actionData[a] = {}
-        unless @actionData[a][key]
-            @actionData[a][key] = []
-
-        datum = new ActionData key, value, ttl
-        @actionData[a][key].push datum
+        @getCacheArray(@actionDataCacheKey action, key).add
+            value: value
+            expire: @getTimeFromNow ttl
 
     getActionData: (action, key) =>
-        a = action.getType()
-        return [] if not @actionData[a] or not @actionData[a][key]
-
-        validData = []
-        validData.push datum for datum in @actionData[a][key] when not datum.expired()
-
-        validData
+        cacheArray = @getCacheArray(@actionDataCacheKey action, key)
+        cacheArray.get()
+        .then (values) =>
+            now = @getTimeFromNow()
+            validData = []
+            for o in values
+                # remove expired
+                if o.expire > now
+                    cacheArray.remove o
+                else
+                    validData.push o.value
+            validData
 
     sendResponse: (response) =>
         return unless response
