@@ -56,9 +56,9 @@ class ServerVersionsAction extends AbstractSshAction
                         switch file.toUpperCase()
                             when 'VERSION' then app = 'CMS'
                             when 'XFP_VERSION' then app = 'XFP'
-                            when 'CLIENT_VERSION' then app = titlecase customer
+                            when 'CLIENT_VERSION' then app = titlecase customer.toLowerCase()
                             else
-                                app = titlecase file.replace('_VERSION', '').replace('_', ' ')
+                                app = titlecase file.replace('_VERSION', '').replace('_', ' ').toLowerCase()
                         "*#{app}* `#{version}`"
 
                     return resolve
