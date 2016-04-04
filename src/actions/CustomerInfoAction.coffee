@@ -69,61 +69,51 @@ class CustomerInfoAction extends Action
             @setLoading()
             Customer = @customer_database.model 'Customer'
             Customer.resolveNaturalLanguage query
-                .then (result) =>
-                    try
-                        switch result.outcome
-                            when 'found'
-                                targetPath = humanize.getRelationalPath result.matches
+            .then (result) =>
+                switch result.outcome
+                    when 'found'
+                        targetPath = humanize.getRelationalPath result.matches
 
-                                if typeof result.target is 'undefined'
-                                    text = "I'm afraid I don't have any information about _#{targetPath}_\n(if you find out, let me know)"
-                                    @jiri.recordOutcome @, @OUTCOME_EMPTY
+                        if typeof result.target is 'undefined'
+                            text = "I'm afraid I don't have any information about _#{targetPath}_\n(if you find out, let me know)"
+                            @jiri.recordOutcome @, @OUTCOME_EMPTY
 
+                        else
+                            if result.target in [true,false]
+                                text = "_Is #{targetPath}_? *#{humanize.dump(result.target)}*"
+                            else if typeof result.target is 'number' or (typeof result.target is 'string' and result.target.length < 60)
+                                text = "*#{targetPath}*: `#{humanize.dump(result.target).replace(/\\n/g, "; ")}`"
+                            else
+                                output = humanize.dump(result.target, @showHiddenProperties).replace(/\\n/g, "; ")
+                                if output is '(an empty object)'
+                                    text = "*#{targetPath}*:\n```#{output}```\nType `#{query} full` to show empty properties too"
+                                else if output
+                                    text = "*#{targetPath}*:\n```#{output}```"
                                 else
-                                    if result.target in [true,false]
-                                        text = "_Is #{targetPath}_? *#{humanize.dump(result.target)}*"
-                                    else if typeof result.target is 'number' or (typeof result.target is 'string' and result.target.length < 60)
-                                        text = "*#{targetPath}*: `#{humanize.dump(result.target).replace(/\\n/g, "; ")}`"
-                                    else
-                                        output = humanize.dump(result.target, @showHiddenProperties).replace(/\\n/g, "; ")
-                                        if output is '(an empty object)'
-                                            text = "*#{targetPath}*:\n```#{output}```\nType `#{query} full` to show empty properties too"
-                                        else if output
-                                            text = "*#{targetPath}*:\n```#{output}```"
-                                        else
-                                            text = "*#{targetPath}*: _(empty)_"
-                                    @jiri.recordOutcome @, @OUTCOME_FOUND
+                                    text = "*#{targetPath}*: _(empty)_"
+                            @jiri.recordOutcome @, @OUTCOME_FOUND
 
-                            when 'suggestion'
-                                if result.suggestions.length is 1
-                                    @jiri.recordOutcome @, @OUTCOME_SUGGESTION, result.suggestions[0]
-                                    text = "Did you mean “#{result.formattedSuggestions[0]}”?"
-                                else
-                                    @jiri.recordOutcome @, @OUTCOME_SUGGESTIONS, result.suggestions
-                                    result.formattedSuggestions = result.formattedSuggestions.map (r, i) -> "`#{i+1}` #{r}"
-                                    text = "Did you mean one of these?\n>>>\n#{result.formattedSuggestions.join "\n"}"
+                    when 'suggestion'
+                        if result.suggestions.length is 1
+                            @jiri.recordOutcome @, @OUTCOME_SUGGESTION, result.suggestions[0]
+                            text = "Did you mean “#{result.formattedSuggestions[0]}”?"
+                        else
+                            @jiri.recordOutcome @, @OUTCOME_SUGGESTIONS, result.suggestions
+                            result.formattedSuggestions = result.formattedSuggestions.map (r, i) -> "`#{i+1}` #{r}"
+                            text = "Did you mean one of these?\n>>>\n#{result.formattedSuggestions.join "\n"}"
 
-                            when 'unknown'
-                                match = result.matches[result.matches.length-1]
-                                bits = humanize.explainMatches result.matches
-                                text = "I understood that #{joinn bits}, but I'm not sure I get the `#{match.query}` bit.\n\nCould you try rephrasing it?"
-                                @jiri.recordOutcome @, @OUTCOME_UNKNOWN
+                    when 'unknown'
+                        match = result.matches[result.matches.length-1]
+                        bits = humanize.explainMatches result.matches
+                        text = "I understood that #{joinn bits}, but I'm not sure I get the `#{match.query}` bit.\n\nCould you try rephrasing it?"
+                        @jiri.recordOutcome @, @OUTCOME_UNKNOWN
 
-                    catch e
-                        console.log e.stack
-                        return reject(e)
+                text = "Sorry, I'm not able to decipher `#{query}`. Try rephrasing?" unless text
 
-                    text = "Sorry, I'm not able to decipher `#{query}`. Try rephrasing?" unless text
-
-                    return resolve
-                        text: text
-                        channel: @channel.id
-                        unfurl_links: false
-
-                .catch (error) =>
-                    return resolve
-                        text: error
-                        channel: @channel.id
+                return resolve
+                    text: text
+                    channel: @channel.id
+                    unfurl_links: false
 
     getTestRegexes: =>
         Customer = @customer_database.model 'Customer'
