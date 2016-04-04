@@ -31,7 +31,6 @@ class Jiri
         @actions = []
         actions = [
             'IgnoreMeAction'
-            'FindIssueForSupportTicketAction'
             'DependenciesAction'
             'ReleaseReadAction'
             'ReleaseWriteAction'
