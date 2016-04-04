@@ -16,6 +16,7 @@
     "chai": "^3.2.0",
     "coffee-script": "^1.9.3",
     "escape-string-regexp": "^1.0.3",
+    "chrono-node": "^1.2.1",
     "crater": "git+ssh://git@gitlab.hq.jadu.net:spacecraft/crater.git",
     "escape-quotes": "^1.0.2",
     "fuzzy": "^0.1.1",
