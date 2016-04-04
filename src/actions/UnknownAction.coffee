@@ -83,9 +83,7 @@ class UnknownAction extends Action
             if message.text.match /\?$/
                 text.push "Good question. No idea, I'm afraid."
 
-            resolve
-                text: text[Math.floor(Math.random() * text.length)]
-                channel: @channel.id
+            return text: text[Math.floor(Math.random() * text.length)], channel: @channel.id
 
     # Returns TRUE if this action can respond to the message
     # No further actions will be tested if this returns TRUE
