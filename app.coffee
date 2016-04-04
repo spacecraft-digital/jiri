@@ -8,7 +8,7 @@ RSVP = require 'rsvp'
 
 # will create SSH tunnels if 'tunnels' is defined in config
 # (which should only be defined in DEV config)
-require('./src/utils/create_ssh_tunnels') config
+require('dev-tunnels') config
 .then ->
     dependencies =
         customer_database: require('crater') config.mongo_url
