@@ -5,6 +5,8 @@ Cron = require './Cron'
 async = require 'async'
 RSVP = require 'rsvp'
 mc_array = require 'mc-array'
+colors = require 'colors'
+joinn = require 'joinn'
 
 class Jiri
 
@@ -18,12 +20,12 @@ class Jiri
 
         @slack.login()
 
-        console.log 'Awakening the Jiri…'
-
         # Create a cron instance to which we can register callbacks
         @cron = new Cron
 
         @loadActions()
+
+        console.log colors.bgWhite.grey "Hello, my name's Jiri."
 
     loadActions: ->
         @actions = []
@@ -103,11 +105,12 @@ class Jiri
                 action.respondTo message
             .catch (e) ->
                 console.error "Error testing #{action.getType()}"
-                console.log e
+                console.log if e.stack then e.stack else e
                 done false
                 return false
             .catch (error) =>
                 @actionError error,action
+            .then @sendResponse
         , (actionClass) ->
             return unless actionClass
             d = new Date
@@ -186,7 +189,7 @@ class Jiri
     sendResponse: (response) =>
         return unless response
         console.log "Response to #{response.channel}: #{response.text}" if @debugMode and '--show-response' in process.argv
-        response.text = ":sparkles: " + response.text if @debugMode
+        response.text = ":sparkles: " + (response.text||'') if @debugMode
         @slack.postMessage response
 
     actionError: (error, action) =>
@@ -202,15 +205,11 @@ class Jiri
         calendar.loadPeopleCalendar()
 
     onSlackOpen: () =>
-        console.log "Connected to Slack"
+        console.log colors.yellow "Connected to Slack"
 
-        if @debugMode then console.log """
-
-            ******************** DEBUG MODE **************************
-            ** I ain't listening to no one other than #{(@slack.getUserByID(u)?.real_name for u in config.debugSlackUserIds).join(', ')}
-            **********************************************************
-
-            """
+        if @debugMode
+            names = (@slack.getUserByID(u)?.real_name for u in config.debugSlackUserIds)
+            console.log colors.cyan "(Ignoring everyone except #{joinn names})"
 
         # avoid re-registering cron task on reconnect
         unless @holidaysCronAdded
