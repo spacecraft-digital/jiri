@@ -41,6 +41,7 @@ class IssueOutput
     getSlackMessage: () ->
         attachments = []
 
+        Issue = require './Issue'
         try
             for issue in @issues
                 attachment =
