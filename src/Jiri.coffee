@@ -207,8 +207,8 @@ class Jiri
     onSlackOpen: () =>
         console.log colors.yellow "Connected to Slack"
 
-        if @debugMode
-            names = (@slack.getUserByID(u)?.real_name for u in config.debugSlackUserIds)
+        if @debugMode and config.slack_userId_whitelist
+            names = (@slack.getUserByID(u)?.real_name for u in config.slack_userId_whitelist)
             console.log colors.cyan "(Ignoring everyone except #{joinn names})"
 
         # avoid re-registering cron task on reconnect
@@ -228,7 +228,7 @@ class Jiri
 
         # for development, only respond to Matt Dolan
         if @debugMode
-            if message.user in config.debugSlackUserIds or (message.subtype is 'bot_message' and message.username in ['Jiri', 'Slackbot'])
+            if message.user in config.slack_userId_whitelist or (message.subtype is 'bot_message' and message.username in ['Jiri', 'Slackbot'])
                 @actOnMessage message
             return
 

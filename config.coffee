@@ -11,11 +11,6 @@ config =
 
     slack_botsToIgnore: 'GitLab gitlab Jenkins HeyUpdate JIRA'
 
-    debugSlackUserIds: [
-        'U025466D6' # matt.dolan
-        'U086UNAEA' # jedkirby
-    ]
-
     jira_protocol: 'https'
     jira_host: 'jadultd.atlassian.net'
     jira_port: '443'
