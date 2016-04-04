@@ -18,13 +18,12 @@ class UnknownAction extends Action
         return 'UnknownAction'
 
     respondTo: (message) ->
+        Customer = @customer_database.model 'Customer'
+        Project = @customer_database.model 'Project'
+        Repository = @customer_database.model 'Repository'
+        Stage = @customer_database.model 'Stage'
+
         return new RSVP.Promise (resolve, reject) =>
-
-            Customer = @customer_database.model 'Customer'
-            Project = @customer_database.model 'Project'
-            Repository = @customer_database.model 'Repository'
-            Stage = @customer_database.model 'Stage'
-
             resolve @jiri.getLastOutcome @
 
         .then (lastOutcome) =>
