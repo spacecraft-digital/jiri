@@ -1,7 +1,6 @@
 RSVP = require 'rsvp'
 config = require '../config'
 JiraApi = require('jira').JiraApi
-Customer = require('spatabase-customers')(config.mongo_url).model 'Customer'
 async = require 'async'
 Issue = require './Issue'
 ReleaseIssue = require './ReleaseIssue'
