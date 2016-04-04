@@ -1,4 +1,4 @@
-Customer = require('spatabase-customers')(config.mongo_url).model 'Customer'
+Customer = require('crater')(config.mongo_url).model 'Customer'
 IsoSpreadsheet = require './src/IsoSpreadsheet'
 
 if 'find' in process.argv

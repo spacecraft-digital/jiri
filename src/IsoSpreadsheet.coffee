@@ -2,7 +2,7 @@ config = require '../config'
 RSVP = require 'rsvp'
 async = require 'async'
 GoogleSpreadsheet = require 'google-spreadsheet'
-customer_database = require('spatabase-customers')(config.mongo_url)
+customer_database = require('crater')(config.mongo_url)
 
 Customer = customer_database.model 'Customer'
 Project = customer_database.model 'Project'

@@ -9,7 +9,7 @@ gitlab = (require 'gitlab')
 
 IsoSpreadsheet = require './src/IsoSpreadsheet'
 
-Customer = require('spatabase-customers')(config.mongo_url).model 'Customer'
+Customer = require('crater')(config.mongo_url).model 'Customer'
 
 translateApiData = (data) ->
     id: data.id
