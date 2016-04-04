@@ -43,5 +43,6 @@
     "titlecase": "^1.1.2",
     "ucfirst": "^1.0.0",
     "uncamelize": "^1.0.5"
+    "dev-tunnels": "git+ssh://git@gitlab.hq.jadu.net:spacecraft/dev-tunnels.git",
   }
 }
