@@ -49,7 +49,7 @@ class CustomerSetInfoAction extends Action
         return 'CustomerSetInfoAction'
 
     describe: ->
-        return 'set information about customers\' projects'
+        return 'record information about customers\' projects'
 
     respond: (text) =>
         throw new Error "No resolve callback set" unless @responseResolveCallback
