@@ -23,7 +23,7 @@ ucfirst = require 'ucfirst'
 module.exports =
 
     # words that should have certain capitalisation
-    allCaps: 'URL URLs SSH PM CMS XFP LAMP ID HTTP HTTPS Jadu QA UAT'
+    allCaps: 'URL URLs SSH PM CMS XFP LAMP ID HTTP HTTPS Jadu QA UAT DB'
 
     # general string replacements to perform
     #
