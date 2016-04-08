@@ -57,6 +57,7 @@ config =
 
     cxm_api_url: 'https://jadusupport.api.q.jadu.net/api/service-api/jiri'
     cxm_api_key: process.env.CXM_API_KEY
+    cxm_caseUrl: 'https://jadusupport.q.jadu.net/q/case/#{reference}/timeline'
 
     calendarChannel: '#general'
 

@@ -59,12 +59,21 @@ class CxmCaseInfoAction extends Action
 
             attachments = []
 
+            if m = data.values.jira_reference?.match /\b([a-z]{3,6}-\d{4,6})\b/i
+                jiraRef = m[1]
+                jiraUrl = config.jira_issueUrl.replace /#\{key\}/g, jiraRef
+
+            text = "#{data.values.type}"
+            if jiraRef
+                text += " <#{jiraUrl}|#{jiraRef}>"
+            text += " `#{data.status?.title}`"
+
             attachment =
                 mrkdwn_in: ["text"]
                 fallback: "[#{data.reference}] #{data.values.subject}"
                 author_name: "#{data.reference} #{data.values.subject}"
-                author_link: "https://jadusupport.q.jadu.net/q/case/#{data.reference}/timeline"
-                text: truncate data.values.message, 50
+                author_link: config.cxm_caseUrl.replace /#\{([a-z0-9_]+)\}/, (m, key) => return data[key]
+                text: text
 
             attachments.push attachment
 
