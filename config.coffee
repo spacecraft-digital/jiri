@@ -55,6 +55,9 @@ config =
 
     supportUrl: 'https://support.jadu.net/jadu/support/support_ticket_list.php?subject=#{ref}'
 
+    cxm_api_url: '' # TBC
+    cxm_api_key: process.env.CXM_API_KEY
+
     calendarChannel: '#general'
 
     # the number of seconds to ignore a Jira ref for after it is once unurled

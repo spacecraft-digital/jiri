@@ -19,6 +19,8 @@ config =
         'U086UNAEA' # jedkirby
     ]
 
+    cxm_api_url: 'https://jadusupport.api.dev.cxm.ntn.jadu.net/api/service-api/jiri'
+
 console.log colors.bgCyan.black "Using DEV config for #{joinn Object.keys(config)}"
 
 module.exports = config

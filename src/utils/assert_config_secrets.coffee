@@ -27,3 +27,4 @@ module.exports = (config) ->
     throw "GOOGLE_CLIENT_ID needs to be set in the environment" unless config.google_client_id?
     throw "GOOGLE_CLIENT_EMAIL needs to be set in the environment" unless config.google_client_email?
     throw "PEOPLE_CALENDAR_URL needs to be set in the environment" unless config.peopleCalendarUrl?
+    throw "CXM_API_KEY needs to be set in the environment" unless config.cxm_api_key?

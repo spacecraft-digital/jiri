@@ -40,6 +40,7 @@ class Jiri
             'ServerVersionsAction'
             'ServerLogAction'
             'IssueInfoAction'
+            'CxmCaseInfoAction'
             'CustomerListAction'
             'CustomerInfoAction'
             'CustomerSetInfoAction'
