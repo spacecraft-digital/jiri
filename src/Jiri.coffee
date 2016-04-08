@@ -108,7 +108,7 @@ class Jiri
                 done true
                 action.respondTo message
             .catch (e) =>
-                console.log if e.stack then e.stack else e
+                console.error e
                 @actionError e,action
             .then @sendResponse
         , (actionClass) ->
