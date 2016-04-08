@@ -98,17 +98,18 @@ class Jiri
         async.detectSeries @actions, (actionClass, done) =>
             action = new actionClass @, @customer_database, message.channel
             action.test message
-            .then (match) =>
-                return done false unless match
-                done true
-                action.respondTo message
             .catch (e) ->
                 console.error "Error testing #{action.getType()}"
                 console.log if e.stack then e.stack else e
                 done false
                 return false
-            .catch (error) =>
-                @actionError error,action
+            .then (match) =>
+                return done false unless match
+                done true
+                action.respondTo message
+            .catch (e) =>
+                console.log if e.stack then e.stack else e
+                @actionError e,action
             .then @sendResponse
         , (actionClass) ->
             return unless actionClass
