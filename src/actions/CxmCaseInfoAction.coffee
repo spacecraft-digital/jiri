@@ -4,7 +4,7 @@ Issue = require '../Issue'
 IssueOutput = require '../IssueOutput'
 config = require '../../config'
 Cxm = require 'cxm'
-truncate = require 'truncate'
+ucfirst = require 'ucfirst'
 
 class CxmCaseInfoAction extends Action
 
@@ -26,7 +26,7 @@ class CxmCaseInfoAction extends Action
         return 'refs-' + @channel.id
 
     # Returns a promise that will resolve to a response if successful
-    respondTo: (message) ->
+    respondTo: (message) =>
         refs = message.text.match @getTestRegex()
 
         if !refs.length
@@ -36,50 +36,85 @@ class CxmCaseInfoAction extends Action
         recentRefs = (ref.value for ref in @jiri.getActionData @, @getRefsDataKey())
 
         if refs.length #and ref not in recentRefs
-            return @getCxmCase refs[0]
+            @setLoading()
+            @loadingTimer = setInterval (=> @setLoading()), 4000
+
+            return @getCxmCase(refs[0])
+            .catch (err) =>
+                clearInterval @loadingTimer
+                throw err
+            .then (response) =>
+                clearInterval @loadingTimer
+                return response
         else
-            return new RSVP.Promise (resolve, reject) ->
-                resolve()
+            return null
 
     getCxmCase: (ref) =>
-        return new Promise (resolve, reject) =>
+        return new RSVP.Promise (resolve, reject) =>
             cxm = new Cxm
                 url: config.cxm_api_url
                 key: config.cxm_api_key
-            resolve cxm.case(ref).then @dataLoaded
+            promise = cxm.case ref
+                .catch (err) ->
+                    # ignore 404s to avoid noise when matching things that aren't CXM cases
+                    if err.errorCode is 404
+                        return null
+                    else
+                        return RSVP.reject err
+                .then @dataLoaded
+            resolve promise
 
     dataLoaded: (data) =>
-        return new Promise (resolve, reject) =>
-            resolve null unless data
+        return new RSVP.Promise (resolve, reject) =>
+            reject null unless data
 
             @jiri.storeActionData @, @getRefsDataKey(), data.reference, config.timeBeforeRepeatUnfurl
 
             @jiri.recordOutcome @, @OUTCOME_RESULTS,
                 issueCount: 1
 
-            attachments = []
-
             if m = data.values.jira_reference?.match /\b([a-z]{3,6}-\d{4,6})\b/i
-                jiraRef = m[1]
-                jiraUrl = config.jira_issueUrl.replace /#\{key\}/g, jiraRef
+                data.jiraRef = m[1]
 
-            text = "#{data.values.type}"
-            if jiraRef
-                text += " <#{jiraUrl}|#{jiraRef}>"
-            text += " `#{data.status?.title}`"
+            # if there's a JIRA ref, output the JIRA ticket details
+            if data.jiraRef
+                promise = @jiri.jira.search("issue = #{data.jiraRef}", fields: IssueOutput.prototype.FIELDS)
+                .then (response) =>
+                    issueData = response?.issues?[0]
+                    # if we couldn't load the JIRA ticket, start again without reference to it
+                    unless issueData
+                        delete data.values.jira_reference
+                        return @dataLoaded data
 
-            attachment =
-                mrkdwn_in: ["text"]
-                fallback: "[#{data.reference}] #{data.values.subject}"
-                author_name: "#{data.reference} #{data.values.subject}"
-                author_link: config.cxm_caseUrl.replace /#\{([a-z0-9_]+)\}/, (m, key) => return data[key]
-                text: text
+                    issueData.cxmCase = data
+                    issue = new Issue issueData
+                    outputter = new IssueOutput issue
+                    response = outputter.getSlackMessage()
+                    response.channel = @channel.id
+                    return response
+                resolve promise
 
-            attachments.push attachment
+            # if no JIRA ref, output the CXM ticket details
+            else
+                attachments = []
 
-            resolve
-                attachments: JSON.stringify attachments
-                channel: @channel.id
+                text = ''
+                text += "#{ucfirst data.values.type} " if data.values.type
+                text += "`#{data.status?.title}` "
+
+                attachment =
+                    mrkdwn_in: ["text", "pretext"]
+                    fallback: "[#{data.reference}] #{data.values.subject}"
+                    author_icon: 'https://emoji.slack-edge.com/T025466D2/q/820184910a1104c4.png'
+                    author_name: "#{data.reference} #{data.values.subject}"
+                    author_link: config.cxm_caseUrl.replace /#\{([a-z0-9_]+)\}/, (m, key) => return data[key]
+                    text: text
+
+                attachments.push attachment
+
+                resolve
+                    attachments: JSON.stringify attachments
+                    channel: @channel.id
 
     test: (message) ->
         new RSVP.Promise (resolve) =>
