@@ -21,6 +21,7 @@
     "escape-quotes": "^1.0.2",
     "escape-string-regexp": "^1.0.3",
     "fuzzy": "^0.1.1",
+    "gitlab": "^1.5.0",
     "google-spreadsheet": "^1.0.1",
     "gravatar": "^1.3.0",
     "i": "^0.3.3",
