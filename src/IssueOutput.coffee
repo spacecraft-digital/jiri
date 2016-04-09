@@ -89,8 +89,8 @@ class IssueOutput
                             text += " for #{issue.clientName}"
                         text += " `#{issue.status.name}`"
 
-                        if issue.supportRef
-                            text += " <#{issue.supportUrl}|#{issue.supportRef}>"
+                        if issue.cxmRef
+                            text += " <#{issue.cxmUrl}|:q: #{issue.cxmRef}>"
 
                     # Other projects
                     else

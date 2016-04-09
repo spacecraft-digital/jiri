@@ -27,11 +27,12 @@ class Issue
         @created = moment @created if @created
         @updated = moment @updated if @updated
 
-        supportRefMatch = @summary.match /Ref:(\d{8}-\d+)/i
-        if supportRefMatch
-            @supportRef = supportRefMatch[1]
-            @supportUrl = config.supportUrl.replace(/#\{ref\}/i, @supportRef)
-            @summary = @summary.replace /\s+Ref:(\d{8}-\d+)/i, ''
+        if issueData.cxmCase
+            @cxmRef = issueData.cxmCase.reference
+            @cxmUrl = config.cxm_caseUrl.replace(/#\{reference\}/i, @cxmRef)
+
+        # clean up old Support.Jadu ref if present
+        @summary = @summary.replace /\s+Ref:(\d{8}-\d+)/i, ''
 
     isToDo: -> @status?.statusCategory?.key is "new"
     isInProgress: ->
