@@ -79,15 +79,15 @@ class IgnoreMeAction extends Action
             resolve @isIgnored message.user
         .catch -> return false
         .then (isIgnored) =>
-            if isIgnored
-                for regex in @getStopRegex()
-                    if m = message.text.toLowerCase().match regex
-                        @stopIgnoring message.user
+            for regex in @getStopRegex()
+                if m = message.text.toLowerCase().match regex
+                    @stopIgnoring message.user
+                    if isIgnored
                         return {
                             channel: @channel.id
                             text: "Sure. Hi #{message.user.profile.first_name}!"
                         }
-                return null
+                    return null
 
             for regex in @getTestRegex()
                 if m = message.text.toLowerCase().match regex
