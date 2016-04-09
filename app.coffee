@@ -29,4 +29,4 @@ require('dev-tunnels') config
     deps.jira = new (require './src/Jira') config, deps.customer_database
     jiri = new (require './src/Jiri') deps.slack, deps.customer_database, deps.jira, deps.gitlab, deps.cache
 
-.catch (e) -> console.log colors.red e.stack
+.catch (e) -> console.error e

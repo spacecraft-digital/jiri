@@ -109,7 +109,6 @@ class Jiri
                 done true
                 action.respondTo message
             .catch (e) =>
-                console.error e
                 @actionError e,action
             .then @sendResponse
         , (actionClass) ->
@@ -194,7 +193,7 @@ class Jiri
         @slack.postMessage response
 
     actionError: (error, action) =>
-        console.log "Action error in #{action.getType()}: #{error.stack or error}"
+        console.log "Action error in #{action.getType()}:", error.stack or error
 
         @slack.postMessage
             channel: action.channel.id
@@ -236,7 +235,7 @@ class Jiri
         @actOnMessage message
 
     onSlackError: (error) ->
-        console.error "Slack Error: #{error}"
+        console.error "Slack Error", error
 
 
 module.exports = Jiri
