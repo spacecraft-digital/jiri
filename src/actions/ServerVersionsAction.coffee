@@ -16,7 +16,7 @@ class ServerVersionsAction extends AbstractSshAction
     # if one of these matches, this Action will be run
     getPatterns: ->
         [
-            'which versions? are? (?:installed)? on (server)\\??$',
+            '(?:which versions? are?|what(?:[\'s’]?s| is)) (?:installed )?on (server)\\??$',
         ]
 
     getPatternParts: ->
