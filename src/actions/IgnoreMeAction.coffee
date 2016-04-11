@@ -87,7 +87,8 @@ class IgnoreMeAction extends Action
                             channel: @channel.id
                             text: "Sure. Hi #{message.user.profile.first_name}!"
                         }
-                    return null
+
+            return if isIgnored
 
             for regex in @getTestRegex()
                 if m = message.text.toLowerCase().match regex
