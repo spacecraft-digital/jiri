@@ -8,6 +8,9 @@ it to the array in Jiri#loadActions (this determines the order they are called i
 
 A user's message will be handled by the first action to return true to its `test()` method.
 
+In Debug Mode, Action modules (i.e. src/actions/FooAction.coffee) are reloaded on each
+incoming message, so you don't need to restart Jiri to test a change to these files.
+
 ## Config
 Config is defined in config.coffee. When running Jiri in `debug mode`, any config
 in `config-dev.coffee` will override anything in config.coffee
