@@ -20,14 +20,14 @@ class IgnoreMeAction extends Action
 
     getStopPatterns: ->
         [
-            'stop ignoring me'
+            'jiri stop ignoring me'
         ]
 
     getPatterns: ->
         patterns = [
-            'ignore me$'
-            'ignore me (for) (.+)$'
-            'ignore me (until) (.+)$'
+            'jiri ignore me$'
+            'jiri ignore me (for) (.+)$'
+            'jiri ignore me (until) (.+)$'
         ]
         patterns.push p for p in @getStopPatterns()
         patterns
