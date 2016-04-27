@@ -59,9 +59,7 @@ class UnknownAction extends Action
                         if customer
                             query = query.replace(new RegExp(customerName), customer.name)
                             @jiri.recordOutcome @, @OUTCOME_SUGGESTION, {query: query}
-                            return resolve
-                                text: "Did you mean `#{query}`?"
-                                channel: @channel.id
+                            return text: "Did you mean `#{query}`?", channel: @channel.id
 
             # no idea what the message means
             @jiri.recordOutcome @
