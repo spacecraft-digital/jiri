@@ -79,7 +79,7 @@ class IssueSearchAction extends IssueInfoAction
         new RSVP.Promise (resolve, reject) =>
             Customer = @customer_database.model 'Customer'
             unless @pattern
-                @pattern = @jiri.createPattern "^jiri (find after_find?)? (\\d+|(?:the )?latest|one)? ?(issueType ?|status ?|for #{Customer.schema.statics.allNameRegexString} ?|_search ?)+\\??$", @patternParts
+                @pattern = @jiri.createPattern "^jiri (find after_find?)? (\\d+|(?:the )?latest|one)? ?(issueType ?|status ?|for #{Customer.schema.statics.getAllNameRegexString()} ?|_search ?)+\\??$", @patternParts
             return resolve @pattern.getRegex()
 
     getMoreRegex: =>
@@ -139,7 +139,7 @@ class IssueSearchAction extends IssueInfoAction
                     async.parallel([
                         (callback) =>
                             Customer = @customer_database.model 'Customer'
-                            pattern = @jiri.createPattern "\\b#{Customer.schema.statics.allNameRegexString}\\b", @patternParts, true
+                            pattern = @jiri.createPattern "\\b#{Customer.schema.statics.getAllNameRegexString()}\\b", @patternParts, true
                             matches = message.text.match pattern.getRegex()
 
                             @setLoading()

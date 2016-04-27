@@ -123,7 +123,7 @@ class CustomerInfoAction extends Action
         Customer = @customer_database.model 'Customer'
         unless @patterns
             @patterns =
-                find: @jiri.createPattern("^jiri find +.*(?=#{Customer.schema.statics.allNameRegexString}).*", @patternParts),
+                find: @jiri.createPattern("^jiri find +.*(?=#{Customer.schema.statics.getAllNameRegexString()}).*", @patternParts),
                 whatVersion: @jiri.createPattern('^jiri whatVersion\\s+(\\S.+?)(?: on| running| at)?\\?*$', @patternParts, true),
         output = {}
         output[name] = pattern.getRegex() for own name, pattern of @patterns

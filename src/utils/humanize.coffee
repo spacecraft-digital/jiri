@@ -172,7 +172,7 @@ module.exports =
                     else
 
                         # get the property used in the getName() method, to avoid including it twice
-                        nameProperty = if originalObject.getNameProperty then originalObject.getNameProperty() else null
+                        nameProperty = originalObject.schema?.statics?.getNameProperty?()
 
                         keys = Object.keys(object)
                         for key in keys when key in @privateKeys or (not showHiddenProperties and (key[0] is '_' or key is nameProperty))

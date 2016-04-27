@@ -22,7 +22,7 @@ class ReleaseWriteAction extends Action
         unless @patternRegexes
             @patternRegexes = {}
             for own key, regex of @regex
-                regex = regex.replace '__customer__', Customer.schema.statics.allNameRegexString
+                regex = regex.replace '__customer__', Customer.schema.statics.getAllNameRegexString()
                 @patternRegexes[key] = @jiri.createPattern(regex).getRegex()
         return if name then @patternRegexes[name] else @patternRegexes
 
