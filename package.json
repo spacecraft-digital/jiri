@@ -6,7 +6,7 @@
   "main": "app.coffee",
   "repository": "https://github.com/spacecraft-digital/jiri",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha",
     "start": "clear && coffee app.coffee 2>&1 >> logs/jiri.log",
     "start-dev": "clear && coffee app.coffee --debug 2>&1"
   },
@@ -47,8 +47,10 @@
   },
   "devDependencies": {
     "chai": "^3.2.0",
+    "chai-as-promised": "^5.3.0",
     "coffee-script": "^1.9.3",
     "dev-tunnels": "git+ssh://git@gitlab.hq.jadu.net:spacecraft/dev-tunnels.git",
-    "mocha": "^2.3.2"
+    "mocha": "^2.3.2",
+    "sinon": "^1.17.3"
   }
 }
