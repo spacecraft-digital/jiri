@@ -90,7 +90,7 @@ class ServerLogAction extends AbstractSshAction
                     for line in result.stdout.split('\n') when line.match /PHP (Warning|.+\bError)/i
                         continue unless m = line.match /^\[([\da-z\-: ]+)\] ([\w ]+): *(.+)$/i
                         [x, date, errorType, message] = m
-                        date = moment date, 'DD-MMM-YYYY HH:mm:ss'
+                        date = moment.utc date, 'DD-MMM-YYYY HH:mm:ss'
                         if now.diff(date, 'hours') < 1
                             message = message
                                         .replace new RegExp("#{jaduPath}/",'g'), ''
