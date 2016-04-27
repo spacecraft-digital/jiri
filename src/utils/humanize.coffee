@@ -224,7 +224,7 @@ module.exports =
         output = {}
 
         # ignore empty arrays
-        return output if array.length is 0
+        return output unless array and array.length isnt 0
 
         pluralKey = @_humanizeKey key
         singularKey = inflect.singularize pluralKey
