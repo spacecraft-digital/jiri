@@ -180,7 +180,7 @@ class Jiri
             validData = []
             for o in values
                 # remove expired
-                if o.expire > now
+                if o.expire < now
                     cacheArray.remove o
                 else
                     validData.push o.value
