@@ -20,8 +20,11 @@ require('dev-tunnels') config
             mc = require 'mc'
             cache = new mc.Client()
             cache.connect ->
-                console.log "Connected to memcached"
-                resolve cache
+                # as this callback seems to fire even if connection
+                # wasn't established, we'll test the connection with a set()
+                cache.set 'connection-test', '1', {}, ->
+                    console.log "Connected to memcached"
+                    resolve cache
 
     return RSVP.hash dependencies
 
