@@ -16,7 +16,6 @@ config =
     # only these users can talk to Jiri in debug mode
     slack_userId_whitelist: [
         'U025466D6' # matt.dolan
-        'U086UNAEA' # jedkirby
     ]
 
 console.log colors.bgCyan.black "Using DEV config for #{joinn Object.keys(config)}"
