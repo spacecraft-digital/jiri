@@ -87,6 +87,9 @@ invalidMessages = [
     'show 3'
 ]
 
+config = require '../config'
+craterInit = require('crater') config.mongo_url
+
 describe 'CustomerInfoAction', ->
 
     ###########################
@@ -97,16 +100,19 @@ describe 'CustomerInfoAction', ->
                 for msg in messages
                     it "respond to “@jiri #{msg}”",
                         ((msg) -> ->
-                            action = new CustomerInfoAction jiri, channel
-                            expect(action.test(createMessage(msg))).to.be.ok
+                            craterInit.then (customer_database) ->
+                                action = new CustomerInfoAction jiri, customer_database, channel
+                                expect(action.test(createMessage(msg))).to.be.ok
                         )(msg)
 
         describe 'misc invalid messages', ->
             for msg in invalidMessages
                 it "don't respond to “@jiri #{msg}”",
                     ((msg) -> ->
-                        action = new CustomerInfoAction jiri, channel
-                        expect(action.test(createMessage(msg))).to.not.be.ok
+                        craterInit.then (customer_database) ->
+                            action = new CustomerInfoAction jiri, customer_database, channel
+                            promise = action.test(createMessage(msg))
+                            expect(promise).to.eventually.not.be.ok
                     )(msg)
 
     ###########################

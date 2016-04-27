@@ -131,6 +131,9 @@ invalidMessages = [
     '10 more'
 ]
 
+config = require '../config'
+craterInit = require('crater') config.mongo_url
+
 describe 'IssueSearchAction', ->
 
     ###########################
@@ -141,16 +144,18 @@ describe 'IssueSearchAction', ->
                 for msg in messages
                     it "respond to “@jiri #{msg}”",
                         ((msg) -> ->
-                            action = new IssueSearchAction jiri, channel
-                            expect(action.test(createMessage(msg))).to.be.ok
+                            craterInit.then (customer_database) ->
+                                action = new IssueSearchAction jiri, customer_database, channel
+                                expect(action.test(createMessage(msg))).to.be.ok
                         )(msg)
 
         describe 'misc invalid messages', ->
             for msg in invalidMessages
                 it "don't respond to “@jiri #{msg}”",
                     ((msg) -> ->
-                        action = new IssueSearchAction jiri, channel
-                        expect(action.test(createMessage(msg))).to.not.be.ok
+                        craterInit.then (customer_database) ->
+                            action = new IssueSearchAction jiri, customer_database, channel
+                            expect(action.test(createMessage(msg))).to.not.be.ok
                     )(msg)
 
     ###########################
@@ -174,7 +179,7 @@ describe 'IssueSearchAction', ->
                 message.channel.latest =
                     user: 'jiri'
 
-                action = new IssueSearchAction jiri, channel
+                action = new IssueSearchAction jiri, customer_database, channel
 
                 [action, message]
 
@@ -220,7 +225,7 @@ describe 'IssueSearchAction', ->
                 message.channel.latest =
                     user: 'someone_else'
 
-                action = new IssueSearchAction jiri, channel
+                action = new IssueSearchAction jiri, customer_database, channel
 
                 [action, message]
 
