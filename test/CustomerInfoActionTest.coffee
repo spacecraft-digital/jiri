@@ -1,8 +1,11 @@
 Pattern = require '../src/Pattern'
 
+sinon = require 'sinon'
 chai = require 'chai'
+chaiAsPromised = require 'chai-as-promised'
 should = chai.should()
 expect = chai.expect
+chai.use chaiAsPromised
 
 CustomerInfoAction = require '../src/actions/CustomerInfoAction'
 
@@ -114,100 +117,3 @@ describe 'CustomerInfoAction', ->
                             promise = action.test(createMessage(msg))
                             expect(promise).to.eventually.not.be.ok
                     )(msg)
-
-    ###########################
-    describe 'when the previous query was ambiguous', ->
-
-        ###########################
-        # describe 'when received immediately after Jiri\'s previous message', ->
-        #     # this will return action and message objects for when
-        #     getVars = (msg) ->
-        #         jiri =
-        #             slack: self: id: 'jiri'
-        #             getLastOutcome: ->
-        #                 return {
-        #                     outcome: CustomerInfoAction.prototype.OUTCOME_TRUNCATED_RESULTS
-        #                     data: {}
-        #                 }
-        #             createPattern: (metaPattern, parts, subpartMatches = false) ->
-        #                 new Pattern metaPattern, parts, subpartMatches
-
-        #         message = createMessage(msg, false)
-        #         message.channel.latest =
-        #             user: 'jiri'
-
-        #         action = new CustomerInfoAction jiri, channel
-
-        #         [action, message]
-
-        #     for msg in [
-        #             'more'
-        #             'more please'
-        #             'gimme moar!'
-        #             '10 more'
-        #         ]
-        #         it "respond to “#{msg}”",
-        #             ((msg) -> ->
-        #                 [action, message] = getVars msg
-        #                 expect(action.test(message)).to.be.ok
-        #             )(msg)
-
-        #     for msg in [
-        #             'I just can\'t take this any more'
-        #             'for goodness sake just give me some more'
-        #             'for goodness sake just give me some others'
-        #             'foo bar baz'
-        #         ]
-        #         it "don't respond to “#{msg}”",
-        #             ((msg) -> ->
-        #                 [action, message] = getVars msg
-        #                 expect(action.test(message)).to.not.be.ok
-        #             )(msg)
-
-        # ###########################
-        # describe 'when someone else has sent a message since Jiri\'s previous message', ->
-        #     # this will return action and message objects for when
-        #     getVars = (msg) ->
-        #         jiri =
-        #             slack: self: id: 'jiri'
-        #             getLastOutcome: ->
-        #                 return {
-        #                     outcome: CustomerInfoAction.prototype.OUTCOME_TRUNCATED_RESULTS
-        #                     data: {}
-        #                 }
-        #             createPattern: (metaPattern, parts, subpartMatches = false) ->
-        #                 new Pattern metaPattern, parts, subpartMatches
-
-        #         message = createMessage(msg, false)
-        #         message.channel.latest =
-        #             user: 'someone_else'
-
-        #         action = new CustomerInfoAction jiri, channel
-
-        #         [action, message]
-
-        #     for msg in [
-        #             'jiri more'
-        #             'more please jiri'
-        #             'jiri, gimme moar!'
-        #             'jiri: 10 more'
-        #         ]
-        #         it "respond to “#{msg}”",
-        #             ((msg) -> ->
-        #                 [action, message] = getVars msg
-        #                 expect(action.test(message)).to.be.ok
-        #             )(msg)
-
-        #     for msg in [
-        #             'more'
-        #             '10 more'
-        #             'I just can\'t take this any more'
-        #             'for goodness sake just give me some more'
-        #             'for goodness sake just give me some others'
-        #             'foo bar baz'
-        #         ]
-        #         it "don't respond to “#{msg}”",
-        #             ((msg) -> ->
-        #                 [action, message] = getVars msg
-        #                 expect(action.test(message)).to.not.be.ok
-        #             )(msg)
