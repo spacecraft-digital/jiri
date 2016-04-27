@@ -32,22 +32,21 @@ class IssueInfoAction extends Action
             return new RSVP.Promise (resolve, reject) ->
                 reject('No Jira refs in message')
 
-        recentRefs = (ref.value for ref in @jiri.getActionData @, @getRefsDataKey())
+        @jiri.getActionData @, @getRefsDataKey()
+        .then (recentRefs) =>
+            # handle references missing a hyphen
+            refs = []
+            for ref in rawRefs
+                [..., x, y] = ref.match(/^([a-z]+)-?(\d+)$/i)
+                ref = "#{x}-#{y}".toUpperCase()
+                # ignore recently handled refs
+                refs.push ref unless ref in recentRefs
 
-        # handle references missing a hyphen
-        refs = []
-        for ref in rawRefs
-            [..., x, y] = ref.match(/^([a-z]+)-?(\d+)$/i)
-            ref = "#{x}-#{y}".toUpperCase()
-            # ignore recently handled refs
-            found = recentRef for recentRef in recentRefs when recentRef is ref
-            refs.push ref unless found
-
-        if refs.length
-            return @getJiraIssues "issue in (#{refs.join(', ')}) ORDER BY issue"
-        else
-            return new RSVP.Promise (resolve, reject) ->
-                resolve()
+            if refs.length
+                return @getJiraIssues "issue in (#{refs.join(', ')}) ORDER BY issue"
+            else
+                return new RSVP.Promise (resolve, reject) ->
+                    resolve()
 
     getJiraIssues: (query, opts, message) =>
         options =
@@ -89,7 +88,7 @@ class IssueInfoAction extends Action
             response
 
     errorLoadingIssues: (error) =>
-        console.log error.stack
+        console.log 'Error loading issues', error
         # throw an error, unless we've just sniffed the refs
         throw error unless @getType() is 'IssueInfoAction'
 

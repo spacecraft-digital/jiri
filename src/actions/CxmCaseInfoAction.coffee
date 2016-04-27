@@ -33,21 +33,24 @@ class CxmCaseInfoAction extends Action
             return new RSVP.Promise (resolve, reject) ->
                 reject 'No CXM case refs in message'
 
-        recentRefs = (ref.value for ref in @jiri.getActionData @, @getRefsDataKey())
+        @jiri.getActionData @, @getRefsDataKey()
+        .then (recentRefs) =>
+            if refs.length
+                ref = refs[0]
+                return null if ref in recentRefs
 
-        if refs.length #and ref not in recentRefs
-            @setLoading()
-            @loadingTimer = setInterval (=> @setLoading()), 4000
+                @setLoading()
+                @loadingTimer = setInterval (=> @setLoading()), 4000
 
-            return @getCxmCase(refs[0])
-            .catch (err) =>
-                clearInterval @loadingTimer
-                throw err
-            .then (response) =>
-                clearInterval @loadingTimer
-                return response
-        else
-            return null
+                return @getCxmCase ref
+                .catch (err) =>
+                    clearInterval @loadingTimer
+                    throw err
+                .then (response) =>
+                    clearInterval @loadingTimer
+                    return response
+            else
+                return null
 
     getCxmCase: (ref) =>
         return new RSVP.Promise (resolve, reject) =>
@@ -69,9 +72,9 @@ class CxmCaseInfoAction extends Action
             reject null unless data
 
             @jiri.storeActionData @, @getRefsDataKey(), data.reference, config.timeBeforeRepeatUnfurl
+            .catch (e) -> console.log "Failed to store CXM key #{data.reference} to avoid repeat unfurling"
 
-            @jiri.recordOutcome @, @OUTCOME_RESULTS,
-                issueCount: 1
+            @jiri.recordOutcome @, @OUTCOME_RESULTS, issueCount: 1
 
             if m = data.values.jira_reference?.match /\b([a-z]{3,6}-\d{4,6})\b/i
                 data.jiraRef = m[1]
