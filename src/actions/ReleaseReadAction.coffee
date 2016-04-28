@@ -23,34 +23,38 @@ class ReleaseReadAction extends Action
 
     # if one of these matches, this Action will be run
     getPatternRegex: (name = null) ->
-        Customer = @customer_database.model 'Customer'
-        unless @patternRegexes
+        return new RSVP.Promise (resolve, reject) =>
+            if @patternRegexes
+                return resolve if name then @patternRegexes[name] else @patternRegexes
+
             @patternRegexes = {}
-            for own key, regex of @regex
-                regex = regex.replace '__customer__', Customer.schema.statics.getAllNameRegexString()
-                @patternRegexes[key] = @jiri.createPattern(regex).getRegex()
-        return if name then @patternRegexes[name] else @patternRegexes
+            Customer = @customer_database.model 'Customer'
+            return Customer.schema.statics.getAllNameRegexString()
+            .then (customerRegex) =>
+                for own key, regex of @regex
+                    regex = regex.replace '__customer__', customerRegex
+                    @patternRegexes[key] = @jiri.createPattern(regex).getRegex()
+                return resolve if name then @patternRegexes[name] else @patternRegexes
 
     # Returns a promise that will resolve to a response if successful
     respondTo: (message) ->
-        return new RSVP.Promise (resolve, reject) =>
+        @getPatternRegex()
+        .then (regexes) =>
             # remove question mark
             message.text = message.text.replace /\?+$/, ''
-
             mode = null
-
             # display release
-            if m = message.text.match @getPatternRegex('get1')
+            if m = message.text.match regexes.get1
                 releaseVersion = m[1]
                 customerName = m[2]
                 mode = 'get'
 
-            else if m = message.text.match @getPatternRegex('get2')
+            else if m = message.text.match regexes.get2
                 customerName = m[1]
                 releaseVersion = m[2]
                 mode = 'get'
 
-            else if m = message.text.match @getPatternRegex('when')
+            else if m = message.text.match regexes.when
                 customerName = m[1]
                 releaseVersion = m[2]
                 mode = 'when'
@@ -114,7 +118,7 @@ class ReleaseReadAction extends Action
                 .then (response) =>
                     if response
                         response.channel = @channel.id
-                        return resolve response
+                        return response
 
                 return
 
@@ -124,10 +128,10 @@ class ReleaseReadAction extends Action
             resolve "It doesn't look like there is an active release for #{customer.name}. Would you like to create one?"
 
     test: (message) ->
-        new RSVP.Promise (resolve) =>
-            for own name,regex of @getPatternRegex()
+        @getPatternRegex().then (regexes) =>
+            for own name,regex of regexes
                 if message.text.match(regex)
-                    return resolve true
-            return resolve false
+                    return true
+            return false
 
 module.exports = ReleaseReadAction

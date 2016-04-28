@@ -78,9 +78,12 @@ class IssueSearchAction extends IssueInfoAction
     getTestRegex: =>
         new RSVP.Promise (resolve, reject) =>
             Customer = @customer_database.model 'Customer'
-            unless @pattern
-                @pattern = @jiri.createPattern "^jiri (find after_find?)? (\\d+|(?:the )?latest|one)? ?(issueType ?|status ?|for #{Customer.schema.statics.getAllNameRegexString()} ?|_search ?)+\\??$", @patternParts
-            return resolve @pattern.getRegex()
+            if @pattern
+                return resolve @pattern.getRegex()
+            else
+                return Customer.schema.statics.getAllNameRegexString().then (customerRegex) =>
+                    @pattern = @jiri.createPattern "^jiri (find after_find?)? (\\d+|(?:the )?latest|one)? ?(issueType ?|status ?|for #{customerRegex} ?|_search ?)+\\??$", @patternParts
+                    return resolve @pattern.getRegex()
 
     getMoreRegex: =>
         unless @morePattern
@@ -138,24 +141,24 @@ class IssueSearchAction extends IssueInfoAction
 
                     async.parallel([
                         (callback) =>
-                            Customer = @customer_database.model 'Customer'
-                            pattern = @jiri.createPattern "\\b#{Customer.schema.statics.getAllNameRegexString()}\\b", @patternParts, true
-                            matches = message.text.match pattern.getRegex()
-
                             @setLoading()
+                            Customer = @customer_database.model 'Customer'
+                            Customer.schema.statics.getAllNameRegexString().then (customerRegex) =>
+                                pattern = @jiri.createPattern "\\b#{customerRegex}\\b", @patternParts, true
+                                matches = message.text.match pattern.getRegex()
 
-                            if matches
-                                customerName = matches[1]
-                                promise = Customer.findOneByName matches[1]
-                            # use channel name, is not in the blacklist of channels
-                            else if message.channel.name not in config.slack_nonCustomerChannels.split(/ /)
-                                customerName = message.channel.name
-                                promise = Customer.findOne(slackChannel: new RegExp("^#{message.channel.name}$",'i'))
-                            else
-                                return callback null, null
+                                if matches
+                                    customerName = matches[1]
+                                    promise = Customer.findOneByName matches[1]
+                                # use channel name, is not in the blacklist of channels
+                                else if message.channel.name not in config.slack_nonCustomerChannels.split(/ /)
+                                    customerName = message.channel.name
+                                    promise = Customer.findOne(slackChannel: new RegExp("^#{message.channel.name}$",'i'))
+                                else
+                                    return callback null, null
 
-                            promise.then @_curryGetJiraMappingIdForCustomer(message.channel.name, callback)
-                                .catch (error) => callback null
+                                promise.then @_curryGetJiraMappingIdForCustomer(message.channel.name, callback)
+                                    .catch (error) => callback null
 
                         (callback) =>
                             pattern = @jiri.createPattern "\\bissueType\\b", @patternParts, true

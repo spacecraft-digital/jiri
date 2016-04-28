@@ -47,30 +47,37 @@ class CustomerInfoAction extends Action
                         text: "That wasn't one of the options!"
                         channel: @channel.id
 
+                return resolve query
             else
-                # convert a 'what version' query to standard form
-                if m = message.text.match @getTestRegexes().whatVersion
-                    customer = m[3].replace /[!.?\s]+$/, ''
-                    query = "#{customer} #{m[2]} version"
+                return resolve @getTestRegexes().then (testRegexes) =>
+                    # convert a 'what version' query to standard form
+                    if m = message.text.match testRegexes.whatVersion
+                        customer = m[3].replace /[!.?\s]+$/, ''
+                        query = "#{customer} #{m[2]} version"
 
-                else
-                    query = message.text.replace(@jiri.createPattern('^jiri find\\s+', @patternParts).getRegex(), '')
-                            # remove trailing question mark
-                            .replace /[!.?\s]+$/, ''
+                    else
+                        query = message.text.replace(@jiri.createPattern('^jiri find\\s+', @patternParts).getRegex(), '')
+                                # remove trailing question mark
+                                .replace /[!.?\s]+$/, ''
 
-                    # a flag to show properties that would otherwise be hidden
-                    showHiddenRegex = /[ ](full|includ(ing|e) hidden)$/i
-                    if query.match showHiddenRegex
-                        query = query.replace showHiddenRegex, ''
-                        @showHiddenProperties = true
+                        # a flag to show properties that would otherwise be hidden
+                        showHiddenRegex = /[ ](full|includ(ing|e) hidden)$/i
+                        if query.match showHiddenRegex
+                            query = query.replace showHiddenRegex, ''
+                            @showHiddenProperties = true
 
+                    query
+
+        .then (query) =>
             # remove any 'apostrophe s'
             query = query.replace /(\w)['’]+s /g, '$1 '
 
             @setLoading()
             Customer = @customer_database.model 'Customer'
-            resolve Customer.resolveNaturalLanguage query
+            Customer.resolveNaturalLanguage query
+
         .catch (e) =>
+            console.log e.stack||e
             return text: e, channel: @channel.id
 
         .then (result) =>
@@ -121,25 +128,26 @@ class CustomerInfoAction extends Action
 
     getTestRegexes: =>
         Customer = @customer_database.model 'Customer'
-        unless @patterns
-            @patterns =
-                find: @jiri.createPattern("^jiri find +.*(?=#{Customer.schema.statics.getAllNameRegexString()}).*", @patternParts),
-                whatVersion: @jiri.createPattern('^jiri whatVersion\\s+(\\S.+?)(?: on| running| at)?\\?*$', @patternParts, true),
-        output = {}
-        output[name] = pattern.getRegex() for own name, pattern of @patterns
-        return output
+        Customer.schema.statics.getAllNameRegexString().then (customerRegex) =>
+            unless @patterns
+                @patterns =
+                    find: @jiri.createPattern("^jiri find +.*(?=#{customerRegex}).*", @patternParts),
+                    whatVersion: @jiri.createPattern('^jiri whatVersion\\s+(\\S.+?)(?: on| running| at)?\\?*$', @patternParts, true),
+            output = {}
+            output[name] = pattern.getRegex() for own name, pattern of @patterns
+            return output
 
     # Returns TRUE if this action can respond to the message
     # No further actions will be tested if this returns TRUE
     test: (message) ->
-        new RSVP.Promise (resolve) =>
-            resolve @jiri.getLastOutcome @
+        @jiri.getLastOutcome @
         .then (lastOutcome) =>
             @lastOutcome = lastOutcome
             return true if @lastOutcome?.outcome is @OUTCOME_SUGGESTION and message.text.match @jiri.createPattern(@patternParts.yes).getRegex()
             return true if @lastOutcome?.outcome is @OUTCOME_SUGGESTIONS and message.text.match @jiri.createPattern(@patternParts.numberChoice).getRegex()
-            for own name,regex of @getTestRegexes()
-                return true if message.text.match regex
-            return false
+            @getTestRegexes().then (regexes) =>
+                for own name,regex of regexes
+                    return true if message.text.match regex
+                return false
 
 module.exports = CustomerInfoAction
