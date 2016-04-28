@@ -1,0 +1,9 @@
+{
+    "uid": "jiri",
+    "watch": true,
+    "command": "coffee",
+    "script": "app.coffee",
+    "sourceDir": "/var/jiri",
+    "minUptime": 1000,
+    "spinSleepTime": 2000
+}
