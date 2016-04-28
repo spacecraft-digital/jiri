@@ -50,6 +50,17 @@ class ServerVersionsAction extends AbstractSshAction
             @setLoading()
             @ssh.execCommand(versionsCommand, {stream: 'both'})
             .then (result) =>
+                if result.stderr
+                    if result.stderr.indexOf('No such file or directory') != -1
+                        if server.match /\.pods\.jadu\.net/
+                            bits = server.split '.'
+                            message = "I don't think #{customer} `#{bits[0]}` is a real pod."
+                        else
+                            message = "Things weren't where I expected them to be on the server, so I couldn't find out the versions."
+                    else
+                        message = "Something went wrong on the server, so I couldn't find out."
+                    return text: message, channel: @channel.id
+
                 versions = for line in result.stdout.split('\n')
                     [file, version] = line.split(': ', 2)
                     continue unless file
@@ -71,8 +82,10 @@ class ServerVersionsAction extends AbstractSshAction
             message =
                 if error.message?.match /I wasn't allowed into/
                     error.message + " Try http://#{server}/jadu/version.php"
+                else if error.message
+                    error.message
                 else
-                    "unable to retrieve version numbers"
+                    "I wasn't able to retrieve version numbers from #{server}"
             text: message
             channel: @channel.id
 

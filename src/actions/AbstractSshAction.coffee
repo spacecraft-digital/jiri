@@ -17,7 +17,7 @@ class AbstractSshAction extends Action
         []
 
     getPatternParts: ->
-        "server": "(the )?(<http[^|]+\\|)?([a-z.0-9\\- ]+)>?(['’]s)?( (qa|uat|dev pod|dev|[a-z]{3,4}-\\d{3,}\\b))? ?(site|server)?"
+        "server": "(the )?(<http[^|]+\\|)?([a-z.0-9\\- ]+)>?(['’]s)?( (qa|uat|dev|[a-z]{3,4}-\\d{3,}\\b))? ?(pod|site|server)?"
 
     # if one of these matches, this Action will be run
     getTestRegex: =>
@@ -42,10 +42,10 @@ class AbstractSshAction extends Action
                        .toLowerCase()
 
         # assume a JIRA ref means a pod
-        if m = server.match /^(.+?) +(dev pod|[a-z]{3,4}-\d{3,})$/i
+        if m = server.match /^(.+?) +(dev pod|[a-z]{3,4}-\d{3,})( pod)?$/i
             [x, client, role] = m
             role = 'dev' if role is 'dev pod'
-            return "#{role}.#{client.replace /[ ]/g, '-'}.pods.jadu.net"
+            return "#{role}.#{client.replace /[ ]+/g, '-'}.pods.jadu.net"
         else if server.indexOf(' ') > -1
             bits = server.split(' ')
             role = bits.pop()
