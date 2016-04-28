@@ -27,52 +27,53 @@ class ServerVersionsAction extends AbstractSshAction
 
     # Returns a promise that will resolve to a response if successful
     respondTo: (message) ->
-        return new RSVP.Promise (resolve, reject) =>
-            for regex in @getTestRegex()
-                if m = message.text.toLowerCase().match regex
-                    server = @normaliseServerName m[1]
-                    break
+        for regex in @getTestRegex()
+            if m = message.text.toLowerCase().match regex
+                server = @normaliseServerName m[1]
+                break
 
-            if server is null
-                return resolve
-                    text: "Sorry, that isn't a server I can work with :no_entry:"
-                    channel: @channel.id
+        if server is null
+            return {
+                text: "Sorry, that isn't a server I can work with :no_entry:"
+                channel: @channel.id
+            }
 
-            customer = @deriveCustomerName server
-            jaduPath = @getJaduPath server
+        customer = @deriveCustomerName server
+        jaduPath = @getJaduPath server
 
-            versionsCommand = """
-                cd #{jaduPath};for f in $(ls -1 *VERSION);do echo -n "$f: ";head -n1 $f|tr -d '\n';echo;done
-            """
+        versionsCommand = """
+            cd #{jaduPath};for f in $(ls -1 *VERSION);do echo -n "$f: ";head -n1 $f|tr -d '\n';echo;done
+        """
 
-            @connectToServer(server)
-            .then =>
-                @setLoading()
-                @ssh.execCommand(versionsCommand, {stream: 'both'})
-                .then (result) =>
-                    versions = for line in result.stdout.split('\n')
-                        [file, version] = line.split(': ', 2)
-                        continue unless file
-                        switch file.toUpperCase()
-                            when 'VERSION' then app = 'CMS'
-                            when 'XFP_VERSION' then app = 'XFP'
-                            when 'CLIENT_VERSION' then app = titlecase customer.toLowerCase()
-                            else
-                                app = titlecase file.replace('_VERSION', '').replace('_', ' ').toLowerCase()
-                        "*#{app}* `#{version}`"
+        @connectToServer(server)
+        .then =>
+            @setLoading()
+            @ssh.execCommand(versionsCommand, {stream: 'both'})
+            .then (result) =>
+                versions = for line in result.stdout.split('\n')
+                    [file, version] = line.split(': ', 2)
+                    continue unless file
+                    switch file.toUpperCase()
+                        when 'VERSION' then app = 'CMS'
+                        when 'XFP_VERSION' then app = 'XFP'
+                        when 'CLIENT_VERSION' then app = titlecase customer.toLowerCase()
+                        else
+                            app = titlecase file.replace('_VERSION', '').replace('_', ' ').toLowerCase()
+                    "*#{app}* `#{version}`"
 
-                    return resolve
-                        text: """
-                            #{server} has the following software installed:
-                            #{versions.join '\n'}
-                        """
-                        channel: @channel.id
+                text: """
+                    #{server} has the following software installed:
+                    #{versions.join '\n'}
+                """
+                channel: @channel.id
 
-            .catch (error) =>
-                if error.match /I wasn't allowed into/
-                    error += " Try http://#{server}/jadu/version.php"
-                resolve
-                    text: error
-                    channel: @channel.id
+        .catch (error) =>
+            message =
+                if error.message?.match /I wasn't allowed into/
+                    error.message + " Try http://#{server}/jadu/version.php"
+                else
+                    "unable to retrieve version numbers"
+            text: message
+            channel: @channel.id
 
 module.exports = ServerVersionsAction

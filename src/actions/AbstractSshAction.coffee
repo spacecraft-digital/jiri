@@ -84,21 +84,18 @@ class AbstractSshAction extends Action
 
     # returns a Promise that will resolve upon connection
     connectToServer: (server) =>
-        return new RSVP.Promise (resolve, reject) =>
-            @setLoading()
-            resolve @ssh.connect(
-                host: server,
-                username: config.sshUser,
-                privateKey: config.sshPrivateKeyPath
-            )
+        @ssh.connect
+            host: server,
+            username: config.sshUser,
+            privateKey: config.sshPrivateKeyPath
         .catch (error) =>
             if error.errno is 'ENOTFOUND'
-                return reject "#{error.hostname} isn't available — have you spelt it right?"
+                throw new Error "#{error.hostname} isn't available — have you spelt it right?"
             else if error.level is 'client-authentication'
-                return reject "Sorry — I wasn't allowed into #{server} with my key, so I don't know."
+                throw new Error "Sorry — I wasn't allowed into #{server} with my key, so I don't know."
             else
                 console.log error
-                return reject "I tried to SSH into #{server}. It didn't work. :cry:"
+                throw new Error "I tried to SSH into #{server}. It didn't work. :cry:"
 
     test: (message) ->
         new RSVP.Promise (resolve) =>
