@@ -121,6 +121,11 @@ module.exports =
 
                 else if object instanceof Date
                     return moment(object).calendar null,
+                        sameDay: '[today]',
+                        nextDay: '[tomorrow]',
+                        nextWeek: 'dddd',
+                        lastDay: '[yesterday]',
+                        lastWeek: '[last] dddd',
                         sameElse: 'dddd LL'
 
                 # array
