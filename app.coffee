@@ -38,8 +38,10 @@ require('dev-tunnels') config
                     console.log "Connected to memcached"
                     resolve cache
     ]
+.catch (err) ->
+    throw colors.bgRed 'Failed to load dependencies: ' + err.stack||err
 
 # once we've got all the dependencies, we can construct
 .then (deps) -> newWithArgs Jiri, deps
 
-.catch (e) -> console.error e
+.catch console.error.bind(console)
