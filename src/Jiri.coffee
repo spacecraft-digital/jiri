@@ -210,6 +210,14 @@ class Jiri
             names = (@slack.getUserByID(u)?.real_name for u in config.slack_userId_whitelist)
             console.log colors.cyan "(Ignoring everyone except #{joinn names})"
 
+        for channel in config.slack_notifyOnRestart||[]
+            text = ":wave: I'm back!"
+            if @debugMode
+                text += " Run by `#{process.env.LOGNAME}` in debug mode"
+            @slack.postMessage
+                text: text
+                channel: channel
+
         # avoid re-registering cron task on reconnect
         unless @holidaysCronAdded
             @holidaysCronAdded = true

@@ -11,6 +11,10 @@ config =
 
     slack_botsToIgnore: 'GitLab gitlab Jenkins HeyUpdate JIRA'
 
+    slack_notifyOnRestart: [
+        'U025466D6' # matt.dolan
+    ]
+
     jira_protocol: 'https'
     jira_host: 'jadultd.atlassian.net'
     jira_port: '443'
