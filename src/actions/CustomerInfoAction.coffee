@@ -36,16 +36,14 @@ class CustomerInfoAction extends Action
         query = ''
         return new RSVP.Promise (resolve, reject) =>
             if @lastOutcome?.outcome is @OUTCOME_SUGGESTION and message.text.match @jiri.createPattern(@patternParts.yes).getRegex()
-                query = @lastOutcome.data
+                return resolve @lastOutcome.data
 
             else if @lastOutcome?.outcome is @OUTCOME_SUGGESTIONS and m = message.text.match @jiri.createPattern(@patternParts.numberChoice).getRegex()
                 index = parseInt(m[1], 10)-1
                 if @lastOutcome.data[index]
                     query = @lastOutcome.data[index]
                 else
-                    return resolve
-                        text: "That wasn't one of the options!"
-                        channel: @channel.id
+                    return reject "That wasn't one of the options!"
 
                 return resolve query
             else
