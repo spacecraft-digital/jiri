@@ -9,7 +9,9 @@ config =
     sshPrivateKeyPath: '/Users/mattd/.ssh/jadu_webdev_key'
     tunnels:
         'spacecraft--jiri.ntn.jadu.net':
-            ports: ['27017', '11211']
+            ports: [
+                '27017'
+            ]
             # privateKeyPath: '/path/to/key' (defaults to use config.sshPrivateKeyPath)
             # username: 'root'
 
