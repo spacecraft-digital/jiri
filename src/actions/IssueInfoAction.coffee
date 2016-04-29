@@ -87,7 +87,7 @@ class IssueInfoAction extends Action
             response
 
     errorLoadingIssues: (error, message) =>
-        if @getType() is 'IssueInfoAction'
+        if @getType() is 'IssueInfoAction' and error is 'Problem with the JQL query'
             # if the message was just a ticket ref, respond even if the ticket's not found
             issueOnly = message.text.match @jiri.createPattern('^jiri? ([a-z]{2,5}-[0-9]{2,5}) *$').getRegex()
             return if issueOnly
