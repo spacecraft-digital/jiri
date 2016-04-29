@@ -1,4 +1,3 @@
-RSVP = require 'rsvp'
 Action = require './Action'
 Pattern = require '../Pattern'
 config = require '../../config'
@@ -25,7 +24,7 @@ class GeneralChatAction extends Action
 
         hours = moment.tz(config.timezone).hours()
 
-        return new RSVP.Promise (resolve, reject) =>
+        return new Promise (resolve, reject) =>
             if message.subtype in ['group_join', 'channel_join'] and message.user.id is @jiri.slack.self.id
                 text = [
                     "Hi folks",
@@ -101,7 +100,7 @@ class GeneralChatAction extends Action
     # Returns TRUE if this action can respond to the message
     # No further actions will be tested if this returns TRUE
     test: (message) ->
-        new RSVP.Promise (resolve) =>
+        new Promise (resolve) =>
             return resolve true if message.subtype in ['group_join', 'channel_join']
 
             return resolve false unless message.text

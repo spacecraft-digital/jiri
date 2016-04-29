@@ -3,7 +3,6 @@ Pattern = require './Pattern'
 Calendar = require './Calendar'
 Cron = require './Cron'
 async = require 'async'
-RSVP = require 'rsvp'
 mc_array = require 'mc-array'
 colors = require 'colors'
 joinn = require 'joinn'
@@ -142,7 +141,7 @@ class Jiri
     # Action action — Action object
     # Returns an object with outcome and data
     getLastOutcome: (action) ->
-        return new RSVP.Promise (resolve, reject) =>
+        return new Promise (resolve, reject) =>
             cacheKey = @channelStateCacheKey action.channel
             @cache.get cacheKey, (err, response) ->
                 return resolve null if err

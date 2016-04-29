@@ -1,4 +1,3 @@
-RSVP = require 'rsvp'
 Action = require './Action'
 Pattern = require '../Pattern'
 
@@ -17,7 +16,7 @@ class HelpAction extends Action
         "who_is_jiri": "^jiri[,:\\- ]* (what|who) are you\\??|(what|who)( i|')s (this )?jiri\\??"
 
     respondTo: (message) ->
-        return new RSVP.Promise (resolve, reject) =>
+        return new Promise (resolve, reject) =>
             text = []
 
             if message.text.match @jiri.createPattern('what_can_you_do', @patternParts).getRegex()
@@ -55,7 +54,7 @@ class HelpAction extends Action
     # Returns TRUE if this action can respond to the message
     # No further actions will be tested if this returns TRUE
     test: (message) ->
-        new RSVP.Promise (resolve) =>
+        new Promise (resolve) =>
             pattern = @jiri.createPattern Object.keys(@patternParts).join('|'), @patternParts
             return resolve message.text.match pattern.getRegex()
 

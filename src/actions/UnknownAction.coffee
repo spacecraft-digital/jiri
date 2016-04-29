@@ -1,4 +1,3 @@
-RSVP = require 'rsvp'
 uncamelize = require 'uncamelize'
 Action = require './Action'
 Pattern = require '../Pattern'
@@ -23,7 +22,7 @@ class UnknownAction extends Action
         Repository = @customer_database.model 'Repository'
         Stage = @customer_database.model 'Stage'
 
-        return new RSVP.Promise (resolve, reject) =>
+        return new Promise (resolve, reject) =>
             resolve @jiri.getLastOutcome @
 
         .then (lastOutcome) =>
@@ -86,7 +85,7 @@ class UnknownAction extends Action
     # Returns TRUE if this action can respond to the message
     # No further actions will be tested if this returns TRUE
     test: (message) ->
-        new RSVP.Promise (resolve) =>
+        new Promise (resolve) =>
             return resolve false unless message.type is 'message' and message.text? and message.channel?
 
             return resolve false if message.subtype is 'bot_message'

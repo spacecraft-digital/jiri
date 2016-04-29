@@ -1,4 +1,3 @@
-RSVP = require 'rsvp'
 AbstractSshAction = require './AbstractSshAction'
 config = require '../../config'
 moment = require 'moment'
@@ -35,7 +34,7 @@ class ServerLogAction extends AbstractSshAction
 
     # Returns a promise that will resolve to a response if successful
     respondTo: (message) ->
-        return new RSVP.Promise (resolve, reject) =>
+        return new Promise (resolve, reject) =>
             for regex in @getTestRegex()
                 if m = message.text.toLowerCase().match regex
                     server = @normaliseServerName m[1]

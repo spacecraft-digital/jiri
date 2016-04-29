@@ -1,4 +1,3 @@
-RSVP = require 'rsvp'
 Action = require './Action'
 Pattern = require '../Pattern'
 humanize = require '../utils/humanize'
@@ -41,7 +40,7 @@ class CustomerListAction extends Action
         return 'list/search for customers'
 
     respondTo: (message) ->
-        return new RSVP.Promise (resolve, reject) =>
+        return new Promise (resolve, reject) =>
             @setLoading()
 
             # the user has answered 'no', so no need to reply
@@ -161,7 +160,7 @@ class CustomerListAction extends Action
     # Returns TRUE if this action can respond to the message
     # No further actions will be tested if this returns TRUE
     test: (message) ->
-        new RSVP.Promise (resolve) =>
+        new Promise (resolve) =>
             resolve @jiri.getLastOutcome @
         .then (lastOutcome) =>
             @lastOutcome = lastOutcome

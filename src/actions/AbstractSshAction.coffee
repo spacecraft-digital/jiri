@@ -1,4 +1,3 @@
-RSVP = require 'rsvp'
 Action = require './Action'
 config = require '../../config'
 https = require 'https'
@@ -98,7 +97,7 @@ class AbstractSshAction extends Action
                 throw new Error "I tried to SSH into #{server}. It didn't work. :cry:"
 
     test: (message) ->
-        new RSVP.Promise (resolve) =>
+        new Promise (resolve) =>
             return resolve false unless message.type is 'message' and message.text? and message.channel?
 
             for regex in @getTestRegex()

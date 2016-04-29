@@ -1,4 +1,3 @@
-RSVP = require 'rsvp'
 joinn = require 'joinn'
 Action = require './Action'
 Pattern = require '../Pattern'
@@ -34,7 +33,7 @@ class CustomerInfoAction extends Action
 
     respondTo: (message) ->
         query = ''
-        return new RSVP.Promise (resolve, reject) =>
+        return new Promise (resolve, reject) =>
             if @lastOutcome?.outcome is @OUTCOME_SUGGESTION and message.text.match @jiri.createPattern(@patternParts.yes).getRegex()
                 return resolve @lastOutcome.data
 

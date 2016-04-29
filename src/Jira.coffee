@@ -1,4 +1,3 @@
-RSVP = require 'rsvp'
 config = require '../config'
 JiraApi = require('jira').JiraApi
 async = require 'async'
@@ -33,27 +32,27 @@ class Jira
     ###########
 
     findIssue: (issueNumber) =>
-        return new RSVP.Promise (resolve, reject) =>
+        return new Promise (resolve, reject) =>
             @api.findIssue issueNumber, @_getCallback(resolve,reject)
 
     listProjects: =>
-        return new RSVP.Promise (resolve, reject) =>
+        return new Promise (resolve, reject) =>
             @api.listProjects @_getCallback(resolve,reject)
 
     getProject: (project) =>
-        return new RSVP.Promise (resolve, reject) =>
+        return new Promise (resolve, reject) =>
             @api.getProject project, @_getCallback(resolve,reject)
 
     search: (jql, options) =>
-        return new RSVP.Promise (resolve, reject) =>
+        return new Promise (resolve, reject) =>
             @api.searchJira jql, options, @_getCallback(resolve,reject)
 
     searchUsers: (username, startAt, maxResults, includeActive, includeInactive) =>
-        return new RSVP.Promise (resolve, reject) =>
+        return new Promise (resolve, reject) =>
             @api.searchUsers username, startAt, maxResults, includeActive, includeInactive, @_getCallback(resolve,reject)
 
     listIssueTypes: =>
-        return new RSVP.Promise (resolve, reject) =>
+        return new Promise (resolve, reject) =>
             @api.listIssueTypes @_getCallback(resolve,reject)
 
     ###########
@@ -61,15 +60,15 @@ class Jira
     ###########
 
     addNewIssue: (issue) =>
-        return new RSVP.Promise (resolve, reject) =>
+        return new Promise (resolve, reject) =>
             @api.addNewIssue issue, @_getCallback(resolve,reject)
 
     updateIssue: (issueNum, issueUpdate) =>
-        return new RSVP.Promise (resolve, reject) =>
+        return new Promise (resolve, reject) =>
             @api.updateIssue issueNum, issueUpdate, @_getCallback(resolve,reject)
 
     createLink: (from, to, type = 'Blocks') =>
-        return new RSVP.Promise (resolve, reject) =>
+        return new Promise (resolve, reject) =>
             options =
                 linkType: type
                 fromIssueKey: from
@@ -77,7 +76,7 @@ class Jira
             @api.issueLink options, @_getCallback(resolve,reject)
 
     addComment: (issueId, comment) =>
-        return new RSVP.Promise (resolve, reject) =>
+        return new Promise (resolve, reject) =>
             @api.addComment issueId, comment, @_getCallback(resolve,reject)
 
     ##########
@@ -85,7 +84,7 @@ class Jira
     ##########
 
     getReleaseTicket: (project, targetVersion = 'latest') ->
-        return new RSVP.Promise (resolve, reject) =>
+        return new Promise (resolve, reject) =>
             project.getJiraMappingId @
             .then (jiraMappingName) =>
                 return reject "Sorry, I don't know what JIRA knows #{project.name} as" unless jiraMappingName
@@ -140,7 +139,7 @@ class Jira
 
 
     getReportingCustomerValues: ->
-        return new RSVP.Promise (resolve, reject) =>
+        return new Promise (resolve, reject) =>
             return resolve @reportingCustomerValues if @reportingCustomerValues
 
             @api.getCreateIssueMeta
@@ -156,7 +155,7 @@ class Jira
 
     # attempts to assign each of the Reporting Customer values from Jira onto a Customer document
     loadReportingCustomerValues: ->
-        return new RSVP.Promise (resolve, reject) =>
+        return new Promise (resolve, reject) =>
             @getReportingCustomerValues()
             .then (jiraCustomerNames) ->
                 console.log "I've got #{jiraCustomerNames.length} customer names from JIRA"

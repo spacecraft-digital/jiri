@@ -1,4 +1,3 @@
-RSVP = require 'rsvp'
 Action = require './Action'
 config = require '../../config'
 ReleaseIssue = require '../ReleaseIssue'
@@ -23,7 +22,7 @@ class ReleaseReadAction extends Action
 
     # if one of these matches, this Action will be run
     getPatternRegex: (name = null) ->
-        return new RSVP.Promise (resolve, reject) =>
+        return new Promise (resolve, reject) =>
             if @patternRegexes
                 return resolve if name then @patternRegexes[name] else @patternRegexes
 
@@ -119,7 +118,7 @@ class ReleaseReadAction extends Action
                         return response
 
     noNextReleaseTicket: (customer, forceCreate = false) =>
-        new RSVP.Promise (resolve, reject) =>
+        new Promise (resolve, reject) =>
             @jiri.recordOutcome 'ReleaseWriteAction', @OUTCOME_SUGGESTION, {suggestion: "create release for #{customer.name}"}, @channel
             resolve "It doesn't look like there is an active release for #{customer.name}. Would you like to create one?"
 

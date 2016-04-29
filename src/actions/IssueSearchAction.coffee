@@ -1,4 +1,3 @@
-RSVP = require 'rsvp'
 IssueInfoAction = require './IssueInfoAction'
 Issue = require '../Issue'
 IssueOutput = require '../IssueOutput'
@@ -52,7 +51,7 @@ class IssueSearchAction extends IssueInfoAction
         return 'find Jira tickets for you, e.g. “Jiri, show me bugs in progress for warrington”'
 
     test: (message) ->
-        new RSVP.Promise (resolve) =>
+        new Promise (resolve) =>
             return resolve false unless message.type is 'message' and message.text? and message.channel?
 
             resolve @jiri.getLastOutcome @
@@ -76,7 +75,7 @@ class IssueSearchAction extends IssueInfoAction
                 return false
 
     getTestRegex: =>
-        new RSVP.Promise (resolve, reject) =>
+        new Promise (resolve, reject) =>
             if @pattern
                 return resolve @pattern.getRegex()
             else
@@ -98,7 +97,7 @@ class IssueSearchAction extends IssueInfoAction
     # @param resolve (function) the overall respondTo promise resolution callback — to exit the whole process if needed
     _curryGetJiraMappingIdForCustomer: (query, callback, loadCustomerNames = true) ->
         (customer) =>
-            return new RSVP.Promise (resolve, reject) =>
+            return new Promise (resolve, reject) =>
                 return callback "Customer not found for #{query}" unless customer
 
                 Customer = @customer_database.model 'Customer'
@@ -128,7 +127,7 @@ class IssueSearchAction extends IssueInfoAction
 
     # Returns a promise that will resolve to a response if successful
     respondTo: (message) =>
-        return new RSVP.Promise (resolve, reject) =>
+        return new Promise (resolve, reject) =>
             if @matched is @MATCH_NORMAL
                 @getTestRegex().then (regex) =>
                     matches = message.text.match regex

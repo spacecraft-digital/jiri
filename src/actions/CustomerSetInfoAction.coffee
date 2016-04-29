@@ -1,4 +1,3 @@
-RSVP = require 'rsvp'
 Action = require './Action'
 Pattern = require '../Pattern'
 humanize = require '../utils/humanize'
@@ -63,7 +62,7 @@ class CustomerSetInfoAction extends Action
         return @responseRejectCallback text
 
     respondTo: (message) ->
-        return new RSVP.Promise (resolve, reject) =>
+        return new Promise (resolve, reject) =>
             @responseResolveCallback = resolve
             @responseRejectCallback = reject
 
@@ -607,7 +606,7 @@ class CustomerSetInfoAction extends Action
 
 
     addCustomer: (name, ignoreExisting = false) ->
-        new RSVP.Promise (resolve, reject) =>
+        new Promise (resolve, reject) =>
             unless name?
                 @jiri.recordOutcome @, @OUTCOME_NO_VALUE_SPECIFIED, query: 'customer', verb: 'add'
                 return @respond "What's the name of the customer to add? (type `cancel` to cancel)"
@@ -615,13 +614,13 @@ class CustomerSetInfoAction extends Action
             Customer = @customer_database.model 'Customer'
 
             if ignoreExisting
-                promise = new RSVP.Promise (resolve) -> resolve()
+                promise = new Promise (resolve) -> resolve()
             else
                 @setLoading()
                 promise = Customer.findOneByName name
                 .then (customer) =>
                     if customer
-                        new RSVP.Promise (resolve, reject) =>
+                        new Promise (resolve, reject) =>
                             @jiri.recordOutcome @, @OUTCOME_SUGGESTION, suggestion: "add customer #{name} --ignoreExisting"
                             text = "There's already a customer called `#{customer.name}`"
                             if customer.aliases?.length

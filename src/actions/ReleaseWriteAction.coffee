@@ -1,4 +1,3 @@
-RSVP = require 'rsvp'
 Action = require './Action'
 config = require '../../config'
 ReleaseIssue = require '../ReleaseIssue'
@@ -58,7 +57,7 @@ class ReleaseWriteAction extends Action
                         channel: @channel.id
 
     noNextReleaseTicket: (customer, forceCreate = false) =>
-        new RSVP.Promise (resolve, reject) =>
+        new Promise (resolve, reject) =>
             @jiri.recordOutcome @, @OUTCOME_SUGGESTION, {suggestion: "create release for #{customer}"}
             resolve "It doesn't look like there is an active release for #{customer.name}. Would you like to create one?"
 

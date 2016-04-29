@@ -1,4 +1,3 @@
-RSVP = require 'rsvp'
 Action = require './Action'
 config = require '../../config'
 chrono = require 'chrono-node'
@@ -43,7 +42,7 @@ class IgnoreMeAction extends Action
         (@jiri.createPattern(pattern, @getPatternParts()).getRegex() for pattern in @getStopPatterns())
 
     test: (message) ->
-        new RSVP.Promise (resolve) =>
+        new Promise (resolve) =>
             return resolve false unless message.type is 'message' and message.text? and message.channel?
 
             resolve @isIgnored message.user
@@ -75,7 +74,7 @@ class IgnoreMeAction extends Action
         time
 
     respondTo: (message) ->
-        return new RSVP.Promise (resolve, reject) =>
+        return new Promise (resolve, reject) =>
             resolve @isIgnored message.user
         .catch -> return false
         .then (isIgnored) =>
@@ -168,7 +167,7 @@ class IgnoreMeAction extends Action
             @ignoring.remove toRemove if toRemove.length
 
     isIgnored: (user) =>
-        return new RSVP.Promise (resolve, reject) =>
+        return new Promise (resolve, reject) =>
             resolve @ignoring.get()
         .catch (err) =>
             console.log "Error checking if this user is being ignored", error

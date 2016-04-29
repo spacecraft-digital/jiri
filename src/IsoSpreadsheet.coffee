@@ -1,5 +1,4 @@
 config = require '../config'
-RSVP = require 'rsvp'
 async = require 'async'
 GoogleSpreadsheet = require 'google-spreadsheet'
 customer_database = require('crater')(config.mongo_url)
@@ -17,7 +16,7 @@ class IsoSpreadsheet
             client_email: config.google_client_email
             private_key: config.google_private_key
 
-        @authPromise = new RSVP.Promise (resolve, reject) =>
+        @authPromise = new Promise (resolve, reject) =>
             @sheet.useServiceAccountAuth credentials, (error) ->
                 if error then reject error
                 else resolve()
@@ -28,7 +27,7 @@ class IsoSpreadsheet
         @authPromise.then @requestRows
 
     requestRows: =>
-        new RSVP.Promise (resolve, reject) =>
+        new Promise (resolve, reject) =>
             @sheet.getRows 1, # first worksheet
                     start: 1,          # start index
                     num: 500,              # number of rows to pull
@@ -36,7 +35,7 @@ class IsoSpreadsheet
                 , @rowsLoaded
 
     rowsLoaded: (err, rows) =>
-        new RSVP.Promise (resolve, reject) =>
+        new Promise (resolve, reject) =>
             async.mapSeries rows, (row, callback) =>
                 [..., row.title, brackets] = row.title.match /^(.+?)\s*(?:(?:\(|[\-—–]\s+)(.+?)\)?\s*)?$/i
 
@@ -79,7 +78,7 @@ class IsoSpreadsheet
     # this function curries row
     curryOnFindMapping: (row) ->
         (customer) =>
-            new RSVP.Promise (resolve, reject) =>
+            new Promise (resolve, reject) =>
                 if customer
                     return @importRow row, customer
                 else
@@ -96,7 +95,7 @@ class IsoSpreadsheet
                 return @importNewCustomer row
 
     importRow: (row, customer) ->
-        new RSVP.Promise (resolve, reject) =>
+        new Promise (resolve, reject) =>
             # preserve the exact title for matching on re-import
             customer.mappingId_isoSpreadsheet = row.title
 

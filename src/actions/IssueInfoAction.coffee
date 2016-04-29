@@ -1,4 +1,3 @@
-RSVP = require 'rsvp'
 Action = require './Action'
 Issue = require '../Issue'
 IssueOutput = require '../IssueOutput'
@@ -29,7 +28,7 @@ class IssueInfoAction extends Action
         rawRefs = message.text.match @getTestRegex()
 
         if !rawRefs.length
-            return new RSVP.Promise (resolve, reject) ->
+            return new Promise (resolve, reject) ->
                 reject('No Jira refs in message')
 
         @jiri.getActionData @, @getRefsDataKey()
@@ -45,7 +44,7 @@ class IssueInfoAction extends Action
             if refs.length
                 return @getJiraIssues "issue in (#{refs.join(', ')}) ORDER BY issue"
             else
-                return new RSVP.Promise (resolve, reject) ->
+                return new Promise (resolve, reject) ->
                     resolve()
 
     getJiraIssues: (query, opts, message) =>
@@ -93,7 +92,7 @@ class IssueInfoAction extends Action
         throw error unless @getType() is 'IssueInfoAction'
 
     test: (message) ->
-        new RSVP.Promise (resolve) =>
+        new Promise (resolve) =>
             return resolve false unless message.type is 'message' and message.text? and message.channel?
 
             return resolve message.text.match @getTestRegex()

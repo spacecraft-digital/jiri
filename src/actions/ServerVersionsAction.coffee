@@ -1,4 +1,3 @@
-RSVP = require 'rsvp'
 AbstractSshAction = require './AbstractSshAction'
 config = require '../../config'
 https = require 'https'

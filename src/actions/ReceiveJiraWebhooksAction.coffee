@@ -1,6 +1,5 @@
 Action = require './Action'
 config = require '../../config'
-RSVP = require 'rsvp'
 IssueOutput = require '../IssueOutput'
 
 class ReceiveJiraWebhooksAction extends Action
@@ -15,7 +14,7 @@ class ReceiveJiraWebhooksAction extends Action
     # Returns TRUE if this action can respond to the message
     # No further actions will be tested if this returns TRUE
     test: (message) ->
-        new RSVP.Promise (resolve) =>
+        new Promise (resolve) =>
             resolve message.subtype is 'bot_message' and
                    message.channel.is_im and
                    message.channel.name is 'slackbot' and
@@ -30,7 +29,7 @@ class ReceiveJiraWebhooksAction extends Action
                 user = @jiri.slack.findUserByEmail data.userEmail
                 userName = if user then "@#{user.name}" else data.userEmail.replace(/@.+$/, '').replace(/\./,' ')
 
-                return new RSVP.Promise (resolve, reject) ->
+                return new Promise (resolve, reject) ->
                     response =
                         text: "<!channel> Review for #{userName} please: "
                         channel: 'zapier-test'
