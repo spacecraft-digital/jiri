@@ -28,8 +28,7 @@ class ReleaseReadAction extends Action
                 return resolve if name then @patternRegexes[name] else @patternRegexes
 
             @patternRegexes = {}
-            Customer = @customer_database.model 'Customer'
-            return Customer.schema.statics.getAllNameRegexString()
+            return @customer_database.model('Customer').getAllNameRegexString()
             .then (customerRegex) =>
                 for own key, regex of @regex
                     regex = regex.replace '__customer__', customerRegex

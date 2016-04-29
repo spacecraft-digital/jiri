@@ -77,11 +77,11 @@ class IssueSearchAction extends IssueInfoAction
 
     getTestRegex: =>
         new RSVP.Promise (resolve, reject) =>
-            Customer = @customer_database.model 'Customer'
             if @pattern
                 return resolve @pattern.getRegex()
             else
-                return Customer.schema.statics.getAllNameRegexString().then (customerRegex) =>
+                return @customer_database.model('Customer').getAllNameRegexString()
+                .then (customerRegex) =>
                     @pattern = @jiri.createPattern "^jiri (find after_find?)? (\\d+|(?:the )?latest|one)? ?(issueType ?|status ?|for #{customerRegex} ?|_search ?)+\\??$", @patternParts
                     return resolve @pattern.getRegex()
 
@@ -142,8 +142,8 @@ class IssueSearchAction extends IssueInfoAction
                     async.parallel([
                         (callback) =>
                             @setLoading()
-                            Customer = @customer_database.model 'Customer'
-                            Customer.schema.statics.getAllNameRegexString().then (customerRegex) =>
+                            @customer_database.model('Customer').getAllNameRegexString()
+                            .then (customerRegex) =>
                                 pattern = @jiri.createPattern "\\b#{customerRegex}\\b", @patternParts, true
                                 matches = message.text.match pattern.getRegex()
 

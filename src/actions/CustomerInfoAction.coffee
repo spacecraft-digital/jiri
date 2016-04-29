@@ -125,8 +125,8 @@ class CustomerInfoAction extends Action
             return text: text, channel: @channel.id, unfurl_links: false
 
     getTestRegexes: =>
-        Customer = @customer_database.model 'Customer'
-        Customer.schema.statics.getAllNameRegexString().then (customerRegex) =>
+        @customer_database.model('Customer').getAllNameRegexString()
+        .then (customerRegex) =>
             unless @patterns
                 @patterns =
                     find: @jiri.createPattern("^jiri find +.*(?=#{customerRegex}).*", @patternParts),
