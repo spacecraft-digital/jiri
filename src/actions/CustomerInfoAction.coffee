@@ -92,7 +92,7 @@ class CustomerInfoAction extends Action
                     else
                         if result.target in [true,false]
                             text = "_Is #{targetPath}_? *#{humanize.dump(result.target)}*"
-                        else if typeof result.target is 'number' or (typeof result.target is 'string' and result.target.length < 16 or (result.target.length < 32 and result.target.indexOf(' ') > -1))
+                        else if typeof result.target is 'number' or Object.prototype.toString.call(result.target) is '[object Date]' or (typeof result.target is 'string' and result.target.length < 16 or (result.target.length < 32 and result.target.indexOf(' ') > -1))
                             text = "*#{targetPath}*: `#{humanize.dump(result.target).replace(/\\n/g, "; ")}`"
                         else
                             output = humanize.dump(result.target, @showHiddenProperties).replace(/\\n/g, "; ")
