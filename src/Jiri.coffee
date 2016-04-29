@@ -102,7 +102,6 @@ class Jiri
             .catch (e) ->
                 console.error "Error testing #{action.getType()}"
                 console.log if e.stack then e.stack else e
-                done false
                 return false
             .then (match) =>
                 return done false unless match
