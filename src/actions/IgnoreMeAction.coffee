@@ -114,7 +114,7 @@ class IgnoreMeAction extends Action
                 }
 
             # add a second to avoid being slightly less than the time requested
-            m = moment(expire).add(2, 's')
+            m = moment(expire).add(15, 's')
             if m.diff() < 0
                 return {
                     channel: @channel.id
