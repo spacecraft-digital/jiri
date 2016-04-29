@@ -139,10 +139,11 @@ class IssueSearchAction extends IssueInfoAction
                         else
                             @MAX_RESULTS = 10
 
+                    Customer = @customer_database.model('Customer')
                     async.parallel([
                         (callback) =>
                             @setLoading()
-                            @customer_database.model('Customer').getAllNameRegexString()
+                            Customer.getAllNameRegexString()
                             .then (customerRegex) =>
                                 pattern = @jiri.createPattern "\\b#{customerRegex}\\b", @patternParts, true
                                 matches = message.text.match pattern.getRegex()
