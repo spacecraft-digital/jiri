@@ -42,7 +42,7 @@ class IssueInfoAction extends Action
                 refs.push ref unless ref in recentRefs
 
             if refs.length
-                return @getJiraIssues "issue in (#{refs.join(', ')}) ORDER BY issue"
+                return @getJiraIssues "issue in (#{refs.join(', ')}) ORDER BY issue", {}, message
             else
                 return new Promise (resolve, reject) ->
                     resolve()
@@ -65,7 +65,7 @@ class IssueInfoAction extends Action
             @issuesLoaded result, message
         .catch (error) =>
             clearInterval loadingTimer
-            @errorLoadingIssues error
+            @errorLoadingIssues error, message
 
     issuesLoaded: (result, message) =>
 
@@ -86,10 +86,17 @@ class IssueInfoAction extends Action
             response.channel = @channel.id
             response
 
-    errorLoadingIssues: (error) =>
-        console.log 'Error loading issues', error
-        # throw an error, unless we've just sniffed the refs
-        throw error unless @getType() is 'IssueInfoAction'
+    errorLoadingIssues: (error, message) =>
+        if @getType() is 'IssueInfoAction'
+            # if the message was just a ticket ref, respond even if the ticket's not found
+            issueOnly = message.text.match @jiri.createPattern('^jiri? ([a-z]{2,5}-[0-9]{2,5}) *$').getRegex()
+            return if issueOnly
+                channel: @channel.id
+                text: "#{issueOnly[1].toUpperCase()} doesn't appear to be a valid JIRA reference…"
+        else
+            console.log 'Error loading issues: ', error
+            # throw an error, unless we've just sniffed the refs
+            throw error
 
     test: (message) ->
         new Promise (resolve) =>
