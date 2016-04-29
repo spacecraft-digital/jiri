@@ -203,6 +203,19 @@ class Jiri
         calendar = new Calendar @, config.peopleCalendarUrl
         calendar.loadPeopleCalendar()
 
+    notifyAdmins: (message) =>
+        for channel in config.slack_processAlerts||[]
+            @slack.postMessage
+                text: message
+                channel: channel
+
+    onTerminate: (signal, err = '') =>
+        @notifyAdmins "I've been told to quit, so I'm off for now :wave:"
+        setTimeout ->
+            console.log "Terminated by SIGTERM"
+            process.exit()
+        , 1000
+
     onSlackOpen: () =>
         console.log colors.yellow "Connected to Slack"
 
@@ -210,18 +223,16 @@ class Jiri
             names = (@slack.getUserByID(u)?.real_name for u in config.slack_userId_whitelist)
             console.log colors.cyan "(Ignoring everyone except #{joinn names})"
 
-        for channel in config.slack_notifyOnRestart||[]
-            text = ":wave: I'm back!"
-            if @debugMode
-                text += " Run by `#{process.env.LOGNAME}` in debug mode"
-            @slack.postMessage
-                text: text
-                channel: channel
+        @notifyAdmins if @debugMode then "Debug instance run by `#{process.env.LOGNAME}`" else "I'm back!"
 
         # avoid re-registering cron task on reconnect
         unless @holidaysCronAdded
             @holidaysCronAdded = true
             @cron.at @cron.convertToServerTime('07:30'), @postHolidaysCalendar
+
+        unless @deathArrangementsMade
+            @deathArrangementsMade = true
+            process.on 'SIGTERM', @onTerminate
 
     onSlackMessage: (message) =>
         # ignore messages Jiri sends

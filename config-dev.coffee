@@ -17,6 +17,10 @@ config =
     slack_userId_whitelist: [
         'U025466D6' # matt.dolan
     ]
+    # users / channels to notify of app events such as start up and restart
+    slack_processAlerts: [
+        '@matt.dolan'
+    ]
 
 console.log colors.bgCyan.black "Using DEV config for #{joinn Object.keys(config)}"
 

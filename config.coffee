@@ -11,8 +11,9 @@ config =
 
     slack_botsToIgnore: 'GitLab gitlab Jenkins HeyUpdate JIRA'
 
-    slack_notifyOnRestart: [
-        'U025466D6' # matt.dolan
+    # users / channels to notify of app events such as start up and restart
+    slack_processAlerts: [
+        '#jiri-status'
     ]
 
     jira_protocol: 'https'
