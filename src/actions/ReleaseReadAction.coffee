@@ -66,11 +66,10 @@ class ReleaseReadAction extends Action
                 @setLoading()
                 Customer.findOneByName(customerName)
                 .then (c) =>
-                    return reject "Unable to find customer #{customerName}" unless c
+                    throw new Error "Unable to find customer #{customerName}" unless c
                     customer = c
                     @setLoading()
                     @jiri.jira.getReleaseTicket customer.project, releaseVersion
-                .catch reject
                 .then (releaseTicket) =>
                     return releaseTicket if releaseTicket and typeof releaseTicket is 'object'
 
@@ -79,7 +78,7 @@ class ReleaseReadAction extends Action
                         return @noNextReleaseTicket customer
 
                 .then (releaseTicket) =>
-                    return reject "I couldn't find the appropriate release ticket" unless releaseTicket
+                    throw new Error "I couldn't find the appropriate release ticket" unless releaseTicket
 
                     response = {}
 
@@ -118,8 +117,6 @@ class ReleaseReadAction extends Action
                     if response
                         response.channel = @channel.id
                         return response
-
-                return
 
     noNextReleaseTicket: (customer, forceCreate = false) =>
         new RSVP.Promise (resolve, reject) =>
