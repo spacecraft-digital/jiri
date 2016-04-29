@@ -178,7 +178,7 @@ class IgnoreMeAction extends Action
             expired = []
             isIgnored = false
             # find all the objects for this user
-            for o in values when o.userId is user.id
+            for o in values when o.userId is user?.id
                 if o.expiry < now
                     expired.push o
                 else
