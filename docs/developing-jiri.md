@@ -46,7 +46,7 @@ clear && echo “Jiri env vars loaded”
 ## Tunnels
 
 Jiri needs access to a number of services — including MongoDB and memcached.
-When developing, it may be convenient to connect these to a remote server —
+When developing, it may be convenient to connect to the database on a remote server —
 perhaps the main Jiri server if you're just developing a reading tool.
 
 Any tunnels in config.tunnels will be set up when you run `npm run start-dev`
@@ -55,10 +55,11 @@ Any tunnels in config.tunnels will be set up when you run `npm run start-dev`
 ```
 tunnels:
     'host1':
-        ports: ['27017', '11211']
+        ports: ['27017']
         privateKeyPath: '/path/to/key' # defaults to use config.sshPrivateKeyPath)
         username: 'mary' # defaults to root
     'host2':
         ports: ['8080']
 ```
 
+You're best off running a local memcached instance.
