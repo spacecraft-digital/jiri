@@ -18,43 +18,44 @@ class ReleaseWriteAction extends Action
 
     # if one of these matches, this Action will be run
     getPatternRegex: (name = null) ->
-        Customer = @customer_database.model 'Customer'
-        unless @patternRegexes
-            @patternRegexes = {}
-            for own key, regex of @regex
-                regex = regex.replace '__customer__', Customer.schema.statics.getAllNameRegexString()
-                @patternRegexes[key] = @jiri.createPattern(regex).getRegex()
-        return if name then @patternRegexes[name] else @patternRegexes
+        @customer_database.model('Customer').getAllNameRegexString()
+        .then (customerRegex) =>
+            unless @patternRegexes
+                @patternRegexes = {}
+                for own key, regex of @regex
+                    regex = regex.replace '__customer__', customerRegex
+                    @patternRegexes[key] = @jiri.createPattern(regex).getRegex()
+            return if name then @patternRegexes[name] else @patternRegexes
 
     # Returns a promise that will resolve to a response if successful
     respondTo: (message) ->
-        return new RSVP.Promise (resolve, reject) =>
+        @getPatternRegex()
+        .then (regexes) =>
             # remove question mark
             message.text = message.text.replace /\?+$/, ''
 
             mode = null
             Customer = @customer_database.model 'Customer'
 
-            if m = message.text.match @getPatternRegex('add')
+            if m = message.text.match regexes.add
                 [..., ref, customerName, releaseVersion] = m
 
                 latestRelease = !releaseVersion or releaseVersion.toLowerCase() is 'latest'
 
                 Customer.findOneByName(customerName)
                 .then (c) =>
-                    return reject "Unable to find customer #{customerName}" unless c
+                    throw new Error "Unable to find customer #{customerName}" unless c
                     customer = c
                     @jiri.jira.getReleaseTicket customer.project, releaseVersion
                 .catch reject
                 .then (releaseTicket) =>
-                    return reject "I couldn't find the appropriate release ticket" unless releaseTicket
+                    throw new Error "I couldn't find the appropriate release ticket" unless releaseTicket
 
                     @jiri.jira.createLink releaseTicket.key, ref
-                    .then ->
+                    .then =>
                         console.log 'link created', arguments
-                        resolve
-                            text: "Link created between #{releaseTicket.ref} and #{ref}"
-                            channel: @channel.id
+                        text: "Link created between #{releaseTicket.ref} and #{ref}"
+                        channel: @channel.id
 
     noNextReleaseTicket: (customer, forceCreate = false) =>
         new RSVP.Promise (resolve, reject) =>
@@ -62,10 +63,11 @@ class ReleaseWriteAction extends Action
             resolve "It doesn't look like there is an active release for #{customer.name}. Would you like to create one?"
 
     test: (message) ->
-        new RSVP.Promise (resolve) =>
-            for own name,regex of @getPatternRegex()
+        @getPatternRegex()
+        .then (regexes) ->
+            for own name,regex of regexes
                 if message.text.match(regex)
-                    return resolve true
-            return resolve false
+                    return true
+            return false
 
 module.exports = ReleaseWriteAction
