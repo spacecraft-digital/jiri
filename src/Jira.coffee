@@ -5,6 +5,7 @@ Issue = require './Issue'
 ReleaseIssue = require './ReleaseIssue'
 IssueOutput = require './IssueOutput'
 semver = require 'semver'
+thenify = require 'thenify'
 escape_quotes = require 'escape-quotes'
 normalize_version = require 'normalize-version'
 
@@ -21,67 +22,30 @@ class Jira
             true
         )
 
-    # Mapping the Jira callback to a promise resolution/rejection
-    _getCallback: (resolve, reject) ->
-        (error, response) ->
-            return reject error if error
-            resolve response
+        # renaming this method
+        @search = thenify @api.searchJira.bind @api
 
-    ###########
-    # GET
-    ###########
+        # proxy and promisify JIRA API functions onto this class
+        for func in [
+            'findIssue'
+            'listProjects'
+            'getProject'
+            'searchUsers'
+            'listIssueTypes'
+            'addNewIssue'
+            'updateIssue'
+            'addComment'
+            'issueLink'
+        ]
+            @[func] = thenify @api[func].bind @api
 
-    findIssue: (issueNumber) =>
-        return new Promise (resolve, reject) =>
-            @api.findIssue issueNumber, @_getCallback(resolve,reject)
-
-    listProjects: =>
-        return new Promise (resolve, reject) =>
-            @api.listProjects @_getCallback(resolve,reject)
-
-    getProject: (project) =>
-        return new Promise (resolve, reject) =>
-            @api.getProject project, @_getCallback(resolve,reject)
-
-    search: (jql, options) =>
-        return new Promise (resolve, reject) =>
-            @api.searchJira jql, options, @_getCallback(resolve,reject)
-
-    searchUsers: (username, startAt, maxResults, includeActive, includeInactive) =>
-        return new Promise (resolve, reject) =>
-            @api.searchUsers username, startAt, maxResults, includeActive, includeInactive, @_getCallback(resolve,reject)
-
-    listIssueTypes: =>
-        return new Promise (resolve, reject) =>
-            @api.listIssueTypes @_getCallback(resolve,reject)
-
-    ###########
-    # SET
-    ###########
-
-    addNewIssue: (issue) =>
-        return new Promise (resolve, reject) =>
-            @api.addNewIssue issue, @_getCallback(resolve,reject)
-
-    updateIssue: (issueNum, issueUpdate) =>
-        return new Promise (resolve, reject) =>
-            @api.updateIssue issueNum, issueUpdate, @_getCallback(resolve,reject)
-
+    # allow link to be created with simpler parameters
     createLink: (from, to, type = 'Blocks') =>
-        return new Promise (resolve, reject) =>
-            options =
-                linkType: type
-                fromIssueKey: from
-                toIssueKey: to
-            @api.issueLink options, @_getCallback(resolve,reject)
-
-    addComment: (issueId, comment) =>
-        return new Promise (resolve, reject) =>
-            @api.addComment issueId, comment, @_getCallback(resolve,reject)
-
-    ##########
-    # Integrated methods
-    ##########
+        options =
+            linkType: type
+            fromIssueKey: from
+            toIssueKey: to
+        @issueLink options
 
     getReleaseTicket: (project, targetVersion = 'latest') ->
         return new Promise (resolve, reject) =>
