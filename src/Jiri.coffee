@@ -94,6 +94,7 @@ class Jiri
         # in debug mode, reload action scripts each time — avoids having to restart Jiri for changes
         @loadActions() if @debugMode
 
+        loadingTimer = null
         # allow each Action to decide if they want to respond to the message
         async.detectSeries @actions, (actionClass, done) =>
             action = new actionClass @, @customer_database, message.channel
@@ -105,10 +106,20 @@ class Jiri
             .then (match) =>
                 return done false unless match
                 done true
+                loadingTimer = @slack.setTyping message.channel.id
                 action.respondTo message
+            .then (reply) =>
+                return null unless reply
+                clearInterval loadingTimer
+                if typeof reply is 'string'
+                    reply = text: reply
+                throw new Error 'Action response must be a string or an object' unless typeof reply is 'object'
+                reply.channel = message.channel.id
+                @sendResponse reply
             .catch (e) =>
-                @actionError e,action
-            .then @sendResponse
+                clearInterval loadingTimer
+                @actionError e, action, message
+
         , (actionClass) ->
             return unless actionClass
             d = new Date
@@ -190,12 +201,20 @@ class Jiri
         response.text = ":sparkles: " + (response.text||'') if @debugMode
         @slack.postMessage response
 
-    actionError: (error, action) =>
-        console.log "Action error in #{action.getType()}:", error.stack or error
+    actionError: (error, action, message) =>
+        console.log "Action error in #{action.getType()}:", error.stack||error
+        if error.stack
+            stackLines = error.stack.split "\n"
 
-        @slack.postMessage
-            channel: action.channel.id
-            text: "Uh oh, something went a bit wrong: _#{error}_"
+        @notifyAdmins """
+            #{action.getType()} went a bit wrong in #{action.channel.name}, responding to
+            > #{message.text.replace("\n","\n> ")}
+            ```
+            #{stackLines.slice(0,1).join("\n")}
+            ```
+        """
+
+        return null
 
     # pull People HR calendar feed, and post who is on Holiday/WFH to Slack
     postHolidaysCalendar: =>
