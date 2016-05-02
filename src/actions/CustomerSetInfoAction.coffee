@@ -54,7 +54,6 @@ class CustomerSetInfoAction extends Action
         throw new Error "No resolve callback set" unless @responseResolveCallback
         return @responseResolveCallback
             text: text
-            channel: @channel.id
             unfurl_links: false
 
     respondWithError: (text) =>

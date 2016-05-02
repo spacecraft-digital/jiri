@@ -75,7 +75,7 @@ class CustomerInfoAction extends Action
 
         .catch (e) =>
             console.log e.stack||e
-            return text: e, channel: @channel.id
+            return text: e
 
         .then (result) =>
             switch result.outcome
@@ -117,11 +117,11 @@ class CustomerInfoAction extends Action
                     @jiri.recordOutcome @, @OUTCOME_UNKNOWN
 
                 else
-                    return text: result.text, channel: @channel.id
+                    return text: result.text
 
             text = "Sorry, I'm not able to decipher `#{query}`. Try rephrasing?" unless text
 
-            return text: text, channel: @channel.id, unfurl_links: false
+            return text: text, unfurl_links: false
 
     getTestRegexes: =>
         @customer_database.model('Customer').getAllNameRegexString()

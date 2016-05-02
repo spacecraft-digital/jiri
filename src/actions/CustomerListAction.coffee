@@ -141,7 +141,6 @@ class CustomerListAction extends Action
 
                     return resolve
                         text: text
-                        channel: @channel.id
                         unfurl_links: false
                 catch e
                     console.log e.stack
@@ -150,7 +149,6 @@ class CustomerListAction extends Action
                 @jiri.recordOutcome @, @OUTCOME_ERROR
                 return resolve
                     text: error
-                    channel: @channel.id
 
     getTestRegex: =>
         unless @pattern

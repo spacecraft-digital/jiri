@@ -32,10 +32,7 @@ class ServerVersionsAction extends AbstractSshAction
                 break
 
         if server is null
-            return {
-                text: "Sorry, that isn't a server I can work with :no_entry:"
-                channel: @channel.id
-            }
+            return text: "Sorry, that isn't a server I can work with :no_entry:"
 
         customer = @deriveCustomerName server
         jaduPath = @getJaduPath server
@@ -58,7 +55,7 @@ class ServerVersionsAction extends AbstractSshAction
                             message = "Things weren't where I expected them to be on the server, so I couldn't find out the versions."
                     else
                         message = "Something went wrong on the server, so I couldn't find out."
-                    return text: message, channel: @channel.id
+                    return text: message
 
                 versions = for line in result.stdout.split('\n')
                     [file, version] = line.split(': ', 2)
@@ -75,7 +72,6 @@ class ServerVersionsAction extends AbstractSshAction
                     #{server} has the following software installed:
                     #{versions.join '\n'}
                 """
-                channel: @channel.id
 
         .catch (error) =>
             message =
@@ -86,6 +82,5 @@ class ServerVersionsAction extends AbstractSshAction
                 else
                     "I wasn't able to retrieve version numbers from #{server}"
             text: message
-            channel: @channel.id
 
 module.exports = ServerVersionsAction

@@ -58,7 +58,7 @@ class UnknownAction extends Action
                         if customer
                             query = query.replace(new RegExp(customerName), customer.name)
                             @jiri.recordOutcome @, @OUTCOME_SUGGESTION, {query: query}
-                            return text: "Did you mean `#{query}`?", channel: @channel.id
+                            return text: "Did you mean `#{query}`?"
 
             # no idea what the message means
             @jiri.recordOutcome @
@@ -80,7 +80,7 @@ class UnknownAction extends Action
             if message.text.match /\?$/
                 text.push "Good question. No idea, I'm afraid."
 
-            return text: text[Math.floor(Math.random() * text.length)], channel: @channel.id
+            return text: text[Math.floor(Math.random() * text.length)]
 
     # Returns TRUE if this action can respond to the message
     # No further actions will be tested if this returns TRUE

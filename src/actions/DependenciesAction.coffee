@@ -57,20 +57,16 @@ class DependenciesAction extends Action
                         when 404
                             return resolve
                                 text: "`#{version}` doesn't seem to be a valid #{product} version tag"
-                                channel: @channel.id
                         when 200
                             if s.match /^\s*[\d.]+\s*$/
                                 return resolve
                                     text: "#{product} #{version} requires #{dependency} #{s}"
-                                    channel: @channel.id
                             else
                                 return resolve
                                     text: "¯\\_(ツ)_/¯ I'm afraid I don't know what #{dependency} version #{product} requires"
-                                    channel: @channel.id
                         else
                             return resolve
                                 text: "Sorry, I wasn't able to check with the #{product} repo on GitLab"
-                                channel: @channel.id
 
             request.end()
 

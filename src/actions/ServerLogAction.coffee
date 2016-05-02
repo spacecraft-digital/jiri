@@ -41,9 +41,7 @@ class ServerLogAction extends AbstractSshAction
                     break
 
             if server is null
-                return resolve
-                    text: "Sorry, that's not a server I can work with"
-                    channel: @channel.id
+                return resolve text: "Sorry, that's not a server I can work with"
 
             customer = @deriveCustomerName server
 
@@ -67,9 +65,7 @@ class ServerLogAction extends AbstractSshAction
                             .then (result) =>
                                 # something's wrong
                                 if result.stderr
-                                    return resolve
-                                        text: "There is no pod #{server} — something's wrong somewhere…"
-                                        channel: @channel.id
+                                    return resolve text: "There is no pod #{server} — something's wrong somewhere…"
                                 # we've got a list of pods
                                 else
                                     pods = (pod for pod in result.stdout.split "\n" when not pod.match /^(\s*|dev|logs)$/)
@@ -78,11 +74,8 @@ class ServerLogAction extends AbstractSshAction
                                             There is no pod #{server}. Did you mean one of these?
                                             #{joinn pods, ', ', ' or '}
                                         """
-                                        channel: @channel.id
                         else
-                            return resolve
-                                text: "I expected there to be a log at #{jaduPath}#{logPath} on #{server}, but it wasn't there :confused:"
-                                channel: @channel.id
+                            return resolve text: "I expected there to be a log at #{jaduPath}#{logPath} on #{server}, but it wasn't there :confused:"
 
                     errors = []
                     now = moment()
@@ -108,19 +101,13 @@ class ServerLogAction extends AbstractSshAction
                         errors = errors.slice -3
 
                     if errors.length is 0
-                        return resolve
-                            text: "There haven't been _any_ PHP errors on `#{server}` in the last hour :sunglasses:"
-                            channel: @channel.id
+                        return resolve text: "There haven't been _any_ PHP errors on `#{server}` in the last hour :sunglasses:"
                     else
-                        return resolve
-                            text: """
+                        return resolve text: """
                                 Recent PHP errors on #{server}:
                                 #{errors.join '\n'}
                             """
-                            channel: @channel.id
             .catch (error) =>
-                resolve
-                    text: error
-                    channel: @channel.id
+                resolve text: error
 
 module.exports = ServerLogAction

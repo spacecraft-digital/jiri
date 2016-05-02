@@ -81,17 +81,13 @@ class IssueInfoAction extends Action
 
         if issues.length
             outputter = new IssueOutput issues
-            response = outputter.getSlackMessage()
-
-            response.channel = @channel.id
-            response
+            outputter.getSlackMessage()
 
     errorLoadingIssues: (error, message) =>
         if @getType() is 'IssueInfoAction' and error is 'Problem with the JQL query'
             # if the message was just a ticket ref, respond even if the ticket's not found
             issueOnly = message.text.match @jiri.createPattern('^jiri? ([a-z]{2,5}-[0-9]{2,5}) *$').getRegex()
             return if issueOnly
-                channel: @channel.id
                 text: "#{issueOnly[1].toUpperCase()} doesn't appear to be a valid JIRA reference…"
         else
             console.log 'Error loading issues: ', error

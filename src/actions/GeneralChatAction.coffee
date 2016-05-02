@@ -93,9 +93,7 @@ class GeneralChatAction extends Action
 
 
             if text?.length
-                resolve
-                    text: text[Math.floor(Math.random() * text.length)]
-                    channel: @channel.id
+                resolve text: text[Math.floor(Math.random() * text.length)]
 
     # Returns TRUE if this action can respond to the message
     # No further actions will be tested if this returns TRUE

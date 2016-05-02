@@ -82,10 +82,8 @@ class IgnoreMeAction extends Action
                 if m = message.text.toLowerCase().match regex
                     @stopIgnoring message.user
                     if isIgnored
-                        return {
-                            channel: @channel.id
-                            text: "Sure. Hi #{message.user.profile.first_name}!"
-                        }
+                        return text: "Sure. Hi #{message.user.profile.first_name}!"
+                    return
 
             return if isIgnored
 
@@ -95,10 +93,7 @@ class IgnoreMeAction extends Action
                     time = '10 minutes' unless time
                     time = @expandAbbreviations time if time
                     unless time
-                        return {
-                            channel: @channel.id
-                            text: "Sorry, I don't understand what ‘#{time}’ is"
-                        }
+                        return text: "Sorry, I don't understand what ‘#{time}’ is"
 
                     switch operator
                         when "for" then expire = chrono.parseDate "in #{time}"
@@ -107,18 +102,12 @@ class IgnoreMeAction extends Action
                     break
 
             unless expire
-                return {
-                    channel: @channel.id
-                    text: "How long is ‘#{time}’?"
-                }
+                return text: "How long is ‘#{time}’?"
 
             # add a second to avoid being slightly less than the time requested
             m = moment(expire).add(15, 's')
             if m.diff() < 0
-                return {
-                    channel: @channel.id
-                    text: "If only you'd told me sooner, I'd have happily ignored you until #{m.fromNow()}"
-                }
+                return text: "If only you'd told me sooner, I'd have happily ignored you until #{m.fromNow()}"
 
             @startIgnoring message.user, m.unix()
 
@@ -149,10 +138,7 @@ class IgnoreMeAction extends Action
             ]
             text = texts[Math.floor(Math.random() * texts.length)]
 
-            return {
-                channel: @channel.id
-                text: text
-            }
+            return text: text
 
     startIgnoring: (user, expiry) ->
         @ignoring.add

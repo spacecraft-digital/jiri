@@ -37,9 +37,7 @@ class HelpAction extends Action
                     description = action.describe()
                     text.push description unless description in ['', undefined]
 
-                resolve
-                    text: text.join "\n • "
-                    channel: @channel.id
+                resolve text: text.join "\n • "
 
             else if message.text.match @jiri.createPattern('who_is_jiri', @patternParts).getRegex()
                 text = [
@@ -47,9 +45,7 @@ class HelpAction extends Action
                     "A question I often ask myself",
                     "I can be whoever you want me to be. Unless you want me to be batman. I can't do batman.",
                 ]
-                resolve
-                    text: text[Math.floor(Math.random() * text.length)]
-                    channel: @channel.id
+                resolve text: text[Math.floor(Math.random() * text.length)]
 
     # Returns TRUE if this action can respond to the message
     # No further actions will be tested if this returns TRUE

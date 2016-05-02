@@ -112,11 +112,6 @@ class ReleaseReadAction extends Action
 
                     response
 
-                .then (response) =>
-                    if response
-                        response.channel = @channel.id
-                        return response
-
     noNextReleaseTicket: (customer, forceCreate = false) =>
         new Promise (resolve, reject) =>
             @jiri.recordOutcome 'ReleaseWriteAction', @OUTCOME_SUGGESTION, {suggestion: "create release for #{customer.name}"}, @channel

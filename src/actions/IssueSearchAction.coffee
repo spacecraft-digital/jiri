@@ -104,7 +104,7 @@ class IssueSearchAction extends IssueInfoAction
                 jiraCustomerName = customer.getProject()?._mappingId_jira
 
                 if !jiraCustomerName and loadCustomerNames
-                    @jiri.sendResponse text: "Syncing customers with Jira, one moment please…", channel: @channel.id
+                    @jiri.sendResponse text: "Syncing customers with Jira, one moment please…"
                     @setLoading()
                     loadingTimer = setInterval (() => @setLoading()), 4000
                     return @jiri.jira.loadReportingCustomerValues()
@@ -120,9 +120,8 @@ class IssueSearchAction extends IssueInfoAction
                 if jiraCustomerName
                     callback null, "'Reporting Customers' = '#{escape_quotes jiraCustomerName}'"
                 else
-                    resolve
-                        text: "I don't know what #{customer.name} is known as in Jira. Please `set #{customer.name}'s _mappingId_jira`"
-                        channel: @channel.id
+                    resolve text: "I don't know what #{customer.name} is known as in Jira.
+                                   Please `set #{customer.name}'s _mappingId_jira`"
 
 
     # Returns a promise that will resolve to a response if successful
@@ -258,10 +257,7 @@ class IssueSearchAction extends IssueInfoAction
         count = result.issues.length
 
         if count is 0
-            return {
-                text: "I'm afraid I couldn't find any. This is the query I tried: \n```\n#{message.jiri_jira_query}\n```"
-                channel: @channel.id
-            }
+            return text: "I'm afraid I couldn't find any. This is the query I tried: \n```\n#{message.jiri_jira_query}\n```"
 
         response = super result, message
 
