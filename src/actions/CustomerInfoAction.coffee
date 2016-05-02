@@ -69,7 +69,6 @@ class CustomerInfoAction extends Action
             # remove any 'apostrophe s'
             query = query.replace /(\w)['’]+s /g, '$1 '
 
-            @setLoading()
             Customer = @customer_database.model 'Customer'
             Customer.resolveNaturalLanguage query
 

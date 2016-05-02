@@ -54,17 +54,10 @@ class IssueInfoAction extends Action
         for own key, value of opts
             options[key] = value
 
-        loadingTimer = null
-
-        @setLoading()
-        loadingTimer = setInterval (=> @setLoading()), 4000
-
         @jiri.jira.search(query, options)
         .then (result) =>
-            clearInterval loadingTimer
             @issuesLoaded result, message
         .catch (error) =>
-            clearInterval loadingTimer
             @errorLoadingIssues error, message
 
     issuesLoaded: (result, message) =>

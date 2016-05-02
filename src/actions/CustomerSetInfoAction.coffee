@@ -130,7 +130,6 @@ class CustomerSetInfoAction extends Action
             # trim quote marks
             newValue = newValue.replace(/(^['"“‘`]|['"”’`]$)/g, '').trim() if newValue
 
-            @setLoading()
             @parseQuery verb.toLowerCase(), query, arrayIndex, newValue
 
     parseQuery: (verb, query, arrayIndex, newValue) =>
@@ -142,7 +141,6 @@ class CustomerSetInfoAction extends Action
         # convert redundant 'add to' -> 'add'
         query = query.replace /^to +/i, '' if verb in @verbSynonyms.add
 
-        @setLoading()
         Customer = @customer_database.model 'Customer'
         Customer.resolveNaturalLanguage query
             .then (result) => @doVerbToTarget verb, query, arrayIndex, newValue, result
@@ -453,7 +451,6 @@ class CustomerSetInfoAction extends Action
             else
                 saveMessage += ". There are #{converter.toWords parent[property].length} now."
 
-            @setLoading()
             return customer.save().then (customer) =>
                 return @respond saveMessage
 
@@ -555,7 +552,6 @@ class CustomerSetInfoAction extends Action
             parent[property] = value
         saveMessage = "_#{targetPath}_ is now #{@formatValueForDisplay value}\n(it was #{@formatValueForDisplay previousValue})"
 
-        @setLoading()
         return customer.save().then (customer) => @respond saveMessage
 
     setArrayValue: (parent, property, arrayIndex, value, targetPath, customer) ->
@@ -577,7 +573,6 @@ class CustomerSetInfoAction extends Action
 
         saveMessage = "#{targetText} is now #{@formatValueForDisplay value}\n(it was #{@formatValueForDisplay previousValue})"
 
-        @setLoading()
         return customer.save().then (customer) => @respond saveMessage
 
     addArrayValue: (parent, property, value, targetPath, customer) ->
@@ -600,7 +595,6 @@ class CustomerSetInfoAction extends Action
         if typeof value is 'object' and not moment.isDate(value)
             saveMessage += @getAvailablePropertiesString value
 
-        @setLoading()
         return customer.save().then => @respond saveMessage
 
 
@@ -615,7 +609,6 @@ class CustomerSetInfoAction extends Action
             if ignoreExisting
                 promise = new Promise (resolve) -> resolve()
             else
-                @setLoading()
                 promise = Customer.findOneByName name
                 .then (customer) =>
                     if customer
@@ -632,7 +625,6 @@ class CustomerSetInfoAction extends Action
 
             promise.then (customer) =>
                 return if customer
-                @setLoading()
                 @jiri.recordOutcome @
                 customer = new Customer name: name
                 customer.save()

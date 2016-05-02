@@ -38,15 +38,10 @@ class CxmCaseInfoAction extends Action
                 ref = refs[0]
                 return null if ref in recentRefs
 
-                @setLoading()
-                @loadingTimer = setInterval (=> @setLoading()), 4000
-
                 return @getCxmCase ref
                 .catch (err) =>
-                    clearInterval @loadingTimer
                     throw err
                 .then (response) =>
-                    clearInterval @loadingTimer
                     return response
             else
                 return null

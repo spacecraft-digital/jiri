@@ -41,7 +41,6 @@ class CustomerListAction extends Action
 
     respondTo: (message) ->
         return new Promise (resolve, reject) =>
-            @setLoading()
 
             # the user has answered 'no', so no need to reply
             if @lastOutcome?.outcome is @OUTCOME_COUNTED and message.text.match @getRegex('no', false)

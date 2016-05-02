@@ -54,7 +54,6 @@ class ServerLogAction extends AbstractSshAction
 
             @connectToServer(server)
             .then =>
-                @setLoading()
                 @ssh.execCommand(tailCommand, {stream: 'both'})
                 .then (result) =>
                     if result.stderr.match /cannot open .+No such file/i

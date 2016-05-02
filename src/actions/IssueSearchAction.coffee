@@ -105,16 +105,12 @@ class IssueSearchAction extends IssueInfoAction
 
                 if !jiraCustomerName and loadCustomerNames
                     @jiri.sendResponse text: "Syncing customers with Jira, one moment please…"
-                    @setLoading()
-                    loadingTimer = setInterval (() => @setLoading()), 4000
                     return @jiri.jira.loadReportingCustomerValues()
                             .then =>
-                                clearInterval loadingTimer
                                 console.log "try again…"
                                 Customer.findOneByName customer.name
                                     .then @_curryGetJiraMappingIdForCustomer(query, callback, false)
                             .catch (error) ->
-                                clearInterval loadingTimer
                                 reject error
 
                 if jiraCustomerName
@@ -140,7 +136,6 @@ class IssueSearchAction extends IssueInfoAction
                     Customer = @customer_database.model('Customer')
                     async.parallel([
                         (callback) =>
-                            @setLoading()
                             Customer.getAllNameRegexString()
                             .then (customerRegex) =>
                                 pattern = @jiri.createPattern "\\b#{customerRegex}\\b", @patternParts, true
@@ -222,7 +217,6 @@ class IssueSearchAction extends IssueInfoAction
                             message.jiri_jira_startAt = 0
                             message.jiri_jira_limit = @MAX_RESULTS
 
-                            @setLoading()
                             resolve @getJiraIssues query, {maxResults: @MAX_RESULTS + 1}, message
                         )
 

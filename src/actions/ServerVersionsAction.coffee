@@ -43,7 +43,6 @@ class ServerVersionsAction extends AbstractSshAction
 
         @connectToServer(server)
         .then =>
-            @setLoading()
             @ssh.execCommand(versionsCommand, {stream: 'both'})
             .then (result) =>
                 if result.stderr

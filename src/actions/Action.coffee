@@ -22,10 +22,6 @@ class Action
     test: (message) ->
         throw new Error 'Action subclass needs to implement test method'
 
-    # Make Slack say “Jiri is typing” to show the user that something is happening
-    setLoading: () =>
-        @jiri.slack.setTyping @channel.id
-
     # returns a Pattern made from the specified patternPart
     getRegex: (part, whole = true) ->
         return null unless @patternParts[part]

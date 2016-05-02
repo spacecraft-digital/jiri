@@ -62,12 +62,10 @@ class ReleaseReadAction extends Action
                 customer = null
                 releaseVersion = if releaseVersion then releaseVersion.toLowerCase() else 'latest'
 
-                @setLoading()
                 Customer.findOneByName(customerName)
                 .then (c) =>
                     throw new Error "Unable to find customer #{customerName}" unless c
                     customer = c
-                    @setLoading()
                     @jiri.jira.getReleaseTicket customer.project, releaseVersion
                 .then (releaseTicket) =>
                     return releaseTicket if releaseTicket and typeof releaseTicket is 'object'
