@@ -108,6 +108,9 @@ class Jiri extends EventEmitter
                 return done false unless match
                 done true
                 loadingTimer = @slack.setTyping message.channel.id
+                if match is 'ignore'
+                    console.log " -> Action requested that message be ignored"
+                    return
                 action.respondTo message
             .then (reply) =>
                 return null unless reply
