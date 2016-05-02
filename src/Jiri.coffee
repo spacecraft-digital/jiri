@@ -107,10 +107,10 @@ class Jiri extends EventEmitter
             .then (match) =>
                 return done false unless match
                 done true
-                loadingTimer = @slack.setTyping message.channel.id
                 if match is 'ignore'
                     console.log " -> Action requested that message be ignored"
                     return
+                loadingTimer = @startLoading message.channel.id
                 action.respondTo message
             .then (reply) =>
                 return null unless reply
@@ -121,7 +121,7 @@ class Jiri extends EventEmitter
                 reply.channel = message.channel.id
                 @sendResponse reply
             .catch (e) =>
-                clearInterval loadingTimer
+                clearInterval loadingTimer if loadingTimer
                 @actionError e, action, message
 
         , (actionClass) ->
@@ -130,6 +130,9 @@ class Jiri extends EventEmitter
             console.log "[#{d.toISOString()}] #{message.userName}
                          in #{if message.channel.is_im then "DM" else message.channel.name}:
                          “#{message.text}” -> #{actionClass.name}"
+
+    startLoading: (channelId) =>
+        setInterval @slack.setTyping.bind(@slack, channelId), 4000
 
     channelStateCacheKey: (channel) ->
         "channel-state:#{channel.id}"
