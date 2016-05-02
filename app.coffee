@@ -17,6 +17,16 @@ if '--debug' in process.argv
 
 config = require './config'
 
+getMemcachedConnection = ->
+    new Promise (resolve, reject) ->
+        cache = new mc.Client()
+        cache.connect ->
+            # as this callback seems to fire even if connection
+            # wasn't established, we'll test the connection with a set()
+            cache.set 'connection-test', '1', {}, ->
+                console.log "Connected to memcached"
+                resolve cache
+
 # will create SSH tunnels if 'tunnels' is defined in config
 # (which should only be defined in DEV config)
 require('dev-tunnels') config
@@ -29,19 +39,19 @@ require('dev-tunnels') config
         customer_database,
         new Jira config, customer_database
         GitLab url: config.gitlab_url, token: config.gitlab_token
-        new Promise (resolve, reject) ->
-            cache = new mc.Client()
-            cache.connect ->
-                # as this callback seems to fire even if connection
-                # wasn't established, we'll test the connection with a set()
-                cache.set 'connection-test', '1', {}, ->
-                    console.log "Connected to memcached"
-                    resolve cache
+        getMemcachedConnection()
     ]
 .catch (err) ->
     throw colors.bgRed 'Failed to load dependencies: ' + err.stack||err
 
 # once we've got all the dependencies, we can construct
-.then (deps) -> newWithArgs Jiri, deps
+.then (deps) ->
+    jiri = newWithArgs Jiri, deps
+    jiri.on 'memcached:connection_error', ->
+        console.log 'Memcached connection error — attemping to recreate connection'
+        # create a new Memcached connection
+        getMemcachedConnection().then (cache) ->
+            # and replace the existing one
+            jiri.cache = cache
 
-.catch console.error.bind(console)
+.catch (e) -> console.error e.stack || e

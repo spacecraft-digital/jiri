@@ -6,8 +6,9 @@ async = require 'async'
 mc_array = require 'mc-array'
 colors = require 'colors'
 joinn = require 'joinn'
+EventEmitter = require 'events'
 
-class Jiri
+class Jiri extends EventEmitter
 
     constructor: (@slack, @customer_database, @jira, @gitlab, @cache) ->
         @cacheArrays = {}
@@ -130,6 +131,11 @@ class Jiri
     channelStateCacheKey: (channel) ->
         "channel-state:#{channel.id}"
 
+    memcachedError: (err) =>
+        if err?.type is 'CONNECTION_ERROR'
+            # emit an event so the app can reconnect to memcached
+            @emit 'memcached:connection_error'
+
     # for storing state
     # The Action object must have a channel ID set
     # The outcome is a string which is meaningful to the Action
@@ -147,15 +153,18 @@ class Jiri
             outcome: outcome
             data: data
         }
-        @cache.set @channelStateCacheKey(channel), o, (err, response) ->
+        @cache.set @channelStateCacheKey(channel), o, (err, response) =>
+            @memcachedError err if err
 
     # Action action — Action object
     # Returns an object with outcome and data
     getLastOutcome: (action) ->
         return new Promise (resolve, reject) =>
             cacheKey = @channelStateCacheKey action.channel
-            @cache.get cacheKey, (err, response) ->
-                return resolve null if err
+            @cache.get cacheKey, (err, response) =>
+                if err
+                    @memcachedError err
+                    return resolve null
                 state = JSON.parse response[cacheKey]
                 if state? and state.action is action.getType()
                     return resolve
@@ -180,6 +189,7 @@ class Jiri
         @getCacheArray(@actionDataCacheKey action, key).add
             value: value
             expire: @getTimeFromNow ttl
+        .catch @memcachedError
 
     getActionData: (action, key) =>
         cacheArray = @getCacheArray(@actionDataCacheKey action, key)
@@ -194,6 +204,7 @@ class Jiri
                 else
                     validData.push o.value
             validData
+        .catch @memcachedError
 
     sendResponse: (response) =>
         return unless response
