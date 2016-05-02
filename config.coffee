@@ -19,7 +19,7 @@ config =
     jira_protocol: 'https'
     jira_host: 'jadultd.atlassian.net'
     jira_port: '443'
-    jira_user: 'jadu_support'
+    jira_user: process.env.JIRA_USER
     jira_password: process.env.JIRA_PASSWORD
     jira_issueUrl: 'https://jadultd.atlassian.net/browse/#{key}'
 

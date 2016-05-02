@@ -21,6 +21,7 @@ module.exports = (config) ->
 
     # Assert some required config
     throw "SLACK_API_TOKEN needs to be set in the environment" unless config.slack_apiToken?
+    throw "JIRA_USER needs to be set in the environment" unless config.jira_user?
     throw "JIRA_PASSWORD needs to be set in the environment" unless config.jira_password?
     throw "GITLAB_TOKEN needs to be set in the environment" unless config.gitlab_token?
     throw "GOOGLE_PRIVATE_KEY needs to be set in the environment" unless config.google_private_key?
