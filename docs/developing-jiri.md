@@ -28,6 +28,7 @@ in your password manager. This can be pasted into a shell before running Jiri.
 ```
 # copy and paste this into the shell
 
+export JIRA_USER=''
 export JIRA_PASSWORD=''
 export SLACK_API_TOKEN=''
 export GITLAB_TOKEN=''
