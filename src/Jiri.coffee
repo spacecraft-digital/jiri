@@ -102,7 +102,8 @@ class Jiri extends EventEmitter
             action.test message
             .catch (e) ->
                 console.error "Error testing #{action.getType()}"
-                console.log if e.stack then e.stack else e
+                console.log e.stack or e
+                # return false so the next action continues
                 return false
             .then (match) =>
                 return done false unless match
@@ -227,7 +228,7 @@ class Jiri extends EventEmitter
             #{action.getType()} went a bit wrong in #{action.channel.name}, responding to
             > #{message.text.replace("\n","\n> ")}
             ```
-            #{stackLines.slice(0,1).join("\n")}
+            #{stackLines.slice(0,2).join("\n")}
             ```
         """
 
