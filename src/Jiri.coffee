@@ -135,6 +135,7 @@ class Jiri extends EventEmitter
                          “#{message.text}” -> #{actionClass.name}"
 
     startLoading: (channelId) =>
+        @slack.setTyping channelId
         setInterval @slack.setTyping.bind(@slack, channelId), 4000
 
     channelStateCacheKey: (channel) ->
