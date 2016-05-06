@@ -7,6 +7,7 @@ mc_array = require 'mc-array'
 colors = require 'colors'
 joinn = require 'joinn'
 EventEmitter = require 'events'
+timeLimit = require 'time-limit-promise'
 
 class Jiri extends EventEmitter
 
@@ -99,7 +100,8 @@ class Jiri extends EventEmitter
         # allow each Action to decide if they want to respond to the message
         async.detectSeries @actions, (actionClass, done) =>
             action = new actionClass @, @customer_database, message.channel
-            action.test message
+            # action tests must return within 5s
+            timeLimit action.test(message), 5000
             .catch (e) ->
                 console.error "Error testing #{action.getType()}"
                 console.log e.stack or e
@@ -112,10 +114,10 @@ class Jiri extends EventEmitter
                     console.log " -> Action requested that message be ignored"
                     return
                 loadingTimer = @startLoading message.channel.id
-                action.respondTo message
+                timeLimit action.respondTo(message), 30000, rejectWith: new Error "Action took too long to respond"
             .then (reply) =>
-                return null unless reply
                 clearInterval loadingTimer
+                return null unless reply
                 if typeof reply is 'string'
                     reply = text: reply
                 throw new Error 'Action response must be a string or an object' unless typeof reply is 'object'
