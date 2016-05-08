@@ -82,6 +82,30 @@ class Jiri extends EventEmitter
 
         message
 
+    findCustomerForChannel: (channel) ->
+        return Promise.resolve null unless channel.is_channel or channel.is_group
+
+        cacheKey = "channel-customer:#{channel.name}"
+        thenify(@cache.get.bind(@cache)) cacheKey
+        # cache errors aren't a problem
+        .catch -> return null
+        .then (customerId) =>
+            return customerId if customerId
+
+            @customer_database.model('Customer')
+            .findByExactName(channel.name, 'slackChannel')
+        .then (results) =>
+            return null unless results.length
+
+            customerId = results[0]._id
+            thenify(@cache.set.bind(@cache)) cacheKey, customerId
+            .catch (err) -> console.log "Error storing channel customer mapping in cache", err
+
+            return customerId
+        .catch (err) ->
+            console.log "Error finding customer for channel #{channel.name}", err.stack || err
+            null
+
     actOnMessage: (message) =>
         if message.subtype is 'message_changed'
             # if we store messages that come in, by their ts, we could cancel and restart those requests
