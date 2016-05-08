@@ -1,6 +1,9 @@
 Action = require './Action'
 IssueOutput = require '../IssueOutput'
 config = require '../../config'
+unique = require 'reduce-unique'
+joinn = require 'joinn'
+converter = require 'number-to-words'
 
 # To extend this class, you probably just need to override the respondTo method and refRegex property (or the test method for advanced)
 class IssueInfoAction extends Action
@@ -17,34 +20,16 @@ class IssueInfoAction extends Action
 
     # if one of these matches, this Action will be run
     getTestRegex: ->
-        return /\b(([A-Z]{2,5})-(?!112\.)[0-9]{2,5}\b)/ig
+        return /\b(([A-Z]{2,5})-(?!112\.)[0-9]{2,5}\b)!?/ig
 
     getRefsDataKey: =>
         return 'refs-' + @channel.id
 
     # Returns a promise that will resolve to a response if successful
     respondTo: (message) ->
-        rawRefs = message.text.match @getTestRegex()
-
-        if !rawRefs.length
-            return new Promise (resolve, reject) ->
-                reject('No Jira refs in message')
-
-        @jiri.getActionData @, @getRefsDataKey()
-        .then (recentRefs) =>
-            # handle references missing a hyphen
-            refs = []
-            for ref in rawRefs
-                [..., x, y] = ref.match(/^([a-z]+)-?(\d+)$/i)
-                ref = "#{x}-#{y}".toUpperCase()
-                # ignore recently handled refs
-                refs.push ref unless ref in recentRefs
-
-            if refs.length
-                return @getJiraIssues "issue in (#{refs.join(', ')}) ORDER BY issue", {}, message
-            else
-                return new Promise (resolve, reject) ->
-                    resolve()
+        # remove duplicate refs, so we can know if we receive data for all that we asked for
+        @refs.reduce unique
+        return @getJiraIssues "issue in (#{@refs.join(', ')}) ORDER BY issue", {}, message
 
     getJiraIssues: (query, opts, message) =>
         options =
@@ -79,9 +64,18 @@ class IssueInfoAction extends Action
             throw error
 
     test: (message) ->
-        new Promise (resolve) =>
-            return resolve false unless message.type is 'message' and message.text? and message.channel?
+        return Promise.resolve false unless message.type is 'message' and message.text? and message.channel?
 
-            return resolve message.text.match @getTestRegex()
+        if refs = message.text.match @getTestRegex()
+            @jiri.getActionData(@, @getRefsDataKey()).then (recentRefs) =>
+                @refs = []
+                for ref in refs
+                    ref = ref.toUpperCase()
+                    forceRepeat = ref.substr(-1) is '!'
+                    if forceRepeat or ref not in recentRefs
+                        @refs.push ref.replace /!$/, ''
+                return @refs.length or 'ignore'
+        else
+            Promise.resolve false
 
 module.exports = IssueInfoAction
