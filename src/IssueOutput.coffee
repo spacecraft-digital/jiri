@@ -1,6 +1,9 @@
 ReleaseIssue = require 'jadu-jira/lib/ReleaseIssue'
 DeploymentIssue = require 'jadu-jira/lib/DeploymentIssue'
 config = require '../config'
+converter = require 'number-to-words'
+joinn = require 'joinn'
+semver = require 'semver'
 
 class IssueOutput
 
@@ -17,87 +20,119 @@ class IssueOutput
     getSlackMessage: () ->
         attachments = []
 
-        Issue = require './Issue'
-        try
-            for issue in @issues
-                attachment =
-                    "mrkdwn_in": ["text"]
-                    "fallback": "[#{issue.key}] #{issue.summary}"
+        for issue in @issues
+            attachment =
+                "mrkdwn_in": ["text"]
+                "fallback": "[#{issue.key}] #{issue.summary}"
 
-                # Spacecraft Release ticket
-                if issue.key.match(/^(SPC|SUP)-/) and issue.issuetype?.name is "Release"
-                    text = "<#{issue.url}|#{issue.key}> *#{issue.summary}*"
+            # Spacecraft Release ticket
+            if issue.key.match(/^(SPC|SUP)-/) and issue instanceof ReleaseIssue
+                text = "<#{issue.url}|#{issue.key}> *#{issue.summary}*"
 
-                    text += " `#{issue.status.name}`" if issue.status?.name
+                text += " `#{issue.status.name}`" if issue.status?.name
 
-                    text += "\n_Created #{@lowercaseRelativeDays issue.created.calendar()} by #{issue.creator.displayName}, updated #{@lowercaseRelativeDays issue.updated.calendar()}._"
+                text += "\n_Created #{@lowercaseRelativeDays issue.created.calendar()} by #{issue.creator.displayName}"
 
-                    for link in issue.issuelinks
-                        linkedIssue = new Issue link.inwardIssue||link.outwardIssue
-                        if link.type.inward is 'is blocked by'
-                            link.type.inward = 'includes'
-                        text += "\n  • _#{link.type.inward}_ <#{linkedIssue.url}|#{linkedIssue.key}> #{linkedIssue.summary} `#{linkedIssue.status.name}`"
-
-                # Spacecraft Deployment ticket
-                else if issue.key.match(/^(SPC|SUP)-/) and issue.issuetype.name is "Deployment"
-                    text = "<#{issue.url}|#{issue.key}>"
-                    status = if issue.status.name.match(/Deployment/i) then issue.status.name else "Deployment (#{issue.status.name})"
-
-                    versionMatch = issue.summary.match /(\d+\.\d+\.\d+)/
-                    if versionMatch and not issue.clientName and issue.server
-                        versionNumber = versionMatch[1]
-                        text += " #{status} of *#{issue.clientName} #{versionNumber}* to #{issue.server}"
-                    else
-                        text += " #{status} of #{issue.summary}"
-
-
-                # Others
+                if issue.updated.unix() != issue.created.unix()
+                    text += ", updated #{@lowercaseRelativeDays issue.updated.calendar()}._"
                 else
-                    attachment.author_name = "#{issue.key} #{issue.summary}"
-                    attachment.author_link = issue.url
+                    # need to close the italics
+                    text += "_"
 
-                    text = "#{issue.issuetype.name}"
+                for feature in issue.features
+                    text += "\n  • _includes_ <#{feature.url}|#{feature.key}> #{feature.summary} `#{feature.status.name}`"
 
-                    # Spacecraft / Support
-                    if issue.key.match /^(SPC|SUP)-/
+                deployments = {}
+                for deployment in issue.deployments when deployment.status.name is 'Successful Deployment'
+                    deployments[deployment.version] = [] unless deployments[deployment.version]
+                    deployments[deployment.version].push deployment.stage
 
-                        unless issue.clientName?.match /^(|\*None\*)$/
-                            text += " for #{issue.clientName}"
-                        text += " `#{issue.status.name}`"
+                deploymentGraph = for version, stages of deployments
+                    s = "#{version} "
+                    s += '-'.repeat(12 - s.length)
 
-                        if issue.cxmRef
-                            text += " <#{issue.cxmUrl}|:q: #{issue.cxmRef}>"
+                    if 'QA' in stages and 'UAT' in stages and 'Production' in stages
+                        s += '>☻ ---->☻ --------->☻'
+                    else if 'QA' in stages and 'UAT' in stages
+                        s += '>☻ ---->☻'
+                    else if 'QA' in stages and 'Production' in stages
+                        s += '>☻ ---------------->☻'
+                    else if 'UAT' in stages and 'Production' in stages
+                        s += '!?----->☻ --------->☻'
+                    else if 'QA' in stages
+                        s += '>☻'
+                    else if 'UAT' in stages
+                        s += '!?----->☻'
+                    else if 'Production' in stages
+                        s += '!?----------------->☻'
 
-                    # Other projects
-                    else
-                        # story points
-                        switch issue.customfield_10004
-                            when 1 then text += " :one:"
-                            when 2 then text += " :two:"
-                            when 3 then text += " :three:"
-                            when 4 then text += " :four:"
-                            when 5 then text += " :five:"
-                            when 6 then text += " :six:"
-                            when 7 then text += " :seven:"
-                            when 8 then text += " :eight:"
-                            when 9 then text += " :nine:"
-                            when 10 then text += " :keycap_ten:"
+                if deploymentGraph.length
+                    text += "\n```\n           [QA]   [UAT]   [Production]\n#{deploymentGraph.join "\n"}\n```"
 
-                        text += " `#{issue.status.name}`"
+            # Spacecraft Deployment ticket
+            else if issue.key.match(/^(SPC|SUP)-/) and issue instanceof DeploymentIssue
+                text = "<#{issue.url}|#{issue.key}>"
+                status = if issue.status.name.match(/Deployment/i) then issue.status.name else "Deployment (#{issue.status.name})"
 
-                # display Assignee's gavatar
-                if issue.assignee?.emailAddress
-                    Gravatar = require 'gravatar'
-                    attachment.author_icon = Gravatar.url issue.assignee.emailAddress, {s: 48, d: '404'}, 'https'
+                versionMatch = issue.summary.match /(\d+\.\d+\.\d+)/
+                if versionMatch and not issue.clientName and issue.stage
+                    versionNumber = versionMatch[1]
+                    text += " #{status} of *#{issue.clientName} #{versionNumber}* to #{issue.stage}"
+                else
+                    text += " #{status} of #{issue.summary}"
 
-                attachment.text = text
 
-                attachments.push attachment
+            # Others
+            else
+                attachment.author_name = "#{issue.key} #{issue.summary}"
+                attachment.author_link = issue.url
 
-        catch e
-            console.error "Error building Issue output: #{e}", e.stack
+                text = "#{issue.issuetype.name}"
 
-        "attachments": JSON.stringify(attachments)
+                # Spacecraft / Support
+                if issue.key.match /^(SPC|SUP)-/
+
+                    unless issue.clientName?.match /^(|\*None\*)$/
+                        text += " for #{issue.clientName}"
+                    text += " `#{issue.status.name}`"
+
+                    if issue.cxmRef
+                        text += " <#{issue.cxmUrl}|:q: #{issue.cxmRef}>"
+
+                # Other projects
+                else
+                    # story points
+                    switch issue.storyPoints
+                        when 1 then text += " :one:"
+                        when 2 then text += " :two:"
+                        when 3 then text += " :three:"
+                        when 4 then text += " :four:"
+                        when 5 then text += " :five:"
+                        when 6 then text += " :six:"
+                        when 7 then text += " :seven:"
+                        when 8 then text += " :eight:"
+                        when 9 then text += " :nine:"
+                        when 10 then text += " :keycap_ten:"
+
+                    text += " `#{issue.status.name}`"
+
+            if issue.status.name in @jira.getStatusNames('awaitingReview') and issue.mergeRequests?.length
+                if issue.mergeRequests.length is 1
+                    text += "\n <#{issue.mergeRequests[0].url}|Merge request>"
+                else
+                    text += "\n Merge requests: " +
+                            joinn ("<#{mr.url}|#{mr.label}>" for mr in issue.mergeRequests)
+
+            # display Assignee's gavatar
+            if issue.assignee?.emailAddress
+                Gravatar = require 'gravatar'
+                attachment.author_icon = Gravatar.url issue.assignee.emailAddress, {s: 48, d: '404'}, 'https'
+
+            attachment.text = text
+
+            attachments.push attachment
+
+        attachments: JSON.stringify(attachments)
 
 
 module.exports = IssueOutput
