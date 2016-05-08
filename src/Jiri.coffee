@@ -230,16 +230,16 @@ class Jiri extends EventEmitter
 
     actionError: (error, action, message) =>
         console.log "Action error in #{action.getType()}:", error.stack||error
-        if error.stack
-            stackLines = error.stack.split "\n"
 
-        @notifyAdmins """
+        alertMessage = """
             #{action.getType()} went a bit wrong in #{action.channel.name}, responding to
             > #{message.text.replace("\n","\n> ")}
-            ```
-            #{stackLines.slice(0,2).join("\n")}
-            ```
         """
+
+        if error.stack
+            alertMessage += "\n```\n#{error.stack.split("\n").slice(0,4).join("\n")}\n```"
+
+        @notifyAdmins alertMessage
 
         return null
 
