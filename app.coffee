@@ -5,6 +5,7 @@ JiriSlack = require './src/JiriSlack'
 GitLab = require 'gitlab'
 mc = require 'mc'
 Jira = require 'jadu-jira'
+timeLimit = require 'time-limit-promise'
 
 # construct a new object, passing an array of arguments
 newWithArgs = (constructor, args) ->
@@ -27,6 +28,8 @@ getMemcachedConnection = ->
                 console.log "Connected to memcached"
                 resolve cache
 
+console.log 'Loading dependencies…'
+
 # will create SSH tunnels if 'tunnels' is defined in config
 # (which should only be defined in DEV config)
 require('dev-tunnels') config
@@ -39,10 +42,11 @@ require('dev-tunnels') config
         customer_database,
         new Jira {user: config.jira_user, password: config.jira_password}, database
         GitLab url: config.gitlab_url, token: config.gitlab_token
-        getMemcachedConnection()
+        timeLimit getMemcachedConnection(), 7000, "memcached connection is taking too long — please check the service at #{config.memcached_hosts}"
     ]
 .catch (err) ->
-    throw colors.bgRed 'Failed to load dependencies: ' + err.stack||err
+    console.log colors.bgRed 'Failed to load dependencies:', err.stack||err
+    process.exit 1
 
 # once we've got all the dependencies, we can construct
 .then (deps) ->
