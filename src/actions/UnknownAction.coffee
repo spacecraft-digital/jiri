@@ -92,7 +92,11 @@ class UnknownAction extends Action
 
             return resolve true if @channel.is_im
 
-            pattern = @jiri.createPattern '^jiri\\b.+'
-            return resolve message.text.match pattern.getRegex()
+            pattern = @jiri.createPattern 'jiri\\b([ ?.!,:]|$)(?!hasn?\\b|doesn?\\b|isn?\\b).*'
+            dontMatch = @jiri.createPattern '(is|does|has)(n\'?t)? jiri'
+            if message.text.match(pattern.getRegex()) and not message.text.match(dontMatch.getRegex())
+                    return resolve true
+
+            resolve 'ignore'
 
 module.exports = UnknownAction
