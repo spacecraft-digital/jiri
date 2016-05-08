@@ -35,11 +35,11 @@ console.log 'Loading dependencies…'
 require('dev-tunnels') config
 # get the database first, because JIRA needs it
 .then -> Crater config.mongo_url
-.then (customer_database) ->
+.then (database) ->
     # then get the rest of the dependencies in parallel
     Promise.all [
         new JiriSlack config.slack_apiToken, config.slack_autoReconnect, config.slack_autoMark
-        customer_database,
+        database,
         new Jira {user: config.jira_user, password: config.jira_password}, database
         GitLab url: config.gitlab_url, token: config.gitlab_token
         timeLimit getMemcachedConnection(), 7000, "memcached connection is taking too long — please check the service at #{config.memcached_hosts}"
