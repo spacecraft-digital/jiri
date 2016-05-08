@@ -18,7 +18,7 @@ class CxmCaseInfoAction extends Action
 
     # if one of these matches, this Action will be run
     getTestRegex: ->
-        return /\b([A-Z]{3}[0-9]{6})\b/ig
+        return /\b(SUP[0-9]{6})\b/ig
 
     getRefsDataKey: =>
         return 'refs-' + @channel.id
