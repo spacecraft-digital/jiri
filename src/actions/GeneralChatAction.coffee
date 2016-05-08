@@ -8,7 +8,7 @@ moment = require 'moment'
 class GeneralChatAction extends Action
 
     patternParts:
-        hello: "^(?=.*jiri).*\\b(say (hello|hi)( to the (nice )?people)?|are you there\\??|hi|hello|hey|yo|s\\'?up|what\\'?s up|greetings|oi)\\b.*"
+        hello: "^(?=.*jiri).*\\b(say (hello|hi)( to the (nice )?people)?|where are you|are you there\\??|hi|hello|hey|yo|s\\'?up|what\\'?s up|greetings|oi)\\b.*"
         thanks: "^(?=.*jiri).*\\b(thank you( very much)?|thanks|ta|cheers|nice one|good work|ta muchly)\\b.*"
         stupid: "^(?=.*jiri).*\\b(stupid|drunk|annoying|go away|get lost|fuck off|piss off)\\b.*"
 
