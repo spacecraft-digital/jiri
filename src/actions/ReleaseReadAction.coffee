@@ -1,6 +1,6 @@
 Action = require './Action'
 config = require '../../config'
-ReleaseIssue = require '../ReleaseIssue'
+ReleaseIssue = require 'jadu-jira/lib/ReleaseIssue'
 IssueOutput = require '../IssueOutput'
 
 class ReleaseReadAction extends Action

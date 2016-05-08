@@ -1,4 +1,5 @@
-Issue = require './Issue'
+ReleaseIssue = require 'jadu-jira/lib/ReleaseIssue'
+DeploymentIssue = require 'jadu-jira/lib/DeploymentIssue'
 config = require '../config'
 
 class IssueOutput
@@ -7,34 +8,9 @@ class IssueOutput
     VIEW_CONDENSED: 2
     VIEW_EXPANDED: 3
 
-    # the fields that should be requested in an api call to be processed by this class
-    FIELDS: [
-        config.jira_field_reportingCustomer, # Reporting Customer
-        'issuetype',
-        'summary',
-        'status',
-        'subtasks',
-        'customfield_10202',
-        config.jira_field_story_points, # Story points
-        config.jira_field_server,
-        config.jira_field_deployment_version,
-        config.jira_field_release_version,
-        'issuelinks',
-        'assignee',
-        'creator', # AKA reporter
-        'created',
-        'updated'
-    ]
-
-    constructor: (issues) ->
-        @issues = []
-
-        unless issues.length?
-            issues = [issues]
-
-        for issue in issues
-            issue = new Issue issue unless issue.isExtended
-            @issues.push issue
+    constructor: (@jira, @issues) ->
+        throw new Error 'IssueOutput requires JIRA instance as first parameter' unless @jira?.getStatusNames
+        @issues = [@issues] unless Array.isArray @issues
 
     lowercaseRelativeDays: (s) -> return s.replace /(yesterday|today|tomorrow|last|next)/gi, (word) -> word.toLowerCase()
 

@@ -1,5 +1,4 @@
 Action = require './Action'
-Issue = require '../Issue'
 IssueOutput = require '../IssueOutput'
 config = require '../../config'
 
@@ -50,26 +49,18 @@ class IssueInfoAction extends Action
     getJiraIssues: (query, opts, message) =>
         options =
             maxResults: 10
-            fields: IssueOutput.prototype.FIELDS
         for own key, value of opts
             options[key] = value
 
-        @jiri.jira.search(query, options)
-        .then (result) =>
-            @issuesLoaded result, message
+        @jiri.jira.search query, options
+        .then @issuesLoaded
         .catch (error) =>
             @errorLoadingIssues error, message
 
-    issuesLoaded: (result, message) =>
+    issuesLoaded: (issues) =>
+        @jiri.storeActionData @, @getRefsDataKey(), issue.key, config.timeBeforeRepeatUnfurl for issue in issues
 
-        issues = []
-
-        if result?.issues
-            for issue in result.issues when issue?
-                issues.push new Issue(issue)
-                @jiri.storeActionData @, @getRefsDataKey(), issue.key, config.timeBeforeRepeatUnfurl
-
-        @jiri.recordOutcome @, @OUTCOME_RESULTS, 
+        @jiri.recordOutcome @, @OUTCOME_RESULTS,
             issueCount: issues.length
 
         if issues.length

@@ -4,7 +4,7 @@ Crater = require 'crater'
 JiriSlack = require './src/JiriSlack'
 GitLab = require 'gitlab'
 mc = require 'mc'
-Jira = require './src/Jira'
+Jira = require 'jadu-jira'
 
 # construct a new object, passing an array of arguments
 newWithArgs = (constructor, args) ->
@@ -37,7 +37,7 @@ require('dev-tunnels') config
     Promise.all [
         new JiriSlack config.slack_apiToken, config.slack_autoReconnect, config.slack_autoMark
         customer_database,
-        new Jira config, customer_database
+        new Jira {user: config.jira_user, password: config.jira_password}, database
         GitLab url: config.gitlab_url, token: config.gitlab_token
         getMemcachedConnection()
     ]

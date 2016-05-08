@@ -1,6 +1,4 @@
 IssueInfoAction = require './IssueInfoAction'
-Issue = require '../Issue'
-IssueOutput = require '../IssueOutput'
 config = require '../../config'
 Pattern = require '../Pattern'
 async = require 'async'
@@ -173,26 +171,22 @@ class IssueSearchAction extends IssueInfoAction
                                 for own key, value of @patternParts.status when matches[0].match new RegExp "(#{value})", 'i'
                                     switch key
                                         when 'in progress'
-                                            status = config.jira_status_inProgress
+                                            status = @jiri.jira.getStatusNames 'inProgress'
                                         when 'test'
-                                            status = config.jira_status_toTest
+                                            status = @jiri.jira.getStatusNames 'toTest'
                                         when 'webdev'
-                                            status = config.jira_status_webdevToDo
+                                            status = @jiri.jira.getStatusNames 'webdevToDo'
                                         when 'ux'
-                                            status = config.jira_status_uxToDo
+                                            status = @jiri.jira.getStatusNames 'uxToDo'
                                         when 'merge'
-                                            status = config.jira_status_awaitingMerge
+                                            status = @jiri.jira.getStatusNames 'awaitingMerge'
                                         when 'to review'
-                                            status = config.jira_status_awaitingReview
+                                            status = @jiri.jira.getStatusNames 'awaitingReview'
                                         when 'release'
-                                            status = config.jira_status_readyToRelease
+                                            status = @jiri.jira.getStatusNames 'readyToRelease'
 
                                     if status?
-                                        if typeof status is 'string'
-                                            status = "'#{status}'"
-                                        else if status.length
-                                            status = ("'#{s}'" for s in status)
-                                            status = status.join ', '
+                                        status = ("'#{s}'" for s in status).join ', '
                                         return callback null, "status IN (#{status})"
 
                             callback null, null

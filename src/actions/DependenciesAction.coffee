@@ -1,6 +1,4 @@
 Action = require './Action'
-Issue = require '../Issue'
-IssueOutput = require '../IssueOutput'
 config = require '../../config'
 https = require 'https'
 

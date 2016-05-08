@@ -1,6 +1,5 @@
 Action = require './Action'
 config = require '../../config'
-IssueOutput = require '../IssueOutput'
 
 class ReceiveJiraWebhooksAction extends Action
 
