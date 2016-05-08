@@ -279,11 +279,14 @@ class Jiri extends EventEmitter
                 channel: channel
 
     onTerminate: (signal, err = '') =>
+        # avoid multiple calls
+        return if @terminating
         @notifyAdmins "I've been told to quit, so I'm off for now :wave:"
         setTimeout ->
             console.log "Terminated by SIGTERM"
             process.exit()
         , 1000
+        @terminating = true
 
     onSlackOpen: () =>
         console.log colors.yellow "Connected to Slack"
