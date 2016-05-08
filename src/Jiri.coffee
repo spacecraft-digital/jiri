@@ -7,6 +7,7 @@ mc_array = require 'mc-array'
 colors = require 'colors'
 joinn = require 'joinn'
 EventEmitter = require 'events'
+thenify = require 'thenify'
 timeLimit = require 'time-limit-promise'
 
 class Jiri extends EventEmitter
@@ -34,7 +35,8 @@ class Jiri extends EventEmitter
             'IgnoreMeAction'
             'DependenciesAction'
             'ReleaseReadAction'
-            'ReleaseWriteAction'
+            'NewReleaseAction'
+            'AddToReleaseAction'
             'IssueSearchAction'
             'HelpAction'
             'ReceiveJiraWebhooksAction'
@@ -93,46 +95,50 @@ class Jiri extends EventEmitter
 
         message = @normaliseMessage message
 
-        # in debug mode, reload action scripts each time — avoids having to restart Jiri for changes
-        @loadActions() if @debugMode
+        # look to see if there's a customer linked to this channel
+        @findCustomerForChannel(message.channel).then (channelCustomerId) =>
+            message.channelCustomerId = channelCustomerId
 
-        loadingTimer = null
-        # allow each Action to decide if they want to respond to the message
-        async.detectSeries @actions, (actionClass, done) =>
-            action = new actionClass @, @customer_database, message.channel
-            # action tests must return within 5s
-            timeLimit action.test(message), 5000
-            .catch (e) ->
-                console.error "Error testing #{action.getType()}"
-                console.log e.stack or e
-                # return false so the next action continues
-                return false
-            .then (match) =>
-                return done false unless match
-                done true
-                if match is 'ignore'
-                    console.log " -> Action requested that message be ignored"
-                    return
-                loadingTimer = @startLoading message.channel.id
-                timeLimit action.respondTo(message), 30000, rejectWith: new Error "Action took too long to respond"
-            .then (reply) =>
-                clearInterval loadingTimer
-                return null unless reply
-                if typeof reply is 'string'
-                    reply = text: reply
-                throw new Error 'Action response must be a string or an object' unless typeof reply is 'object'
-                reply.channel = message.channel.id
-                @sendResponse reply
-            .catch (e) =>
-                clearInterval loadingTimer if loadingTimer
-                @actionError e, action, message
+            # in debug mode, reload action scripts each time — avoids having to restart Jiri for changes
+            @loadActions() if @debugMode
 
-        , (actionClass) ->
-            return unless actionClass
-            d = new Date
-            console.log "[#{d.toISOString()}] #{message.userName}
-                         in #{if message.channel.is_im then "DM" else message.channel.name}:
-                         “#{message.text}” -> #{actionClass.name}"
+            loadingTimer = null
+            # allow each Action to decide if they want to respond to the message
+            async.detectSeries @actions, (actionClass, done) =>
+                action = new actionClass @, @customer_database, message.channel
+                # action tests must return within 5s
+                timeLimit action.test(message), 5000
+                .catch (e) ->
+                    console.error "Error testing #{action.getType()}"
+                    console.log e.stack or e
+                    # return false so the next action continues
+                    return false
+                .then (match) =>
+                    return done false unless match
+                    done true
+                    if match is 'ignore'
+                        console.log " -> Action requested that message be ignored"
+                        return
+                    loadingTimer = @startLoading message.channel.id
+                    timeLimit action.respondTo(message), 30000, rejectWith: new Error "Action took too long to respond"
+                .then (reply) =>
+                    clearInterval loadingTimer
+                    return null unless reply
+                    if typeof reply is 'string'
+                        reply = text: reply
+                    throw new Error 'Action response must be a string or an object' unless typeof reply is 'object'
+                    reply.channel = message.channel.id
+                    @sendResponse reply
+                .catch (e) =>
+                    clearInterval loadingTimer if loadingTimer
+                    @actionError e, action, message
+
+            , (actionClass) ->
+                return unless actionClass
+                d = new Date
+                console.log "[#{d.toISOString()}] #{message.userName}
+                             in #{if message.channel.is_im then "DM" else message.channel.name}:
+                             “#{message.text}” -> #{actionClass.name}"
 
     startLoading: (channelId) =>
         @slack.setTyping channelId
