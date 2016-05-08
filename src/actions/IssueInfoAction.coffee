@@ -49,8 +49,16 @@ class IssueInfoAction extends Action
             issueCount: issues.length
 
         if issues.length
-            outputter = new IssueOutput issues
-            outputter.getSlackMessage()
+            outputter = new IssueOutput @jiri.jira, issues
+            response = outputter.getSlackMessage()
+            if issues.length < @refs.length
+                notFoundRefs = issues.filter (issue) -> !ref for ref in refs when ref is issue.key
+                if notFoundRefs
+                    if issues.length is 1
+                        response.text = "I couldn't find #{joinn notFoundRefs}, but here's #{issues[0].ref}:"
+                    else
+                        response.text = "I couldn't find #{joinn notFoundRefs}, but here are the other #{converter.toWords issues.length}:"
+            response
 
     errorLoadingIssues: (error, message) =>
         if @getType() is 'IssueInfoAction' and error is 'Problem with the JQL query'
@@ -58,8 +66,10 @@ class IssueInfoAction extends Action
             issueOnly = message.text.match @jiri.createPattern('^jiri? ([a-z]{2,5}-[0-9]{2,5}) *$').getRegex()
             return if issueOnly
                 text: "#{issueOnly[1].toUpperCase()} doesn't appear to be a valid JIRA reference…"
+        else if @getType() is 'IssueInfoAction' and error?.errorMessages?
+            text: "JIRA objected: ```#{error.errorMessages.join "\n"}\n```"
         else
-            console.log 'Error loading issues: ', error
+            console.log 'Error loading issues'
             # throw an error, unless we've just sniffed the refs
             throw error
 
