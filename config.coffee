@@ -16,6 +16,10 @@ config =
         '#jiri-status'
     ]
 
+    memcached_hosts: [
+        '127.0.0.1'
+    ]
+
     jira_user: process.env.JIRA_USER
     jira_password: process.env.JIRA_PASSWORD
 

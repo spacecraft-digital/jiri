@@ -19,7 +19,7 @@ config = require './config'
 
 getMemcachedConnection = ->
     new Promise (resolve, reject) ->
-        cache = new mc.Client()
+        cache = new mc.Client config.memcached_hosts
         cache.connect ->
             # as this callback seems to fire even if connection
             # wasn't established, we'll test the connection with a set()
