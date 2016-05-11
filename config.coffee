@@ -38,6 +38,8 @@ config =
     sshUser: 'root'
     sshPrivateKeyPath: '/root/.ssh/jadu_webdev_key'
 
+    giphy_api_key: 'dc6zaTOxFJmzC'
+
     timezone: 'Europe/London'
 
     bot_name: 'Jiri'
