@@ -52,10 +52,7 @@ class NewReleaseAction extends Action
                 @jiri.jira.createNewReleaseTicket customer, customer.getProject()
             ]
         .then ([customer, release]) =>
-            outputter = new IssueOutput @jiri.jira, release
-            response = outputter.getSlackMessage()
-            response.text = "Voila. One new release for #{customer.getName()}:"
-            response
+            new IssueOutput(@jiri.jira, release).getSlackMessage "Voila. One new release for #{customer.getName()}:"
         .catch (e) =>
             # handle assertion errors as okay — just return message
             if e?.name is 'AssertionError'

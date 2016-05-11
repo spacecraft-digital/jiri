@@ -62,8 +62,7 @@ class CxmCaseInfoAction extends Action
                     return @dataLoaded data
 
                 issue.setCxmCaseData data.reference, config.cxm_caseUrl.replace(/#\{reference\}/i, data.reference)
-                outputter = new IssueOutput @jiri.jira, issue
-                return outputter.getSlackMessage()
+                return new IssueOutput(@jiri.jira, issue).getSlackMessage()
 
         # if no JIRA ref, output the CXM ticket details
         else

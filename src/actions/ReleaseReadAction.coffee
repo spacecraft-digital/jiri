@@ -84,27 +84,21 @@ class ReleaseReadAction extends Action
         .then (releaseTicket) =>
             throw new Error "I couldn't find the appropriate release ticket" unless releaseTicket
 
-            response = {}
-
             switch mode
                 when 'when'
-                    response =
-                        text: "#{customer.name}'s "
+                    text = "#{customer.name}'s "
                     if releaseVersion in ReleaseIssue.prototype.synonyms.latest
-                        response.text += "latest release"
+                        text += "latest release"
                     else if releaseVersion in ReleaseIssue.prototype.synonyms.previous
-                        response.text += "most recent completed release"
+                        text += "most recent completed release"
                     else if releaseVersion in ReleaseIssue.prototype.synonyms.next
-                        response.text += "next release"
+                        text += "next release"
                     else
-                        response.text += "release #{releaseVersion}"
-
-                    response.text += " was created #{releaseTicket.created.calendar()} by #{releaseTicket.creator?.displayName}"
+                        text += "release #{releaseVersion}"
+                    text += " was created #{releaseTicket.created.calendar()} by #{releaseTicket.creator?.displayName}"
+                    return text: text
 
                 else
-                    outputter = new IssueOutput @jiri.jira, releaseTicket
-                    response = outputter.getSlackMessage()
-
                     if releaseVersion in ReleaseIssue.prototype.synonyms.latest
                         text = "Here's #{customer.name}'s latest release:"
                     else if releaseVersion in ReleaseIssue.prototype.synonyms.previous
@@ -113,9 +107,7 @@ class ReleaseReadAction extends Action
                         text = "#{customer.name}'s next release:"
                     else
                         text = "#{customer.name} release #{releaseVersion}:"
-                    response.text = text
-
-            response
+                    return new IssueOutput(@jiri.jira, releaseTicket).getSlackMessage text
 
     noNextReleaseTicket: (customer, forceCreate = false) =>
         new Promise (resolve, reject) =>

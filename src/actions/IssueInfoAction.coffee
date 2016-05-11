@@ -49,16 +49,14 @@ class IssueInfoAction extends Action
             issueCount: issues.length
 
         if issues.length
-            outputter = new IssueOutput @jiri.jira, issues
-            response = outputter.getSlackMessage()
             if issues.length < @refs.length
-                notFoundRefs = issues.filter (issue) -> !ref for ref in refs when ref is issue.key
+                notFoundRefs = issues.filter (issue) -> !ref for ref in @refs when ref is issue.key
                 if notFoundRefs
                     if issues.length is 1
-                        response.text = "I couldn't find #{joinn notFoundRefs}, but here's #{issues[0].ref}:"
+                        text = "I couldn't find #{joinn notFoundRefs}, but here's #{issues[0].ref}:"
                     else
-                        response.text = "I couldn't find #{joinn notFoundRefs}, but here are the other #{converter.toWords issues.length}:"
-            response
+                        text = "I couldn't find #{joinn notFoundRefs}, but here are the other #{converter.toWords issues.length}:"
+            new IssueOutput(@jiri.jira, issues).getSlackMessage text
 
     errorLoadingIssues: (error, message) =>
         if @getType() is 'IssueInfoAction' and error is 'Problem with the JQL query'
