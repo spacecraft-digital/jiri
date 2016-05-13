@@ -234,20 +234,20 @@ class IssueSearchAction extends IssueInfoAction
             else
                 reject new Error "Unknown match type"
 
-    issuesLoaded: (result, message) =>
+    issuesLoaded: (issues, message) =>
 
         moreAvailable = false
 
-        if result.issues.length > @MAX_RESULTS
+        if issues.length > @MAX_RESULTS
             moreAvailable = true
-            result.issues = result.issues.slice(0,@MAX_RESULTS)
+            issues = issues.slice(0,@MAX_RESULTS)
 
-        count = result.issues.length
+        count = issues.length
 
         if count is 0
             return text: "I'm afraid I couldn't find any. This is the query I tried: \n```\n#{message.jiri_jira_query}\n```"
 
-        response = super result, message
+        response = super issues, message
 
         return unless response
 
