@@ -85,18 +85,17 @@ class UnknownAction extends Action
     # Returns TRUE if this action can respond to the message
     # No further actions will be tested if this returns TRUE
     test: (message) ->
-        new Promise (resolve) =>
-            return resolve false unless message.type is 'message' and message.text? and message.channel?
+        Promise.resolve false unless message.type is 'message' and message.text? and message.channel?
 
-            return resolve false if message.subtype is 'bot_message'
+        Promise.resolve false if message.subtype is 'bot_message'
 
-            return resolve true if @channel.is_im
+        Promise.resolve true if @channel.is_im
 
-            pattern = @jiri.createPattern 'jiri\\b([ ?.!,:]|$)(?!hasn?\\b|doesn?\\b|isn?\\b).*'
-            dontMatch = @jiri.createPattern '(is|does|has)(n\'?t)? jiri'
-            if message.text.match(pattern.getRegex()) and not message.text.match(dontMatch.getRegex())
-                    return resolve true
+        pattern = @jiri.createPattern 'jiri\\b([ ?.!,:]|$)'
+        dontMatch = @jiri.createPattern '(is|does|has)(n\'?t)? jiri'
+        if message.text.match(pattern.getRegex()) and not message.text.match(dontMatch.getRegex())
+            Promise.resolve true
 
-            resolve 'ignore'
+        Promise.resolve false
 
 module.exports = UnknownAction
