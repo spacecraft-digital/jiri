@@ -307,6 +307,12 @@ class Jiri extends EventEmitter
             @deathArrangementsMade = true
             process.on 'SIGTERM', @onTerminate
 
+    # a debug function to log a message with less noise
+    logSlackMessage: (message) ->
+        o = {}
+        o[key] = value for key, value of message when key not in ['_client', '_user', '_channel', 'client', 'channel', '_onDeleteMessage', '_onUpdateMessage', 'deleteMessage', 'updateMessage', 'user_profile', 'toJSON', 'toString', 'getChannelType', '_onMessageSent', 'getBody', 'team']
+        console.log o
+
     onSlackMessage: (message) =>
         # ignore messages Jiri sends
         return if message.user is @slack.self.id
