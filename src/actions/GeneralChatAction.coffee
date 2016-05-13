@@ -92,14 +92,14 @@ class GeneralChatAction extends Action
                 ]
 
 
-            if text?.length
+            if text.length
                 resolve text: text[Math.floor(Math.random() * text.length)]
 
     # Returns TRUE if this action can respond to the message
     # No further actions will be tested if this returns TRUE
     test: (message) ->
         new Promise (resolve) =>
-            return resolve true if message.subtype in ['group_join', 'channel_join']
+            return resolve true if message.subtype in ['group_join', 'channel_join'] and message.user.id is @jiri.slack.self.id
 
             return resolve false unless message.text
 
