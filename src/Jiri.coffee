@@ -19,6 +19,7 @@ class Jiri extends EventEmitter
         @slack.on 'open', @onSlackOpen
         @slack.on 'message', @onSlackMessage
         @slack.on 'error', @onSlackError
+        @slack.on 'raw_message', @onSlackRawMessage
 
         @slack.login()
 
@@ -327,5 +328,9 @@ class Jiri extends EventEmitter
     onSlackError: (error) ->
         console.error "Slack Error", error
 
+    # allows us to process messages that the Slack package doesn't trigger a message event for
+    onSlackRawMessage: (message) =>
+        if message.subtype in ['group_join', 'channel_join'] and message.user is @slack.self.id
+            @actOnMessage message
 
 module.exports = Jiri
