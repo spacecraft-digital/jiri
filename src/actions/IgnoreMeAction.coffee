@@ -42,19 +42,18 @@ class IgnoreMeAction extends Action
         (@jiri.createPattern(pattern, @getPatternParts()).getRegex() for pattern in @getStopPatterns())
 
     test: (message) ->
-        new Promise (resolve) =>
-            return resolve false unless message.type is 'message' and message.text? and message.channel?
+        return Promise.resolve false unless message.type is 'message' and message.text? and message.channel?
 
-            resolve @isIgnored message.user
+        for regex in @getStopRegex() when message.text.match regex
+            return Promise.resolve true
+
+        @isIgnored message.user
         .then (isIgnored) =>
             # if this user is ignored,
-            return true if isIgnored
+            return 'ignore' if isIgnored
 
-            for regex in @getTestRegex()
-                if message.text.match regex
-                    return true
-
-            return false
+            for regex in @getTestRegex() when message.text.match regex
+                return true
 
     abbreviations:
         'seconds': ['s', 'sec', 'secs']
@@ -153,8 +152,7 @@ class IgnoreMeAction extends Action
             @ignoring.remove toRemove if toRemove.length
 
     isIgnored: (user) =>
-        return new Promise (resolve, reject) =>
-            resolve @ignoring.get()
+        @ignoring.get()
         .catch (err) =>
             console.log "Error checking if this user is being ignored", error
             return false
