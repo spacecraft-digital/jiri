@@ -5,6 +5,7 @@ converter = require 'number-to-words'
 joinn = require 'joinn'
 semver = require 'semver'
 gif = require './gif'
+pickOne = require 'pick-one'
 
 class IssueOutput
 
@@ -82,12 +83,17 @@ class IssueOutput
                 versionNumber = versionMatch[1]
                 text += " #{status} of *#{issue.clientName} #{versionNumber}* to #{issue.stage}"
             else
-                text += " #{status} of #{issue.summary}"
+                text += " #{status} of #{issue.summary.replace /deploy +/i, ''}"
 
-            if issue.stage is 'Production' and issue.status.name is 'Successful Deployment'
-                return resolve gif('celebrate').then (gifUrl) ->
-                    text: text
-                    image_url: gifUrl if gifUrl
+            if issue.status.name is 'Successful Deployment'
+                switch issue.stage
+                    when 'Production' then word = pickOne ['celebrate!', 'fireworks', 'group hug']
+                    when 'UAT' then word = pickOne ['well done', 'thumbs up']
+                    when 'QA' then word = ['gift', 'moonwalk', 'slam dunk', 'goal']
+                if word
+                    return resolve gif(word).then (gifUrl) ->
+                        text: text
+                        image_url: gifUrl if gifUrl
 
             resolve text
 
