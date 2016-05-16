@@ -92,7 +92,7 @@ class UnknownAction extends Action
         Promise.resolve true if @channel.is_im
 
         pattern = @jiri.createPattern 'jiri\\b([ ?.!,:]|$)'
-        dontMatch = @jiri.createPattern '(is|does|has)(n\'?t)? jiri'
+        dontMatch = @jiri.createPattern '(will|wo|is|does|has)(n\'?t)? jiri'
         if message.text.match(pattern.getRegex()) and not message.text.match(dontMatch.getRegex())
             Promise.resolve true
 
