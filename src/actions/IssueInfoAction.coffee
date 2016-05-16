@@ -49,7 +49,7 @@ class IssueInfoAction extends Action
             issueCount: issues.length
 
         if issues.length
-            if issues.length < @refs.length
+            if @refs and issues.length < @refs.length
                 notFoundRefs = issues.filter (issue) -> !ref for ref in @refs when ref is issue.key
                 if notFoundRefs
                     if issues.length is 1

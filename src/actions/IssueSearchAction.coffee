@@ -207,9 +207,9 @@ class IssueSearchAction extends IssueInfoAction
                             query = queryBits.filter((n) -> n?).join(' AND ') +
                                     ' ORDER BY createdDate DESC'
 
-                            message.jiri_jira_query = query
-                            message.jiri_jira_startAt = 0
-                            message.jiri_jira_limit = @MAX_RESULTS
+                            @jira_query = query
+                            @jira_startAt = 0
+                            @jira_limit = @MAX_RESULTS
 
                             resolve @getJiraIssues query, {maxResults: @MAX_RESULTS + 1}, message
                         )
@@ -221,20 +221,20 @@ class IssueSearchAction extends IssueInfoAction
                 else
                     @MAX_RESULTS = @lastOutcome.data.limit
 
-                message.jiri_jira_query = @lastOutcome.data.query
-                message.jiri_jira_startAt = @lastOutcome.data.startAt + @lastOutcome.data.limit
-                message.jiri_jira_limit = @MAX_RESULTS
+                @jira_query = @lastOutcome.data.query
+                @jira_startAt = @lastOutcome.data.startAt + @lastOutcome.data.limit
+                @jira_limit = @MAX_RESULTS
 
                 resolve @getJiraIssues @lastOutcome.data.query, {
-                        maxResults: message.jiri_jira_limit + 1,
-                        startAt: message.jiri_jira_startAt
+                        maxResults: @jira_limit + 1,
+                        startAt: @jira_startAt
                     },
                     message
 
             else
                 reject new Error "Unknown match type"
 
-    issuesLoaded: (issues, message) =>
+    issuesLoaded: (issues) =>
 
         moreAvailable = false
 
@@ -245,14 +245,14 @@ class IssueSearchAction extends IssueInfoAction
         count = issues.length
 
         if count is 0
-            return text: "I'm afraid I couldn't find any. This is the query I tried: \n```\n#{message.jiri_jira_query}\n```"
+            return text: "I'm afraid I couldn't find any. This is the query I tried: \n```\n#{@jira_query}\n```"
 
-        response = super issues, message
+        response = super issues
 
         return unless response
 
-        if message.jiri_jira_startAt > 0
-            startAt = message.jiri_jira_startAt
+        if @jira_startAt > 0
+            startAt = @jira_startAt
             if count is 1
                 response.text = "Here is result #{startAt+1}. "
             else
@@ -265,7 +265,7 @@ class IssueSearchAction extends IssueInfoAction
             response.text = "Here you go — I found #{count}. "
 
         # show query
-        # response.text += "\n```\n#{message.jiri_jira_query}\n```"
+        # response.text += "\n```\n#{@jira_query}\n```"
 
         if moreAvailable
             strings = [
@@ -294,9 +294,9 @@ class IssueSearchAction extends IssueInfoAction
             outcome = @OUTCOME_LAST_RESULTS
 
         @jiri.recordOutcome @, outcome, {
-            query: message.jiri_jira_query
-            startAt: message.jiri_jira_startAt
-            limit: message.jiri_jira_limit
+            query: @jira_query
+            startAt: @jira_startAt
+            limit: @jira_limit
         }
 
         response
