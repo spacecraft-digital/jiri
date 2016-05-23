@@ -2,6 +2,7 @@ Action = require './Action'
 config = require '../../config'
 ReleaseIssue = require 'jadu-jira/lib/ReleaseIssue'
 IssueOutput = require '../IssueOutput'
+assert = require 'assert'
 
 class ReleaseReadAction extends Action
 
@@ -108,6 +109,16 @@ class ReleaseReadAction extends Action
                     else
                         text = "#{customer.name} release #{releaseVersion}:"
                     return new IssueOutput(@jiri.jira, releaseTicket).getSlackMessage text
+
+        .catch (e) =>
+            # handle assertion errors as okay — just return message
+            if e?.name is 'AssertionError'
+                return text: e.message
+            else if e.message?.match /mapped to in JIRA/
+                return text: "#{e.message} — set the `_mappingId_jira` property to the `Reporting Customer` as JIRA knows it"
+            else if m = e.errorMessages?[0].match /The option '(.+)' for field 'Reporting Customers' does not exist./
+                return text: "The `_mappingId_jira` value `#{m[1]}` doesn't match a Reporting Customer value in JIRA"
+            throw e
 
     noNextReleaseTicket: (customer, forceCreate = false) =>
         new Promise (resolve, reject) =>
