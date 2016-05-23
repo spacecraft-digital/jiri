@@ -49,7 +49,7 @@ class NewReleaseAction extends Action
             throw new Error "Unable to find customer #{customerName}" unless customer
             Promise.all [
                 customer
-                @jiri.jira.createNewReleaseTicket customer, customer.getProject()
+                @jiri.jira.createNewReleaseTicket customer.getProject()
             ]
         .then ([customer, release]) =>
             new IssueOutput(@jiri.jira, release).getSlackMessage "Voila. One new release for #{customer.getName()}:"

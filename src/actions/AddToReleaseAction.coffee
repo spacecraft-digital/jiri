@@ -64,7 +64,7 @@ class AddToReleaseAction extends Action
         .then ([customer, release, feature]) =>
             unless release
                 if releaseVersion is 'next'
-                    return @jiri.jira.createNewReleaseTicket customer, customer.project
+                    return @jiri.jira.createNewReleaseTicket customer.project
                     .then (release) ->
                         throw new Error "Failed to create a new release ticket for #{customer.name} #{project.getName(true)}" unless release
                         Promise.all [
