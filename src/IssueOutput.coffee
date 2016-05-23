@@ -79,7 +79,7 @@ class IssueOutput
             status = if issue.status.name.match(/Deployment/i) then issue.status.name else "Deployment (#{issue.status.name})"
 
             versionMatch = issue.summary.match /(\d+\.\d+\.\d+)/
-            if versionMatch and issue.clientName and issue.stage
+            if versionMatch and issue.productType?.name is 'Customer release' and issue.clientName and issue.stage
                 versionNumber = versionMatch[1]
                 text += " #{status} of *#{issue.clientName} #{versionNumber}* to #{issue.stage}"
             else
