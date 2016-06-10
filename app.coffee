@@ -42,7 +42,7 @@ require('dev-tunnels') config
         database,
         new Jira {user: config.jira_user, password: config.jira_password}, database
         GitLab url: config.gitlab_url, token: config.gitlab_token
-        timeLimit getMemcachedConnection(), 7000, "memcached connection is taking too long — please check the service at #{config.memcached_hosts}"
+        timeLimit getMemcachedConnection(), 7000, rejectWith: new Error "memcached connection is taking too long — please check the service at #{config.memcached_hosts}"
     ]
 .catch (err) ->
     console.log colors.bgRed 'Failed to load dependencies:', err.stack||err
