@@ -26,7 +26,8 @@ class Calendar
                     [...,name,type] = event.summary.match /^(.+) - (.+)$/
 
                     switch type
-                        when 'Other Leave' then type = 'working from home'
+                        when 'Other Events' then type = 'working from home'
+                        when 'Sick' then type = 'off sick'
                         else type = 'on ' + type.toLowerCase()
 
                     people[type] = [] if not people[type]
