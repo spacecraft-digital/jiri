@@ -23,8 +23,8 @@ class HydrazineStatusAction extends AbstractSshAction
 
     getPodNameFromObject: (o) ->
         if o.ref and o.project.path_with_namespace
-            pod = o.ref.replace(/^refs\/heads\/(feature\/)?/, '').replace(/[^a-z0-9-]+/,'-').toLowerCase()
-            customer = o.project.path_with_namespace.replace(/^.+\/([a-z0-9-]+)$/, '$1')
+            pod = o.ref.replace(/^refs\/heads\/(feature\/)?/, '').replace(/[^a-z0-9-]+/i,'-').toLowerCase()
+            customer = o.project.path_with_namespace.replace(/^.+\/([a-z0-9-]+)$/i, '$1')
             "#{pod}.#{customer}.pods.jadu.net"
         else if o.client and o.branch
             "#{o.branch}.#{o.client}.pods.jadu.net"
