@@ -32,7 +32,12 @@ console.log 'Loading dependencies…'
 
 # will create SSH tunnels if 'tunnels' is defined in config
 # (which should only be defined in DEV config)
-require('dev-tunnels') config
+(->
+    if process.env.NODE_ENV is 'development'
+        require('dev-tunnels') config
+    else
+        Promise.resolve()
+)()
 # get the database first, because JIRA needs it
 .then -> Crater config.mongo_url
 .then (database) ->

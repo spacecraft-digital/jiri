@@ -4,6 +4,8 @@
 colors = require 'colors'
 joinn = require 'joinn'
 
+process.env.NODE_ENV = 'development'
+
 config =
     calendarChannel: 'zapier-test'
     sshPrivateKeyPath: '/Users/mattd/.ssh/jadu_webdev_key'
