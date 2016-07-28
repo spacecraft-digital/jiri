@@ -40,6 +40,8 @@ config =
 
     giphy_api_key: 'dc6zaTOxFJmzC'
 
+    git_repos_folder: '/tmp/jiri-repos'
+
     timezone: 'Europe/London'
 
     bot_name: 'Jiri'
