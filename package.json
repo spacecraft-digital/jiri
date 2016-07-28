@@ -38,6 +38,8 @@
     "mongoose": "^4.1.3",
     "nedb": "^1.1.2",
     "node-ssh": "^2.0.7",
+    "node-while-loop": "^1.0.4",
+    "nodegit": "^0.13.0",
     "normalize-version": "^1.0.4",
     "number-to-words": "^1.1.0",
     "pick-one": "^1.0.0",
