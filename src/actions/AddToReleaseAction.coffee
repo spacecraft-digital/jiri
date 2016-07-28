@@ -78,8 +78,7 @@ class AddToReleaseAction extends Action
                 feature
             ]
         .then ([release, feature]) =>
-            text = "`<#{feature.url}|#{feature.summary}>` added to release <#{release.url}|#{release.summary}>"
-            new IssueOutput(@jiri.jira, release).getSlackMessage text
+            text: "<#{feature.url}|#{feature.summary}> added to <#{release.url}|#{release.summary}>"
 
         .catch (e) =>
             # handle assertion errors as okay — just return message
