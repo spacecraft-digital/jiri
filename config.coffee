@@ -26,7 +26,7 @@ config =
     gitlab_url: 'https://gitlab.hq.jadu.net/'
     gitlab_token: process.env.GITLAB_TOKEN
 
-    mongo_url: 'mongodb://localhost/customers'
+    mongo_url: 'mongodb://localhost/crater'
 
     isoSpreadsheetId: '0AhQfpyH66MJXdGpYcGZiMTNDaFQ0dGpJcnJqZXdnaXc'
     google_client_id: process.env.GOOGLE_CLIENT_ID
