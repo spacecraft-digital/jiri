@@ -8,7 +8,7 @@
   "scripts": {
     "test": "mocha",
     "start": "clear && coffee app.coffee 2>&1 >> logs/jiri.log",
-    "start-dev": "clear && coffee app.coffee --debug 2>&1"
+    "start-dev": "clear && set NODE_ENV=development && coffee app.coffee --debug 2>&1"
   },
   "author": "matt.dolan@jadu.co.uk",
   "license": "ISC",
