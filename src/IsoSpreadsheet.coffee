@@ -1,23 +1,19 @@
 config = require '../config'
 async = require 'async'
 GoogleSpreadsheet = require 'google-spreadsheet'
-customer_database = require('crater')(config.mongo_url)
-
-Customer = customer_database.model 'Customer'
-Project = customer_database.model 'Project'
-Stage = customer_database.model 'Stage'
-Module = customer_database.model 'Module'
 
 class IsoSpreadsheet
 
-    constructor: ->
+    constructor: (@database) ->
         @sheet = new GoogleSpreadsheet config.isoSpreadsheetId
         credentials =
             client_email: config.google_client_email
             private_key: config.google_private_key
 
         @authPromise = new Promise (resolve, reject) =>
+            console.log 'authenticating…'
             @sheet.useServiceAccountAuth credentials, (error) ->
+                console.log error.stack||error if error
                 if error then reject error
                 else resolve()
         .catch (err) ->
@@ -25,8 +21,10 @@ class IsoSpreadsheet
 
     importData: ->
         @authPromise.then @requestRows
+        .catch (e) -> console.log e.stack||e
 
     requestRows: =>
+        console.log 'getting rows…'
         new Promise (resolve, reject) =>
             @sheet.getRows 1, # first worksheet
                     start: 1,          # start index
@@ -35,11 +33,14 @@ class IsoSpreadsheet
                 , @rowsLoaded
 
     rowsLoaded: (err, rows) =>
+        Project = @database.model('Project')
+        console.log "got #{rows.length} rows"
         new Promise (resolve, reject) =>
             async.mapSeries rows, (row, callback) =>
+                console.log row.title || "NO TITLE"
                 [..., row.title, brackets] = row.title.match /^(.+?)\s*(?:(?:\(|[\-—–]\s+)(.+?)\)?\s*)?$/i
 
-                row.projectName = Project.defaultProjectName
+                row.projectName = 'Website'
                 row.titleAliases = []
 
                 # handle the word 'intranet' at the end of the title
@@ -78,6 +79,7 @@ class IsoSpreadsheet
     # this function curries row
     curryOnFindMapping: (row) ->
         (customer) =>
+            Customer = @database.model('Customer')
             new Promise (resolve, reject) =>
                 if customer
                     return @importRow row, customer
@@ -95,6 +97,7 @@ class IsoSpreadsheet
                 return @importNewCustomer row
 
     importRow: (row, customer) ->
+        Project = @database.model('Project')
         new Promise (resolve, reject) =>
             # preserve the exact title for matching on re-import
             customer.mappingId_isoSpreadsheet = row.title
@@ -106,7 +109,7 @@ class IsoSpreadsheet
             customer.addAlias normalizedName if normalizedName != row.title
 
             # add simplified name as alias
-            simplifiedName = Customer.simplifyName(row.title)
+            simplifiedName = @database.model('Customer').simplifyName(row.title)
             customer.addAlias simplifiedName if simplifiedName != row.title
 
             # add simplified name as alias
@@ -144,7 +147,8 @@ class IsoSpreadsheet
                 console.log "#{object?.name} imported"
                 resolve object
 
-    importStage: (project, stageName, servers, urls, versions) ->
+    importStage: (project, stageName, servers, urls, versions) =>
+        Stage = @database.model('Stage')
         stage = project.getStage(stageName) or new Stage name: stageName
 
         if urls
@@ -157,16 +161,17 @@ class IsoSpreadsheet
         for role, host of servers
             stage.servers.push role: role, host: host unless stage.getServer(role)
 
-        for module, version of versions when version
-            existingModule = stage.getModule(module)
-            if existingModule
-                existingModule.version = version
+        for software, version of versions when version
+            existingSoftware = stage.getSoftware(software)
+            if existingSoftware
+                existingSoftware.version = version
             else
-                stage.modules.push name: module, version: version
+                stage.software.push name: software, version: version
 
         project.stages.push stage if stage.isNew
 
-    importNewCustomer: (row) ->
+    importNewCustomer: (row) =>
+        Customer = @database.model('Customer')
         customer = new Customer
             name: row.title
 
