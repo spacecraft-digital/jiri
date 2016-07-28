@@ -43,6 +43,7 @@ class Jiri extends EventEmitter
             'ReceiveJiraWebhooksAction'
             'ServerVersionsAction'
             'ServerLogAction'
+            'HydrazineStatusAction'
             'IssueInfoAction'
             'CxmCaseInfoAction'
             'CustomerListAction'
