@@ -49,7 +49,7 @@ class IssueInfoAction extends Action
             issueCount: issues.length
 
         if issues.length
-            if @refs and issues.length < @refs.length
+            if issues.length < @refs.length
                 notFoundRefs = issues.filter (issue) -> !ref for ref in @refs when ref is issue.key
                 if notFoundRefs
                     if issues.length is 1
@@ -78,10 +78,11 @@ class IssueInfoAction extends Action
         if refs = message.text.match @getTestRegex()
             @jiri.getActionData(@, @getRefsDataKey()).then (recentRefs) =>
                 for ref in refs
-                    ref = ref.toUpperCase()
                     forceRepeat = ref.substr(-1) is '!'
-                    if forceRepeat or ref not in recentRefs
+                    ref = ref.toUpperCase().replace /[^\dA-Z\-]/, ''
+                    if ref not in @refs and (forceRepeat or ref not in recentRefs)
                         @refs.push ref.replace /!$/, ''
+
                 return @refs.length or 'ignore'
         else
             Promise.resolve false
