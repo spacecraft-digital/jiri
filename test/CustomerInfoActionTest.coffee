@@ -65,7 +65,7 @@ validMessages = {
 
         'show Maldon servers'
         'show Maldon urls'
-        'show Maldon modules'
+        'show Maldon software'
 
         'show Oxford sites'
         'where is the UAT site for oxford?'
