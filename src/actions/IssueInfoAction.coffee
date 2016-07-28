@@ -71,12 +71,12 @@ class IssueInfoAction extends Action
             # throw an error, unless we've just sniffed the refs
             throw error
 
-    test: (message) ->
+    test: (message) =>
         return Promise.resolve false unless message.type is 'message' and message.text? and message.channel?
 
+        @refs = []
         if refs = message.text.match @getTestRegex()
             @jiri.getActionData(@, @getRefsDataKey()).then (recentRefs) =>
-                @refs = []
                 for ref in refs
                     ref = ref.toUpperCase()
                     forceRepeat = ref.substr(-1) is '!'
