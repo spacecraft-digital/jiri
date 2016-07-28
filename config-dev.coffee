@@ -10,7 +10,7 @@ config =
     calendarChannel: 'zapier-test'
     sshPrivateKeyPath: '/Users/mattd/.ssh/jadu_webdev_key'
     tunnels:
-        'spacecraft--jiri.ntn.jadu.net':
+        'titan.hq.jadu.net':
             ports: [
                 '27017'
             ]
