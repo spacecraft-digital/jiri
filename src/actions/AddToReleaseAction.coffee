@@ -55,7 +55,7 @@ class AddToReleaseAction extends Action
                 else
                     assert false, "Can you specify which customer / project you mean?"
         .then (customer) =>
-            throw new Error "Unable to find customer #{customerName}" unless customer
+            assert false, "Unable to find customer #{customerName}" unless customer
             Promise.all [
                 customer
                 @jiri.jira.getReleaseTicket customer.project, releaseVersion
