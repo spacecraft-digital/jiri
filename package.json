@@ -8,7 +8,9 @@
   "scripts": {
     "test": "mocha",
     "start": "clear && coffee app.coffee 2>&1 >> logs/jiri.log",
-    "start-dev": "clear && coffee app.coffee --debug 2>&1"
+    "start-dev": "clear && coffee app.coffee --debug 2>&1",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "author": "matt.dolan@jadu.co.uk",
   "license": "ISC",
@@ -23,10 +25,10 @@
     "escape-string-regexp": "^1.0.3",
     "fuzzy": "^0.1.1",
     "gitlab": "^1.5.0",
-    "google-spreadsheet": "^1.0.1",
+    "google-spreadsheet": "2.0.0",
     "gravatar": "^1.3.0",
     "i": "^0.3.3",
-    "ical": "^0.4.0",
+    "ical": "0.5.0",
     "indefinite-article": "0.0.2",
     "jadu-jira": "git+ssh://git@gitlab.hq.jadu.net:spacecraft/jadu-jira.git",
     "joinn": "^1.0.2",
@@ -45,13 +47,14 @@
     "reduce-unique": "^1.0.0",
     "request-promise": "^3.0.0",
     "semver": "^5.0.3",
-    "slack-client": "^1.4.1",
+    "slack-client": "2.0.1",
     "thenify": "^3.2.0",
     "time-limit-promise": "^1.0.2",
     "titlecase": "^1.1.2",
     "truncate": "^2.0.0",
     "ucfirst": "^1.0.0",
-    "uncamelize": "^1.0.5"
+    "uncamelize": "^1.0.5",
+    "snyk": "^1.17.4"
   },
   "devDependencies": {
     "chai": "^3.2.0",
@@ -60,5 +63,6 @@
     "dev-tunnels": "git+ssh://git@gitlab.hq.jadu.net:spacecraft/dev-tunnels.git",
     "mocha": "^2.3.2",
     "sinon": "^1.17.3"
-  }
+  },
+  "snyk": true
 }
