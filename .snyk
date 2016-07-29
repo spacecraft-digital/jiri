@@ -1,0 +1,9 @@
+version: v1.5.0
+ignore: {}
+patch:
+  'npm:minimatch:20160620':
+    - gitlab > slumber > yamljs > glob > minimatch:
+        patched: '2016-07-29T13:50:49.028Z'
+  'npm:request:20160119':
+    - google-spreadsheet > google-auth-library > request:
+        patched: '2016-07-29T13:50:49.028Z'
