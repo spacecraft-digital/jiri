@@ -53,6 +53,11 @@ Jiri has a mechanism for statefulness, per-Slack-channel. This allows for things
 
 and avoiding spamming channels by unfurling Jira tickets only once within a certain time period.
 
+Developing
+----------
+
+See [notes on developing Jiri](https://github.com/spacecraft-digital/jiri/blob/develop/docs/developing-jiri.md).
+
 Author
 ------
 Written by Matt Dolan [@_MattDolan](https://twitter.com/_MattDolan)
