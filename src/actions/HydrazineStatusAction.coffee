@@ -39,7 +39,6 @@ class HydrazineStatusAction extends AbstractSshAction
                 @ssh.execCommand('cat /var/www/.hydrazine/receive/var/tmp/*', {stream: 'both'})
             ]
             .then ([queue, current]) =>
-                console.log queue, current
                 if current.stdout
                     o = JSON.parse current.stdout
                     message = "*Hydrazine is working on #{@getPodNameFromObject(o)}*"
@@ -47,9 +46,12 @@ class HydrazineStatusAction extends AbstractSshAction
                     message = "*No pod is currently being built*"
 
                 if queue.stdout.length
-                    pods = for file in queue.stdout.replace('}{','}•{').split('•')
-                        @getPodNameFromObject JSON.parse(file)
-
+                    regex = new RegExp('\}\{', 'g')
+                    pods = for file in queue.stdout.replace(regex,'}•{').split('•')
+                        try
+                            @getPodNameFromObject JSON.parse(file)
+                        catch e
+                            console.log "Error parsing pod file"
                     message += "\n\n*With #{converter.toWords pods.length} politely waiting their turn:*\n#{pods.join("\n")}"
                 else
                     message += "\n\n(and none are waiting to be processed)"
